@@ -85,8 +85,6 @@ type AppendP<S> = S extends `'${infer U}'` ? `'+${U}'` : never
 
 const appendTest: AppendP<"'test'"> = "'+test'"
 
-type TDSDS = ["sym/AppendP", "'test'"]
-
 type BuiltINerror1 = false
 type BuiltINerror2 = false
 type BuiltINerror3 = false
@@ -96,14 +94,24 @@ type BuiltINerror4 = false
 type BuiltIN<A, env> =
   A extends [infer OPC, infer OPR]
   ? env extends Env
+  // todo : defining sym in this way, good or bad??
   ? OPC extends `sym/${infer U}`
     // todo : management built-ins.
     ? U extends `AppendP`
-      ? AppendP<OPR>
-      : BuiltINerror1 : BuiltINerror2 : BuiltINerror3 : BuiltINerror4
+      ? OPR extends `sym/${infer V}`
+        ? AppendP<GetSym<V, env>>
+        : AppendP<OPR>
+          : BuiltINerror1 : BuiltINerror2 : BuiltINerror3 : BuiltINerror4
 
+// test
+type TDSDS = ["sym/AppendP", "'test'"]
+type TDDDD = ["sym/AppendP", "sym/str"]
+// test raw
 const buildinTest: BuiltIN<TDSDS, []> = "'+test'"
 const decomTest: BuiltIN<Decompile<"(AppendP 'test')">, []> = "'+test'"
+// test with env
+const buildinTest2: BuiltIN<TDDDD, [MakeSym<"str", "'strval'">]> = "'+strval'"
+
 
 // ------------------------------------------
 // the above is in the case of not recursive sexpr.
