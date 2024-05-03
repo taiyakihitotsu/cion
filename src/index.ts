@@ -90,27 +90,36 @@ type BuiltINerror2 = false
 type BuiltINerror3 = false
 type BuiltINerror4 = false
 
+type Decompiled = [string | Decompiled]
+
+// todo : integrate
+// todo : Sym -> Sym[] / Env
+// todo : decompiled type sort.
+type FnDecompiled = [`fn`, Sym, Decompiled]
+
 // todo : ugly
 type BuiltIN<A, env> =
   A extends [infer OPC, infer OPR]
-  ? env extends Env
+  ? env extends EnvLifo
   // todo : defining sym in this way, good or bad??
-  ? OPC extends `sym/${infer U}`
-    // todo : management built-ins.
-    ? U extends `AppendP`
-      ? OPR extends `sym/${infer V}`
-        ? AppendP<GetSym<V, env>>
-        : AppendP<OPR>
-          : BuiltINerror1 : BuiltINerror2 : BuiltINerror3 : BuiltINerror4
+      ? OPC extends `sym/${infer U}`
+	// todo : management built-ins.
+	? U extends `AppendP`
+	  ? OPR extends `sym/${infer V}`
+	    ? AppendP<ReadLet<V, env>>
+	    : AppendP<OPR>
+	      : BuiltINerror1 : BuiltINerror2 : BuiltINerror3 : BuiltINerror4
 
 // test
 type TDSDS = ["sym/AppendP", "'test'"]
 type TDDDD = ["sym/AppendP", "sym/str"]
 // test raw
-const buildinTest: BuiltIN<TDSDS, []> = "'+test'"
-const decomTest: BuiltIN<Decompile<"(AppendP 'test')">, []> = "'+test'"
+const buildinTest: BuiltIN<TDSDS, [[]]> = "'+test'"
+const decomTest: BuiltIN<Decompile<"(AppendP 'test')">, [[]]> = "'+test'"
 // test with env
-const buildinTest2: BuiltIN<TDDDD, [MakeSym<"str", "'strval'">]> = "'+strval'"
+const buildinTest2: BuiltIN<TDDDD, [[MakeSym<"str", "'strval'">]]> = "'+strval'"
+const buildinTest3:  BuiltIN<TDDDD, [[MakeSym<"str", "'strval'">], [MakeSym<"sstr", "'notstrval'">]]> = "'+strval'"
+const buildinTest4:  BuiltIN<TDDDD, [[MakeSym<"sstr", "'notstrval'">], [MakeSym<"str", "'strval'">]]> = "'+strval'"
 
 
 // ------------------------------------------
@@ -128,7 +137,7 @@ type Error4 = false
 type Error5 = false
 
 type RecBuiltIN<A, env> =
-  env extends Env
+  env extends EnvLifo
   ? A extends [infer OPC, infer OPR]
     ? OPC extends SEXPR
       ? OPR extends SEXPR
@@ -148,6 +157,17 @@ type RecBuiltIN<A, env> =
 const rbiTest:  RecBuiltIN<["sym/AppendP", "'test'"], []> = "'+test'"
 const rbiTest2: RecBuiltIN<["sym/AppendP", ["sym/AppendP", "'test'"]], []> = "'++test'"
 const rbiTest3: RecBuiltIN<["sym/AppendP", ["sym/AppendP", ["sym/AppendP", "'test'"]]], []> = "'+++test'"
+const rbiTest4:  RecBuiltIN<["sym/AppendP", "sym/testsym"], [[MakeSym<"testsym", "'test'">]]> = "'+test'"
+const rbiTest5:  RecBuiltIN<["sym/AppendP", "sym/testsym"], [[MakeSym<"testsym", "'test'">], [MakeSym<"t", "'t'">], [MakeSym<"tttt", "'tttt'">]]> = "'+test'"
+// [NOTE]
+// Pitfall if forgot ,comma.
+// 
+// src/index.ts:161:94 - error TS2538: Type '{ name: "t"; value: "'t'"; }' cannot be used as an index type.
+//
+// 161 const rbiTest5:  RecBuiltIN<["sym/AppendP", "sym/testsym"], [[MakeSym<"testsym", "'test'">] [MakeSym<"t", "'t'">]]> = "'+test'"
+//
+        
+
 
 // todo : fn resolve test
 
