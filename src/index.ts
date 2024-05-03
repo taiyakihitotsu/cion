@@ -85,30 +85,43 @@ type AppendP<S> = S extends `'${infer U}'` ? `'+${U}'` : never
 
 const appendTest: AppendP<"'test'"> = "'+test'"
 
-type BuiltINerror1 = false
-type BuiltINerror2 = false
-type BuiltINerror3 = false
-type BuiltINerror4 = false
+type BuiltINerror1 = "BuiltINerror1"
+type BuiltINerror2 = "BuiltINerror2"
+type BuiltINerror3 = "BuiltINerror3"
+type BuiltINerror4 = "BuiltINerror4"
+type BuiltINerror5 = "BuiltINerror5"
+type BuiltINerror6 = "BuiltINerror6"
+type BuiltINerror7 = "BuiltINerror7"
+type BuiltINerror8 = "BuiltINerror8"
 
-type Decompiled = [string | Decompiled]
+type Decompiled = string[] // todo : rec
 
 // todo : integrate
 // todo : Sym -> Sym[] / Env
 // todo : decompiled type sort.
-type FnDecompiled = [`fn`, Sym, Decompiled]
+type FnDecompiled = [`fn`, string, Decompiled]
+
+// test
+const dectest: FnDecompiled = [`fn`, `a`, [`sym/AppendP`, `sym/a`]]
 
 // todo : ugly
 type BuiltIN<A, env> =
   A extends [infer OPC, infer OPR]
   ? env extends EnvLifo
-  // todo : defining sym in this way, good or bad??
-      ? OPC extends `sym/${infer U}`
-	// todo : management built-ins.
-	? U extends `AppendP`
-	  ? OPR extends `sym/${infer V}`
-	    ? AppendP<ReadLet<V, env>>
-	    : AppendP<OPR>
-	      : BuiltINerror1 : BuiltINerror2 : BuiltINerror3 : BuiltINerror4
+    ? OPC extends FnDecompiled
+      ? OPC extends [`fn`, infer S, infer D]
+	// todo : integrate
+	? OPR extends `sym/${infer VV}`
+	  ? BuiltIN<D, Let<S,ReadLet<VV, env>,env>>
+	  : BuiltIN<D, Let<S,OPR,env>> : BuiltINerror5
+    // todo : defining sym in this way, good or bad??
+    : OPC extends `sym/${infer U}`
+      // todo : management built-ins.
+      ? U extends `AppendP`
+	? OPR extends `sym/${infer V}`
+	  ? AppendP<ReadLet<V, env>>
+	  : AppendP<OPR>
+	    : BuiltINerror1 : BuiltINerror2 : BuiltINerror3 : BuiltINerror4
 
 // test
 type TDSDS = ["sym/AppendP", "'test'"]
@@ -120,7 +133,9 @@ const decomTest: BuiltIN<Decompile<"(AppendP 'test')">, [[]]> = "'+test'"
 const buildinTest2: BuiltIN<TDDDD, [[MakeSym<"str", "'strval'">]]> = "'+strval'"
 const buildinTest3:  BuiltIN<TDDDD, [[MakeSym<"str", "'strval'">], [MakeSym<"sstr", "'notstrval'">]]> = "'+strval'"
 const buildinTest4:  BuiltIN<TDDDD, [[MakeSym<"sstr", "'notstrval'">], [MakeSym<"str", "'strval'">]]> = "'+strval'"
-
+// test fn
+const builtinfntest: BuiltIN<[[`fn`, `str`, TDDDD], "'test'"], [[MakeSym<"str", "'strval'">]]> = "'+test'"
+const builtinfntest2: BuiltIN<[[`fn`, `str`, TDDDD], "'test'"], [[MakeSym<"aaa", "'aaa'">], [MakeSym<"str", "'strval'">]]> = "'+test'"
 
 // ------------------------------------------
 // the above is in the case of not recursive sexpr.
@@ -159,13 +174,14 @@ const rbiTest2: RecBuiltIN<["sym/AppendP", ["sym/AppendP", "'test'"]], []> = "'+
 const rbiTest3: RecBuiltIN<["sym/AppendP", ["sym/AppendP", ["sym/AppendP", "'test'"]]], []> = "'+++test'"
 const rbiTest4:  RecBuiltIN<["sym/AppendP", "sym/testsym"], [[MakeSym<"testsym", "'test'">]]> = "'+test'"
 const rbiTest5:  RecBuiltIN<["sym/AppendP", "sym/testsym"], [[MakeSym<"testsym", "'test'">], [MakeSym<"t", "'t'">], [MakeSym<"tttt", "'tttt'">]]> = "'+test'"
+// --------------------------------------------------------
 // [NOTE]
 // Pitfall if forgot ,comma.
-// 
+// --------------------------------------------------------
 // src/index.ts:161:94 - error TS2538: Type '{ name: "t"; value: "'t'"; }' cannot be used as an index type.
 //
 // 161 const rbiTest5:  RecBuiltIN<["sym/AppendP", "sym/testsym"], [[MakeSym<"testsym", "'test'">] [MakeSym<"t", "'t'">]]> = "'+test'"
-//
+// ---------------------------------------------------------
         
 
 
