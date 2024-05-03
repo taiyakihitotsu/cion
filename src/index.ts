@@ -90,17 +90,20 @@ type TDSDS = ["sym/AppendP", "'test'"]
 type BuiltINerror1 = false
 type BuiltINerror2 = false
 type BuiltINerror3 = false
+type BuiltINerror4 = false
 
 // todo : ugly
-type BuiltIN<A> = 
+type BuiltIN<A, env> =
   A extends [infer OPC, infer OPR]
+  ? env extends Env
   ? OPC extends `sym/${infer U}`
+    // todo : management built-ins.
     ? U extends `AppendP`
       ? AppendP<OPR>
-      : BuiltINerror1 : BuiltINerror2 : BuiltINerror3
+      : BuiltINerror1 : BuiltINerror2 : BuiltINerror3 : BuiltINerror4
 
-const buildinTest: BuiltIN<TDSDS> = "'+test'"
-const decomTest: BuiltIN<Decompile<"(AppendP 'test')">> = "'+test'"
+const buildinTest: BuiltIN<TDSDS, []> = "'+test'"
+const decomTest: BuiltIN<Decompile<"(AppendP 'test')">, []> = "'+test'"
 
 // ------------------------------------------
 // the above is in the case of not recursive sexpr.
@@ -114,27 +117,29 @@ type Error1 = false
 type Error2 = false
 type Error3 = false
 type Error4 = false
+type Error5 = false
 
-type RecBuiltIN<A> =
-  A extends [infer OPC, infer OPR]
-  ? OPC extends SEXPR
-    ? OPR extends SEXPR
-      ? BuiltIN<[RecBuiltIN<OPC>, RecBuiltIN<OPR>]>
-      : OPR extends ATOM
-        ? BuiltIN<[RecBuiltIN<OPC>, OPR]>
-        : Error1
-  : OPC extends ATOM
-    ? OPR extends SEXPR
-      ? BuiltIN<[OPC, RecBuiltIN<OPR>]>
-      : OPR extends ATOM
-        ? BuiltIN<[OPC, OPR]>
-        : Error2 : Error3 : Error4
+type RecBuiltIN<A, env> =
+  env extends Env
+  ? A extends [infer OPC, infer OPR]
+    ? OPC extends SEXPR
+      ? OPR extends SEXPR
+        ? BuiltIN<[RecBuiltIN<OPC, env>, RecBuiltIN<OPR, env>], env>
+        : OPR extends ATOM
+          ? BuiltIN<[RecBuiltIN<OPC, env>, OPR], env>
+          : Error1
+    : OPC extends ATOM
+      ? OPR extends SEXPR
+        ? BuiltIN<[OPC, RecBuiltIN<OPR, env>], env>
+        : OPR extends ATOM
+          ? BuiltIN<[OPC, OPR], env>
+          : Error2 : Error3 : Error4 : Error5
 
 //test
 
-const rbiTest:  RecBuiltIN<["sym/AppendP", "'test'"]> = "'+test'"
-const rbiTest2: RecBuiltIN<["sym/AppendP", ["sym/AppendP", "'test'"]]> = "'++test'"
-const rbiTest3: RecBuiltIN<["sym/AppendP", ["sym/AppendP", ["sym/AppendP", "'test'"]]]> = "'+++test'"
+const rbiTest:  RecBuiltIN<["sym/AppendP", "'test'"], []> = "'+test'"
+const rbiTest2: RecBuiltIN<["sym/AppendP", ["sym/AppendP", "'test'"]], []> = "'++test'"
+const rbiTest3: RecBuiltIN<["sym/AppendP", ["sym/AppendP", ["sym/AppendP", "'test'"]]], []> = "'+++test'"
 
 // todo : fn resolve test
 
