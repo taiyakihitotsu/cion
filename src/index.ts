@@ -104,6 +104,21 @@ type FnDecompiled = [`fn`, string, Decompiled]
 // test
 const dectest: FnDecompiled = [`fn`, `a`, [`sym/AppendP`, `sym/a`]]
 
+type ATOM  = string
+// type SEXPR = [ATOM | SEXPR, ATOM | SEXPR]
+type SEXPR = Array<ATOM | SEXPR>
+
+
+// todo : regex
+type Args = string
+// todo : 
+type IsAtomic<T> = 
+  T extends `sym/${infer U}` | [`fn`, Args, Sym | FnDecompiled | Decompiled] ? true : false
+
+// test
+const atomicTest: IsAtomic<`sym/a`> = true
+const atomicTest2: IsAtomic<[`fn`, `a`, [`fn`, `b`, ["sym/AppendP", "sym/testsym"]]]> = true
+
 
 
 // todo : ugly
@@ -115,7 +130,7 @@ type Eval<A, env> =
 	// todo : integrate
 	? OPR extends `sym/${infer VV}`
 	  ? Eval<D, Let<S,ReadLet<VV, env>,env>>
-	  : Eval<D, Let<S,OPR,env>> : Evalerror5
+	  : Eval<D, Let<S,OPR,env>> : EvalError5
     // todo : defining sym in this way, good or bad??
     : OPC extends `sym/${infer U}`
       // todo : management built-ins.
@@ -123,7 +138,7 @@ type Eval<A, env> =
 	? OPR extends `sym/${infer V}`
 	  ? AppendP<ReadLet<V, env>>
 	  : AppendP<OPR>
-	    : Evalerror1 : Evalerror2 : Evalerror3 : Evalerror4
+	    : EvalError1 : EvalError2 : EvalError3 : EvalError4
 
 // test
 type TDSDS = ["sym/AppendP", "'test'"]
@@ -143,9 +158,6 @@ const builtinfntest2: Eval<[[`fn`, `str`, TDDDD], "'test'"], [[MakeSym<"aaa", "'
 // the above is in the case of not recursive sexpr.
 // -----------------------------------------
 
-type ATOM  = string
-// type SEXPR = [ATOM | SEXPR, ATOM | SEXPR]
-type SEXPR = Array<ATOM | SEXPR>
 
 type Error1 = false
 type Error2 = false
