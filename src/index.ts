@@ -3,31 +3,31 @@ console.log('Hello World!!');
 
 // Eval
 
-type SymK = "name" | "value"
+type VarK = "name" | "value"
 
-type Sym = {
-  [key in SymK] : string
+type Var = {
+  [key in VarK] : string
 }
 
-type Env = Sym[]
+type Env = Var[]
 
-type NotMatch = false
-const NotMatch = false
+type NotMatch = "NotMatch"
+const NotMatch = "NotMatch"
 
-type MakeSym<N, V> = N extends string ? V extends string ? {name: N, value: V} : never : never 
+type MakeVar<N, V> = N extends string ? V extends string ? {name: N, value: V} : never : never 
 
-type GetSym<T, E> = 
+type GetVar<T, E> = 
   E extends Env
   ? E extends [infer U, ...infer R]
-    ? U extends Sym
+    ? U extends Var
       ? U["name"] extends T
         ? U["value"]
-        : GetSym<T, R> : NotMatch : NotMatch : NotMatch
+        : GetVar<T, R> : NotMatch : NotMatch : NotMatch
 
 // test
-const getSymTest: GetSym<"s", [MakeSym<"ss", "stringer">, MakeSym<"s", "string">]> = "string"
-const getSymTest2: GetSym<"ss", [MakeSym<"ss", "stringer">, MakeSym<"s", "string">]> = "stringer"
-const EvalTest3: GetSym<"sss", [MakeSym<"ss", "stringer">, MakeSym<"s", "string">]> = NotMatch
+const getVarTest: GetVar<"s", [MakeVar<"ss", "stringer">, MakeVar<"s", "string">]> = "string"
+const getVarTest2: GetVar<"ss", [MakeVar<"ss", "stringer">, MakeVar<"s", "string">]> = "stringer"
+const EvalTest3: GetVar<"sss", [MakeVar<"ss", "stringer">, MakeVar<"s", "string">]> = NotMatch
 
 //------------------------------------------------
 
@@ -38,12 +38,12 @@ const EvalTest3: GetSym<"sss", [MakeSym<"ss", "stringer">, MakeSym<"s", "string"
 // This "Lifo" has no mean but just a naming.
 type EnvLifo = Env[]
 
-type Let<N,V,EnvLifo> = EnvLifo extends Env[] ? [...EnvLifo, [MakeSym<N,V>]] : never
+type Let<N,V,EnvLifo> = EnvLifo extends Env[] ? [...EnvLifo, [MakeVar<N,V>]] : never
 
-type ReadLet<N, EnvLifo> = EnvLifo extends [...infer HS, infer L] ? L extends Env ? GetSym<N, L> extends NotMatch ? ReadLet<N, HS> : GetSym<N, L> : NotMatch : NotMatch
+type ReadLet<N, EnvLifo> = EnvLifo extends [...infer HS, infer L] ? L extends Env ? GetVar<N, L> extends NotMatch ? ReadLet<N, HS> : GetVar<N, L> : NotMatch : NotMatch
 
 // test
-type LetEnvLifo = [[MakeSym<"ss", "stringer">, MakeSym<"s", "string">]]
+type LetEnvLifo = [[MakeVar<"ss", "stringer">, MakeVar<"s", "string">]]
 const letTest: Let<"sss", "str", LetEnvLifo> = [[{ name: "ss", value: "stringer" }, { name: "s", value: "string" }], [{ name: "sss", value: "str" }]]
 
 const readLetTest: ReadLet<"s", Let<"sss", "str", LetEnvLifo>> = "string"
@@ -57,7 +57,7 @@ const readLetTest3:  ReadLet<"ssss", Let<"sss", "str", LetEnvLifo>> = NotMatch
 // Note: Ignore duplicate def (in current)
 //   to fix it, making error handling type.
 
-type Def<N,V,EnvLifo> = EnvLifo extends [infer U, ...infer R] ? U extends Env ? [[MakeSym<N,V>, ...U], ...R] : never :never
+type Def<N,V,EnvLifo> = EnvLifo extends [infer U, ...infer R] ? U extends Env ? [[MakeVar<N,V>, ...U], ...R] : never :never
 
 // todo : test
 
@@ -76,118 +76,107 @@ type Def<N,V,EnvLifo> = EnvLifo extends [infer U, ...infer R] ? U extends Env ? 
 // it is easier of defining inc to append + into a string.
 // ----------------------------------------
 
-// todo
-type CompileError = false
+type AppendError = "AppendError"
+type AppendP<S> = S extends `'${infer U}'` ? [`prim`, `'+${U}'`] : AppendError
 
-type Decompile<S> = S extends `(${infer U} ${infer R})` ? [`sym/${U}`, R] : CompileError
+const appendTest: AppendP<"'test'"> = [`prim`, "'+test'"]
 
-type AppendP<S> = S extends `'${infer U}'` ? `'+${U}'` : never
+type EvalError1 = "EvalError1"
+type EvalError2 = "EvalError2"
+type EvalError3 = "EvalError3"
+type EvalError4 = "EvalError4"
+type EvalError5 = "EvalError5"
+type EvalError6 = "EvalError6"
+type EvalError7 = "EvalError7"
+type EvalError8 = "EvalError8"
 
-const appendTest: AppendP<"'test'"> = "'+test'"
+// todo : there is no regex string template type,
+//   so using taple type in a tempo.
+type Sym  = [`sym`, string]
+type Prim = [`prim`, string]
+type Args = Sym[]
+type Fn   = [`fn`, Args, Array<Sym | Prim | Fn | ATOM>]
 
-type BuiltINerror1 = "BuiltINerror1"
-type BuiltINerror2 = "BuiltINerror2"
-type BuiltINerror3 = "BuiltINerror3"
-type BuiltINerror4 = "BuiltINerror4"
-type BuiltINerror5 = "BuiltINerror5"
-type BuiltINerror6 = "BuiltINerror6"
-type BuiltINerror7 = "BuiltINerror7"
-type BuiltINerror8 = "BuiltINerror8"
+type ATOM  = Sym | Prim | Fn
+type SEXPR = Array<ATOM | SEXPR>
 
-type Decompiled = string[] // todo : rec
-
-// todo : integrate
-// todo : Sym -> Sym[] / Env
-// todo : decompiled type sort.
-type FnDecompiled = [`fn`, string, Decompiled]
-
-// test
-const dectest: FnDecompiled = [`fn`, `a`, [`sym/AppendP`, `sym/a`]]
+// test fn
+const dectest: Fn = [`fn`, [[`sym`, `a`]], [[`sym`, `a`], [`sym`, `b`]]]
 
 // todo : ugly
-type BuiltIN<A, env> =
-  A extends [infer OPC, infer OPR]
-  ? env extends EnvLifo
-    ? OPC extends FnDecompiled
-      ? OPC extends [`fn`, infer S, infer D]
-	// todo : integrate
-	? OPR extends `sym/${infer VV}`
-	  ? BuiltIN<D, Let<S,ReadLet<VV, env>,env>>
-	  : BuiltIN<D, Let<S,OPR,env>> : BuiltINerror5
-    // todo : defining sym in this way, good or bad??
-    : OPC extends `sym/${infer U}`
-      // todo : management built-ins.
-      ? U extends `AppendP`
-	? OPR extends `sym/${infer V}`
-	  ? AppendP<ReadLet<V, env>>
-	  : AppendP<OPR>
-	    : BuiltINerror1 : BuiltINerror2 : BuiltINerror3 : BuiltINerror4
+type Eval<A, env> =
+  A extends SEXPR
+  ? A extends [infer OPC, infer OPR]
+    ? env extends EnvLifo
+      ? OPC extends Fn
+	? OPC extends [`fn`, [[`sym`, infer S]], infer D]
+	  ? OPR extends [`sym`, infer VV]
+	    ? Eval<D, Let<S,ReadLet<VV, env>,env>>
+	    : OPR extends [`prim`, infer VVV]
+	      ? Eval<D, Let<S,VVV,env>> : EvalError5 : EvalError7
+	  : OPC extends [`sym`, infer U]
+	  // todo : management built-ins.
+	  ? U extends `AppendP`
+	    ? OPR extends [`sym`, infer V]
+	      // todo : in current,
+	      // if a sym isn't matched with env,
+	      // this returns appendP error, not env error (I hope.)
+	      ? AppendP<ReadLet<V, env>>
+	      : OPR extends [`prim`, infer W]
+		? AppendP<W>
+		: EvalError1 : EvalError2 : EvalError3 : EvalError4 : EvalError6
+  : A extends ATOM
+    ? A extends [`sym`, infer SS]
+      ? [`prim`, ReadLet<SS, env>]
+      : A : never
 
-// test
-type TDSDS = ["sym/AppendP", "'test'"]
-type TDDDD = ["sym/AppendP", "sym/str"]
+// test case
+type TDSDS = [[`sym`, `AppendP`], [`prim`, `'test'`]]
+type TDDDD = [[`sym`, `AppendP`], [`sym`, `str`]]
 // test raw
-const buildinTest: BuiltIN<TDSDS, [[]]> = "'+test'"
-const decomTest: BuiltIN<Decompile<"(AppendP 'test')">, [[]]> = "'+test'"
-// test with env
-const buildinTest2: BuiltIN<TDDDD, [[MakeSym<"str", "'strval'">]]> = "'+strval'"
-const buildinTest3:  BuiltIN<TDDDD, [[MakeSym<"str", "'strval'">], [MakeSym<"sstr", "'notstrval'">]]> = "'+strval'"
-const buildinTest4:  BuiltIN<TDDDD, [[MakeSym<"sstr", "'notstrval'">], [MakeSym<"str", "'strval'">]]> = "'+strval'"
+const buildinTest: Eval<TDSDS, [[]]> = [`prim`, "'+test'"]
+const buildinTest2: Eval<TDDDD, [[]]> = "AppendError"
+const buildinTest3: Eval<TDDDD, [[MakeVar<`str`,`'strval'`>]]> = [`prim`,"'+strval'"]
+const buildinTest4:  Eval<TDDDD, [[MakeVar<"str", "'strval'">], [MakeVar<"sstr", "'notstrval'">]]> = [`prim`, "'+strval'"]
+const buildinTest5:  Eval<TDDDD, [[MakeVar<"sstr", "'notstrval'">], [MakeVar<"str", "'strval'">]]> = [`prim`, "'+strval'"]
 // test fn
-const builtinfntest: BuiltIN<[[`fn`, `str`, TDDDD], "'test'"], [[MakeSym<"str", "'strval'">]]> = "'+test'"
-const builtinfntest2: BuiltIN<[[`fn`, `str`, TDDDD], "'test'"], [[MakeSym<"aaa", "'aaa'">], [MakeSym<"str", "'strval'">]]> = "'+test'"
+const builtinfntest: Eval<[[`fn`, [[`sym`, `str`]], TDDDD], [`prim`, `'test'`]], [[MakeVar<"str", "'strval'">]]> = [`prim`, "'+test'"]
+const builtinfntest2: Eval<[[`fn`, [[`sym`, `str`]], TDDDD], [`prim`, `'test'`]], [[MakeVar<"aaa", "'aaa'">], [MakeVar<"str", "'strval'">]]> = [`prim`, "'+test'"]
+// test atomic
+const builtinatomtest: Eval<[`prim`, `'test'`],[]> = [`prim`, `'test'`]
+const builtinatomtest2: Eval<[`sym`, `test`],[[MakeVar<`test`, `'testval'`>]]> = [`prim`, `'testval'`]
+
 
 // ------------------------------------------
 // the above is in the case of not recursive sexpr.
 // -----------------------------------------
 
-type ATOM  = string
-// type SEXPR = [ATOM | SEXPR, ATOM | SEXPR]
-type SEXPR = Array<ATOM | SEXPR>
+type Error1 = "RecEval1"
+type Error2 = "RecEval2"
+type Error3 = "RecEval3"
+type Error4 = "RecEval4"
+type Error5 = "RecEval5"
 
-type Error1 = false
-type Error2 = false
-type Error3 = false
-type Error4 = false
-type Error5 = false
-
-type RecBuiltIN<A, env> =
+type RecEval<A, env> =
   env extends EnvLifo
   ? A extends [infer OPC, infer OPR]
     ? OPC extends SEXPR
       ? OPR extends SEXPR
-        ? BuiltIN<[RecBuiltIN<OPC, env>, RecBuiltIN<OPR, env>], env>
+        ? Eval<[RecEval<OPC, env>, RecEval<OPR, env>], env>
         : OPR extends ATOM
-          ? BuiltIN<[RecBuiltIN<OPC, env>, OPR], env>
+          ? Eval<[RecEval<OPC, env>, OPR], env>
           : Error1
     : OPC extends ATOM
       ? OPR extends SEXPR
-        ? BuiltIN<[OPC, RecBuiltIN<OPR, env>], env>
+        ? Eval<[OPC, RecEval<OPR, env>], env>
         : OPR extends ATOM
-          ? BuiltIN<[OPC, OPR], env>
+          ? Eval<[OPC, OPR], env>
           : Error2 : Error3 : Error4 : Error5
 
-//test
-
-const rbiTest:  RecBuiltIN<["sym/AppendP", "'test'"], []> = "'+test'"
-const rbiTest2: RecBuiltIN<["sym/AppendP", ["sym/AppendP", "'test'"]], []> = "'++test'"
-const rbiTest3: RecBuiltIN<["sym/AppendP", ["sym/AppendP", ["sym/AppendP", "'test'"]]], []> = "'+++test'"
-const rbiTest4:  RecBuiltIN<["sym/AppendP", "sym/testsym"], [[MakeSym<"testsym", "'test'">]]> = "'+test'"
-const rbiTest5:  RecBuiltIN<["sym/AppendP", "sym/testsym"], [[MakeSym<"testsym", "'test'">], [MakeSym<"t", "'t'">], [MakeSym<"tttt", "'tttt'">]]> = "'+test'"
-// --------------------------------------------------------
-// [NOTE]
-// Pitfall if forgot ,comma.
-// --------------------------------------------------------
-// src/index.ts:161:94 - error TS2538: Type '{ name: "t"; value: "'t'"; }' cannot be used as an index type.
-//
-// 161 const rbiTest5:  RecBuiltIN<["sym/AppendP", "sym/testsym"], [[MakeSym<"testsym", "'test'">] [MakeSym<"t", "'t'">]]> = "'+test'"
-// ---------------------------------------------------------
-        
-
-
-// todo : fn resolve test
-
-// todo : built in with env
-// todo : making if pattern in built in
-//   this is useful for a test in the case that
-//   the 1st is SEXPR (not ATOM)
+//test (no env)
+const rbiTest:  RecEval<[[`sym`, `AppendP`], [`prim`, `'test'`]], []> = [`prim`,"'+test'"]
+const rbiTest2: RecEval<[[`sym`, `AppendP`], [[`sym`, `AppendP`], [`prim`, `'test'`]]], []> = [`prim`,"'++test'"]
+const rbiTest3: RecEval<[[`sym`, `AppendP`], [[`sym`, `AppendP`], [[`sym`, `AppendP`], [`prim`, `'test'`]]]], []> = [`prim`, "'+++test'"]
+// test (with env)
+const rbiTest4:  RecEval<[[`sym`, `AppendP`], [`sym`, `testsym`]], [[MakeVar<"testsym", `'test'`>]]> = [`prim`, "'+test'"]
+const rbiTest5:  RecEval<[[`sym`, `AppendP`], [`sym`, `testsym`]], [[MakeVar<"testsym", `'test'`>], [MakeVar<"t", "'t'">], [MakeVar<"tttt", "'tttt'">]]> = [`prim`,"'+test'"]
