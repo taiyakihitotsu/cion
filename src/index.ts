@@ -105,25 +105,30 @@ const dectest: Fn = [`fn`, [[`sym`, `a`]], [[`sym`, `a`], [`sym`, `b`]]]
 
 // todo : ugly
 type Eval<A, env> =
-  A extends [infer OPC, infer OPR]
-  ? env extends EnvLifo
-    ? OPC extends Fn
-      ? OPC extends [`fn`, [[`sym`, infer S]], infer D]
-	? OPR extends [`sym`, infer VV]
-	  ? Eval<D, Let<S,ReadLet<VV, env>,env>>
-          : OPR extends [`prim`, infer VVV]
-            ? Eval<D, Let<S,VVV,env>> : EvalError5 : EvalError7
-        : OPC extends [`sym`, infer U]
-	// todo : management built-ins.
-	? U extends `AppendP`
-	  ? OPR extends [`sym`, infer V]
-            // todo : in current,
-            // if a sym isn't matched with env,
-            // this returns appendP error, not env error (I hope.)
-	    ? AppendP<ReadLet<V, env>>
-	    : OPR extends [`prim`, infer W]
-              ? AppendP<W>
-	      : EvalError1 : EvalError2 : EvalError3 : EvalError4 : EvalError6
+  A extends SEXPR
+  ? A extends [infer OPC, infer OPR]
+    ? env extends EnvLifo
+      ? OPC extends Fn
+	? OPC extends [`fn`, [[`sym`, infer S]], infer D]
+	  ? OPR extends [`sym`, infer VV]
+	    ? Eval<D, Let<S,ReadLet<VV, env>,env>>
+	    : OPR extends [`prim`, infer VVV]
+	      ? Eval<D, Let<S,VVV,env>> : EvalError5 : EvalError7
+	  : OPC extends [`sym`, infer U]
+	  // todo : management built-ins.
+	  ? U extends `AppendP`
+	    ? OPR extends [`sym`, infer V]
+	      // todo : in current,
+	      // if a sym isn't matched with env,
+	      // this returns appendP error, not env error (I hope.)
+	      ? AppendP<ReadLet<V, env>>
+	      : OPR extends [`prim`, infer W]
+		? AppendP<W>
+		: EvalError1 : EvalError2 : EvalError3 : EvalError4 : EvalError6
+  : A extends ATOM
+    ? A extends [`sym`, infer SS]
+      ? [`prim`, ReadLet<SS, env>]
+      : A : never
 
 // test case
 type TDSDS = [[`sym`, `AppendP`], [`prim`, `'test'`]]
@@ -135,9 +140,12 @@ const buildinTest3: Eval<TDDDD, [[MakeVar<`str`,`'strval'`>]]> = [`prim`,"'+strv
 const buildinTest4:  Eval<TDDDD, [[MakeVar<"str", "'strval'">], [MakeVar<"sstr", "'notstrval'">]]> = [`prim`, "'+strval'"]
 const buildinTest5:  Eval<TDDDD, [[MakeVar<"sstr", "'notstrval'">], [MakeVar<"str", "'strval'">]]> = [`prim`, "'+strval'"]
 // test fn
-
 const builtinfntest: Eval<[[`fn`, [[`sym`, `str`]], TDDDD], [`prim`, `'test'`]], [[MakeVar<"str", "'strval'">]]> = [`prim`, "'+test'"]
 const builtinfntest2: Eval<[[`fn`, [[`sym`, `str`]], TDDDD], [`prim`, `'test'`]], [[MakeVar<"aaa", "'aaa'">], [MakeVar<"str", "'strval'">]]> = [`prim`, "'+test'"]
+// test atomic
+const builtinatomtest: Eval<[`prim`, `'test'`],[]> = [`prim`, `'test'`]
+const builtinatomtest2: Eval<[`sym`, `test`],[[MakeVar<`test`, `'testval'`>]]> = [`prim`, `'testval'`]
+
 
 // ------------------------------------------
 // the above is in the case of not recursive sexpr.
