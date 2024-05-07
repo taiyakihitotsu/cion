@@ -89,16 +89,30 @@ type EvalError5 = "EvalError5"
 type EvalError6 = "EvalError6"
 type EvalError7 = "EvalError7"
 type EvalError8 = "EvalError8"
+type EvalError9 = "EvalError9"
+type EvalError10 = "EvalError10"
+type EvalError11 = "EvalError11"
+type EvalError12 = "EvalError12"
+
+// todo
+type EACH = LetForm | ATOM
+type ATOM  = Sym | Prim | Fn
+type SEXPR = Array<EACH | SEXPR>
 
 // todo : there is no regex string template type,
 //   so using taple type in a tempo.
 type Sym  = [`sym`, string]
 type Prim = [`prim`, string]
 type Args = Sym[]
-type Fn   = [`fn`, Args, Array<Sym | Prim | Fn | ATOM>]
+type Fn   = [`fn`, Args, EACH | Array<EACH>]
 
-type ATOM  = Sym | Prim | Fn
-type SEXPR = Array<ATOM | SEXPR>
+// todo : naming
+// let itself isn't value and returning value, unlike fn, so maybe ok as it is.
+type LetArg = [[`sym`, string], string]
+type LetForm = [`let`, LetArg, EACH | Array<EACH>]
+// test let
+const larttest: LetArg = [[`sym`, `t`], `test`]
+
 
 // test fn
 const dectest: Fn = [`fn`, [[`sym`, `a`]], [[`sym`, `a`], [`sym`, `b`]]]
@@ -106,14 +120,17 @@ const dectest: Fn = [`fn`, [[`sym`, `a`]], [[`sym`, `a`], [`sym`, `b`]]]
 // todo : ugly
 type Eval<A, env> =
   A extends SEXPR
+  // todo : this branch doesn't need because of it's well: Eval<Eval, Eval>
   ? A extends [infer OPC, infer OPR]
     ? env extends EnvLifo
-      ? OPC extends Fn
-	? OPC extends [`fn`, [[`sym`, infer S]], infer D]
-	  ? OPR extends [`sym`, infer VV]
-	    ? Eval<D, Let<S,ReadLet<VV, env>,env>>
-	    : OPR extends [`prim`, infer VVV]
-	      ? Eval<D, Let<S,VVV,env>> : EvalError5 : EvalError7
+	? OPC extends Fn
+	  ? OPC extends [`fn`, [[`sym`, infer S]], infer D]
+	    ? OPR extends [`sym`, infer VV]
+	      ? Eval<D, Let<S,ReadLet<VV, env>,env>>
+	      : OPR extends [`prim`, infer VVV]
+		? Eval<D, Let<S,VVV,env>>
+		: EvalError5
+            : EvalError7
 	  : OPC extends [`sym`, infer U]
 	  // todo : management built-ins.
 	  ? U extends `AppendP`
@@ -128,24 +145,40 @@ type Eval<A, env> =
   : A extends ATOM
     ? A extends [`sym`, infer SS]
       ? [`prim`, ReadLet<SS, env>]
-      : A : never
+      : A
+  // --------------------
+  // todo
+  // src/index.ts:189:11 - error TS2589: Type instantiation is excessively deep and possibly infinite.
+  // 189         ? Eval<[RecEval<OPC, env>, RecEval<OPR, env>], env>
+  : A extends LetForm
+    ? A extends [`let`, [[`sym`, infer LN], infer LV], infer LC]
+      ? LN extends string
+      ? LV extends string
+      // todo
+      ? LC extends EACH 
+      ? Eval<LC, Let<LN, LV, env>>
+      : never : never : never : never
+  // ---------------------
+    : never
+
 
 // test case
 type TDSDS = [[`sym`, `AppendP`], [`prim`, `'test'`]]
 type TDDDD = [[`sym`, `AppendP`], [`sym`, `str`]]
 // test raw
-const buildinTest: Eval<TDSDS, [[]]> = [`prim`, "'+test'"]
-const buildinTest2: Eval<TDDDD, [[]]> = "AppendError"
-const buildinTest3: Eval<TDDDD, [[MakeVar<`str`,`'strval'`>]]> = [`prim`,"'+strval'"]
-const buildinTest4:  Eval<TDDDD, [[MakeVar<"str", "'strval'">], [MakeVar<"sstr", "'notstrval'">]]> = [`prim`, "'+strval'"]
-const buildinTest5:  Eval<TDDDD, [[MakeVar<"sstr", "'notstrval'">], [MakeVar<"str", "'strval'">]]> = [`prim`, "'+strval'"]
+const evalTest: Eval<TDSDS, [[]]> = [`prim`, "'+test'"]
+const evalTest2: Eval<TDDDD, [[]]> = "AppendError"
+const evalTest3: Eval<TDDDD, [[MakeVar<`str`,`'strval'`>]]> = [`prim`,"'+strval'"]
+const evalTest4:  Eval<TDDDD, [[MakeVar<"str", "'strval'">], [MakeVar<"sstr", "'notstrval'">]]> = [`prim`, "'+strval'"]
+const evalTest5:  Eval<TDDDD, [[MakeVar<"sstr", "'notstrval'">], [MakeVar<"str", "'strval'">]]> = [`prim`, "'+strval'"]
 // test fn
-const builtinfntest: Eval<[[`fn`, [[`sym`, `str`]], TDDDD], [`prim`, `'test'`]], [[MakeVar<"str", "'strval'">]]> = [`prim`, "'+test'"]
-const builtinfntest2: Eval<[[`fn`, [[`sym`, `str`]], TDDDD], [`prim`, `'test'`]], [[MakeVar<"aaa", "'aaa'">], [MakeVar<"str", "'strval'">]]> = [`prim`, "'+test'"]
+const evalfntest: Eval<[[`fn`, [[`sym`, `str`]], TDDDD], [`prim`, `'test'`]], [[MakeVar<"str", "'strval'">]]> = [`prim`, "'+test'"]
+const evalfntest2: Eval<[[`fn`, [[`sym`, `str`]], TDDDD], [`prim`, `'test'`]], [[MakeVar<"aaa", "'aaa'">], [MakeVar<"str", "'strval'">]]> = [`prim`, "'+test'"]
 // test atomic
-const builtinatomtest: Eval<[`prim`, `'test'`],[]> = [`prim`, `'test'`]
-const builtinatomtest2: Eval<[`sym`, `test`],[[MakeVar<`test`, `'testval'`>]]> = [`prim`, `'testval'`]
-
+const evalatomtest: Eval<[`prim`, `'test'`],[]> = [`prim`, `'test'`]
+const evalatomtest2: Eval<[`sym`, `test`],[[MakeVar<`test`, `'testval'`>]]> = [`prim`, `'testval'`]
+// test let
+const evallettest: Eval<[`let`, [[`sym`, `t`], `'test'`], [`sym`, `t`]], []> = [`prim`, "'test'"]
 
 // ------------------------------------------
 // the above is in the case of not recursive sexpr.
