@@ -195,13 +195,13 @@ type RecEval<A, env> =
   ? A extends [infer OPC, infer OPR]
     ? OPC extends SEXPR
       ? OPR extends SEXPR
-        ? Eval<[RecEval<OPC, env>, RecEval<OPR, env>], env>
+        ? Eval<[RecEval<OPC, env> extends infer A ? A : never, RecEval<OPR, env> extends infer B ? B : never], env>
         : OPR extends ATOM
-          ? Eval<[RecEval<OPC, env>, OPR], env>
+          ? Eval<[RecEval<OPC, env> extends infer A ? A : never, OPR], env>
           : Error1
     : OPC extends ATOM
       ? OPR extends SEXPR
-        ? Eval<[OPC, RecEval<OPR, env>], env>
+        ? Eval<[OPC, RecEval<OPR, env> extends infer A ? A : never], env>
         : OPR extends ATOM
           ? Eval<[OPC, OPR], env>
           : Error2 : Error3 : Error4 : Error5
