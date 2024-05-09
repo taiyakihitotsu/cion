@@ -120,7 +120,6 @@ const dectest: Fn = [`fn`, [[`sym`, `a`]], [[`sym`, `a`], [`sym`, `b`]]]
 // todo : ugly
 type Eval<A, env> =
   A extends SEXPR
-  // todo : this branch doesn't need because of it's well: Eval<Eval, Eval>
   ? A extends [infer OPC, infer OPR]
     ? env extends EnvLifo
 	? OPC extends Fn
@@ -132,12 +131,11 @@ type Eval<A, env> =
 		: EvalError5
             : EvalError7
 	  : OPC extends [`sym`, infer U]
-	  // todo : management built-ins.
 	  ? U extends `AppendP`
 	    ? OPR extends [`sym`, infer V]
 	      // todo : in current,
-	      // if a sym isn't matched with env,
-	      // this returns appendP error, not env error (I hope.)
+	      //   if a sym isn't matched with an env,
+	      //   this returns appendP error, not env error (I hope to return .)
 	      ? AppendP<ReadLet<V, env>>
 	      : OPR extends [`prim`, infer W]
 		? AppendP<W>
@@ -146,10 +144,6 @@ type Eval<A, env> =
     ? A extends [`sym`, infer SS]
       ? [`prim`, ReadLet<SS, env>]
       : A
-  // --------------------
-  // todo
-  // src/index.ts:189:11 - error TS2589: Type instantiation is excessively deep and possibly infinite.
-  // 189         ? Eval<[RecEval<OPC, env>, RecEval<OPR, env>], env>
   : A extends LetForm
     ? A extends [`let`, [[`sym`, infer LN], infer LV], infer LC]
       ? LN extends string
