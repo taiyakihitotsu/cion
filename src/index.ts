@@ -108,7 +108,9 @@ type Fn   = [`fn`, Args, EACH | Array<EACH>]
 
 // todo : naming
 // let itself isn't value and returning value, unlike fn, so maybe ok as it is.
-type LetArg = [[`sym`, string], string]
+// todo
+// integrated let form to [[`sym`, string], EACH | Array<EACH>] in future.
+type LetArg = [[`sym`, string], string | EACH | Array<EACH> ]
 type LetForm = [`let`, LetArg, EACH | Array<EACH>]
 // test let
 const larttest: LetArg = [[`sym`, `t`], `test`]
@@ -118,16 +120,16 @@ const larttest: LetArg = [[`sym`, `t`], `test`]
 const dectest: Fn = [`fn`, [[`sym`, `a`]], [[`sym`, `a`], [`sym`, `b`]]]
 
 // todo : ugly
-type Eval<A, env> =
+type Eval<A, env = [[]], prev = 0> =
   A extends SEXPR
   ? A extends [infer OPC, infer OPR]
     ? env extends EnvLifo
 	? OPC extends Fn
 	  ? OPC extends [`fn`, [[`sym`, infer S]], infer D]
 	    ? OPR extends [`sym`, infer VV]
-	      ? Eval<D, Let<S,ReadLet<VV, env>,env>>
+	      ? Eval<D, Let<S,ReadLet<VV, env>,env>, [prev]>
 	      : OPR extends [`prim`, infer VVV]
-		? Eval<D, Let<S,VVV,env>>
+		? Eval<D, Let<S,VVV,env>, [prev]>
 		: EvalError5
             : EvalError7
 	  : OPC extends [`sym`, infer U]
@@ -146,14 +148,14 @@ type Eval<A, env> =
       : A
   : A extends LetForm
     ? A extends [`let`, [[`sym`, infer LN], infer LV], infer LC]
-      ? LN extends string
-      ? LV extends string
-      // todo
-      ? LC extends EACH 
-      ? Eval<LC, Let<LN, LV, env>>
-      : never : never : never : never
-  // ---------------------
-    : never
+      ? LV extends Prim & [`prim`, infer LP]
+      ? Eval<LC, Let<LN, LP, env>, [prev]>
+      : LV extends Sym & [`sym`, infer LP]
+      ? Eval<LC, Let<LN, ReadLet<LP, env>, env>, [prev]>
+      : LV extends LetForm 
+      ? Eval<[`let`, [[`sym`, LN], Eval<LV, env, [prev]>], LC], env, [prev]>
+      : {error: [EvalError7, prev, A]} : EvalError8 // : EvalError9 : EvalError10
+    : {error: [EvalError11, prev, A]}
 
 
 // test case
@@ -172,7 +174,24 @@ const evalfntest2: Eval<[[`fn`, [[`sym`, `str`]], TDDDD], [`prim`, `'test'`]], [
 const evalatomtest: Eval<[`prim`, `'test'`],[]> = [`prim`, `'test'`]
 const evalatomtest2: Eval<[`sym`, `test`],[[MakeVar<`test`, `'testval'`>]]> = [`prim`, `'testval'`]
 // test let
-const evallettest: Eval<[`let`, [[`sym`, `t`], `'test'`], [`sym`, `t`]], []> = [`prim`, "'test'"]
+// const evallettest: Eval<[`let`, [[`sym`, `t`], `'test'`], [`sym`, `t`]], []> = [`prim`, "'test'"]
+const evalletwprimtest: Eval<[`let`, [[`sym`, `t`], [`prim`, `'test'`]], [`sym`, `t`]], []> = [`prim`, "'test'"]
+
+
+// recursive test[fn]
+type AppendPWstr = [[`sym`, `AppendP`], [`sym`, `str`]]
+type AppendPWa   = [[`sym`, `AppendP`], [`sym`, `a`]]
+type InnerFnTest = [`fn`, [[`sym`, `str`]], AppendPWstr]
+type OuterFnTest = [`fn`, [[`sym`, `a`]], [InnerFnTest, [`sym`, `a`]]]
+const evalrecfntest1: Eval<[OuterFnTest, [`prim`, `'test'`]], []> = [`prim`, `'+test'`]
+
+// recursive test[let]
+type InnerLetTest = [`let`, [[`sym`, `str`], [`prim`, `'test'`]], [[`sym`, `AppendP`], [`sym`, `str`]]]
+type OuterLetTest = [`let`, [[`sym`, `aaa`], InnerLetTest], [[`sym`, `AppendP`], [`sym`, `aaa`]]]
+type RecLetTest = [`let`,[[`sym`, `aaa`], InnerLetTest], [`let`, [[`sym`, `bbb`], [`sym`, `aaa`]], [[`sym`, `AppendP`], [`sym`, `bbb`]]]]
+const evalreclettest0: Eval<InnerLetTest> = [`prim`, `'+test'`]
+const evalreclettest1: Eval<OuterLetTest> = [`prim`, `'++test'`]
+const evalreclettest2: Eval<RecLetTest> = [`prim`, `'++test'`]
 
 // ------------------------------------------
 // the above is in the case of not recursive sexpr.
