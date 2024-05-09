@@ -207,3 +207,13 @@ const rbiTest3: RecEval<[[`sym`, `AppendP`], [[`sym`, `AppendP`], [[`sym`, `Appe
 // test (with env)
 const rbiTest4:  RecEval<[[`sym`, `AppendP`], [`sym`, `testsym`]], [[MakeVar<"testsym", `'test'`>]]> = [`prim`, "'+test'"]
 const rbiTest5:  RecEval<[[`sym`, `AppendP`], [`sym`, `testsym`]], [[MakeVar<"testsym", `'test'`>], [MakeVar<"t", "'t'">], [MakeVar<"tttt", "'tttt'">]]> = [`prim`,"'+test'"]
+
+
+
+
+
+// --------------------
+// def / defn a scribble.
+const defined: [`sym`, `test`] = null as any
+const readdef: typeof defined = [`sym`, `test`] // null as any
+// const readdef2: typeof defined = [`sym`, `tet`] // null as any
