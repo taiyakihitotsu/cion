@@ -1,12 +1,15 @@
-console.log('Hello World!!');
+type EACH = LetForm | ATOM
+type ATOM  = Sym | Prim | Fn
+type SEXPR = Array<EACH | SEXPR>
 
-
-// Eval
-
-type VarK = "name" | "value"
+type Sym  = [`sym`, string]
+type Prim = [`prim`, string]
+type Args = Sym[]
+type Fn   = [`fn`, Args, EACH | Array<EACH>]
 
 type Var = {
-  [key in VarK] : string
+  name: string
+  , value: string | ATOM
 }
 
 type Env = Var[]
@@ -14,7 +17,7 @@ type Env = Var[]
 type NotMatch = "NotMatch"
 const NotMatch = "NotMatch"
 
-type MakeVar<N, V> = N extends string ? V extends string ? {name: N, value: V} : never : never 
+type MakeVar<N, V> = {name: N, value: V}
 
 type GetVar<T, E> = 
   E extends Env
@@ -33,22 +36,28 @@ const EvalTest3: GetVar<"sss", [MakeVar<"ss", "stringer">, MakeVar<"s", "string"
 
 // Let
 // Env in Let must be a list of LIFO.
-
+//
 // Note:
 // This "Lifo" has no mean but just a naming.
+//
+// Sym in Sym itself is loadable but ReadLet doesn't do that
+// because this case is broken in a macro context.
 type EnvLifo = Env[]
 
-type Let<N,V,EnvLifo> = EnvLifo extends Env[] ? [...EnvLifo, [MakeVar<N,V>]] : never
+type Let<N,V,EnvLifo = Env[]> = EnvLifo extends Env[] ? [...EnvLifo, [MakeVar<N,V>]] : never
 
 type ReadLet<N, EnvLifo> = EnvLifo extends [...infer HS, infer L] ? L extends Env ? GetVar<N, L> extends NotMatch ? ReadLet<N, HS> : GetVar<N, L> : NotMatch : NotMatch
 
 // test
-type LetEnvLifo = [[MakeVar<"ss", "stringer">, MakeVar<"s", "string">]]
-const letTest: Let<"sss", "str", LetEnvLifo> = [[{ name: "ss", value: "stringer" }, { name: "s", value: "string" }], [{ name: "sss", value: "str" }]]
+type LetEnvLifo = [[MakeVar<"ss", "stringer">, MakeVar<"s", "string">, MakeVar<"cc", [`prim`, "p/cc"]>]]
+const letTest: Let<"sss", "str", LetEnvLifo> = [[{ name: "ss", value: "stringer" }, { name: "s", value: "string" }, {name: "cc", value: [`prim`, `p/cc`]}], [{ name: "sss", value: "str" }]]
 
 const readLetTest: ReadLet<"s", Let<"sss", "str", LetEnvLifo>> = "string"
 const readLetTest2:  ReadLet<"sss", Let<"sss", "str", LetEnvLifo>> = "str"
 const readLetTest3:  ReadLet<"ssss", Let<"sss", "str", LetEnvLifo>> = NotMatch
+// test / primitive - case
+const readLetTest4: ReadLet<"sss", Let<"sss", [`prim`, `p/sss`], LetEnvLifo>> = [`prim`, `p/sss`]
+const readLetTest5:  ReadLet<"cc", Let<"sss", "str", LetEnvLifo>> = [`prim`, `p/cc`]
 
 //-----------------------------------------
 
@@ -86,25 +95,13 @@ type EvalError2 = "EvalError2"
 type EvalError3 = "EvalError3"
 type EvalError4 = "EvalError4"
 type EvalError5 = "EvalError5"
-type EvalError6 = "EvalError6"
-type EvalError7 = "EvalError7"
+type EvalError6 = "EvalError6" 
+type EvalError7 = "EvalError7/ 2nd in let form must be Atom. No wrapped value is deprecated."
 type EvalError8 = "EvalError8"
 type EvalError9 = "EvalError9"
 type EvalError10 = "EvalError10"
 type EvalError11 = "EvalError11"
 type EvalError12 = "EvalError12"
-
-// todo
-type EACH = LetForm | ATOM
-type ATOM  = Sym | Prim | Fn
-type SEXPR = Array<EACH | SEXPR>
-
-// todo : there is no regex string template type,
-//   so using taple type in a tempo.
-type Sym  = [`sym`, string]
-type Prim = [`prim`, string]
-type Args = Sym[]
-type Fn   = [`fn`, Args, EACH | Array<EACH>]
 
 // todo : naming
 // let itself isn't value and returning value, unlike fn, so maybe ok as it is.
@@ -125,26 +122,36 @@ type Eval<A, env = [[]], prev = 0> =
   ? A extends [infer OPC, infer OPR]
     ? env extends EnvLifo
 	? OPC extends Fn
-	  ? OPC extends [`fn`, [[`sym`, infer S]], infer D]
-	    ? OPR extends [`sym`, infer VV]
+	  ? OPC extends Fn & [`fn`, [[`sym`, infer S]], infer D]
+	    ? OPR extends Sym & [`sym`, infer VV]
 	      ? Eval<D, Let<S,ReadLet<VV, env>,env>, [prev]>
-	      : OPR extends [`prim`, infer VVV]
-		? Eval<D, Let<S,VVV,env>, [prev]>
-		: EvalError5
+	    : OPR extends Prim & [`prim`, infer VVV]
+	      ? Eval<D, Let<S,VVV,env>, [prev]>
+	    : EvalError5
             : EvalError7
-	  : OPC extends [`sym`, infer U]
+	: OPC extends Sym & [`sym`, infer U]
+          // todo : this shouldn't be build-in.
+          //   if making def, or global env,
+          //   this part will be deleted.
 	  ? U extends `AppendP`
 	    ? OPR extends [`sym`, infer V]
 	      // todo : in current,
 	      //   if a sym isn't matched with an env,
 	      //   this returns appendP error, not env error (I hope to return .)
 	      ? AppendP<ReadLet<V, env>>
-	      : OPR extends [`prim`, infer W]
-		? AppendP<W>
-		: EvalError1 : EvalError2 : EvalError3 : EvalError4 : EvalError6
+	    : OPR extends [`prim`, infer W]
+	      ? AppendP<W>
+              : EvalError1
+          // this is fn case.
+          : ReadLet<U,env> extends Fn & infer UU
+            ? Eval<[UU, OPR], env, [prev]>
+            : EvalError3
+        : EvalError4 : EvalError6 : EvalError2
   : A extends ATOM
     ? A extends [`sym`, infer SS]
-      ? [`prim`, ReadLet<SS, env>]
+      ? ReadLet<SS, env> extends ATOM & infer U
+      ? U
+      : [`prim`, ReadLet<SS, env>]
       : A
   : A extends LetForm
     ? A extends [`let`, [[`sym`, infer LN], infer LV], infer LC]
@@ -170,11 +177,17 @@ const evalTest5:  Eval<TDDDD, [[MakeVar<"sstr", "'notstrval'">], [MakeVar<"str",
 // test fn
 const evalfntest: Eval<[[`fn`, [[`sym`, `str`]], TDDDD], [`prim`, `'test'`]], [[MakeVar<"str", "'strval'">]]> = [`prim`, "'+test'"]
 const evalfntest2: Eval<[[`fn`, [[`sym`, `str`]], TDDDD], [`prim`, `'test'`]], [[MakeVar<"aaa", "'aaa'">], [MakeVar<"str", "'strval'">]]> = [`prim`, "'+test'"]
+// test fn sym
+const evalfnsymrawtest: Eval<[[`fn`, [[`sym`, `a`]], [[`sym`, `AppendP`], [`sym`, `a`]]], [`prim`, `'test'`]]> = [`prim`, `'+test'`]
+const evalfnsymtest: Eval<[[`sym`, `f`], [`prim`, `'test'`]], [[MakeVar<"f", [`fn`, [[`sym`, `a`]], [[`sym`, `AppendP`], [`sym`, `a`]]]>]]> = [`prim`, `'+test'`]
 // test atomic
-const evalatomtest: Eval<[`prim`, `'test'`],[]> = [`prim`, `'test'`]
+const evalatomtest: Eval<[`prim`, `'test'`]> = [`prim`, `'test'`]
 const evalatomtest2: Eval<[`sym`, `test`],[[MakeVar<`test`, `'testval'`>]]> = [`prim`, `'testval'`]
+const evalatomtest3: Eval<[`sym`, `test`], [[MakeVar<`test`, [`prim`, `'prim/test'`]>]]> = [`prim`, `'prim/test'`]
+const evalatomtest4: Eval<[`sym`, `test`], [[MakeVar<`test`, [`fn`, [[`sym`, `a`]], [`sym`, `a`]]>]]> = [`fn`, [[`sym`, `a`]], [`sym`, `a`]]
 // test let
-// const evallettest: Eval<[`let`, [[`sym`, `t`], `'test'`], [`sym`, `t`]], []> = [`prim`, "'test'"]
+// const evallettest: Eval<[`let`, [[`sym`, `t`], `'test'`], [`sym`, `t`]]> = [`prim`, "'test'"] // deprecated.
+const evallettest: Eval<[`let`, [[`sym`, `t`], `'test'`], [`sym`, `t`]]> = { error: ["EvalError7/ 2nd in let form must be Atom. No wrapped value is deprecated.", 0, ["let", [["sym", "t"], "'test'"], ["sym", "t"]]]}
 const evalletwprimtest: Eval<[`let`, [[`sym`, `t`], [`prim`, `'test'`]], [`sym`, `t`]], []> = [`prim`, "'test'"]
 
 
@@ -226,9 +239,6 @@ const rbiTest3: RecEval<[[`sym`, `AppendP`], [[`sym`, `AppendP`], [[`sym`, `Appe
 // test (with env)
 const rbiTest4:  RecEval<[[`sym`, `AppendP`], [`sym`, `testsym`]], [[MakeVar<"testsym", `'test'`>]]> = [`prim`, "'+test'"]
 const rbiTest5:  RecEval<[[`sym`, `AppendP`], [`sym`, `testsym`]], [[MakeVar<"testsym", `'test'`>], [MakeVar<"t", "'t'">], [MakeVar<"tttt", "'tttt'">]]> = [`prim`,"'+test'"]
-
-
-
 
 
 // --------------------
