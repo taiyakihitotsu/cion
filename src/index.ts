@@ -17,6 +17,8 @@ type Env = Var[]
 type NotMatch = "NotMatch"
 const NotMatch = "NotMatch"
 
+// -------------------------
+
 type MakeVar<N, V> = {name: N, value: V}
 
 type GetVar<T, E> = 
@@ -116,6 +118,23 @@ const larttest: LetArg = [[`sym`, `t`], `test`]
 // test fn
 const dectest: Fn = [`fn`, [[`sym`, `a`]], [[`sym`, `a`], [`sym`, `b`]]]
 
+// -------------------------------------
+type Eq<L,R> = L extends R ? R extends L ? true : false : false
+type If<A,B,C> = A extends true ? B : C
+const eqtest1: Eq<'a', 'a'> = true
+const eqtest2: Eq<'a', ""> = false
+const eqtest3: Eq<null, []> = false
+const eqtest4: Eq<undefined, null> = false
+const eqtest5: Eq<undefined, undefined> = true
+const eqtest6: Eq<{}, null> = false
+const eqtest7: Eq<1, "1"> = false
+const eqtest8: Eq<["a"], ["a", ""]> = false
+const eqtest9: Eq<[""], ["a"]> = false
+const eqtest10: Eq<["a"], ["a"]> = true
+const eqtest11: Eq<[""], [""]> = true
+
+
+
 // todo : ugly
 type Eval<A, env = [[]], prev = 0> =
   A extends SEXPR
@@ -147,6 +166,10 @@ type Eval<A, env = [[]], prev = 0> =
             ? Eval<[UU, OPR], env, [prev]>
             : EvalError3
         : EvalError4 : EvalError6 : EvalError2
+
+  : A extends [`if`, infer C, infer L, infer R]
+    ? Eval<If<C,L,R>, env, [prev]>
+
   : A extends ATOM
     ? A extends [`sym`, infer SS]
       ? ReadLet<SS, env> extends ATOM & infer U
@@ -171,28 +194,32 @@ type Eval<A, env = [[]], prev = 0> =
 // test case
 type TDSDS = [[`sym`, `AppendP`], [`prim`, `'test'`]]
 type TDDDD = [[`sym`, `AppendP`], [`sym`, `str`]]
+
 // test raw
 const evalTest: Eval<TDSDS, [[]]> = [`prim`, "'+test'"]
 const evalTest2: Eval<TDDDD, [[]]> = "AppendError"
 const evalTest3: Eval<TDDDD, [[MakeVar<`str`,`'strval'`>]]> = [`prim`,"'+strval'"]
 const evalTest4:  Eval<TDDDD, [[MakeVar<"str", "'strval'">], [MakeVar<"sstr", "'notstrval'">]]> = [`prim`, "'+strval'"]
 const evalTest5:  Eval<TDDDD, [[MakeVar<"sstr", "'notstrval'">], [MakeVar<"str", "'strval'">]]> = [`prim`, "'+strval'"]
+
 // test fn
 const evalfntest: Eval<[[`fn`, [[`sym`, `str`]], TDDDD], [`prim`, `'test'`]], [[MakeVar<"str", "'strval'">]]> = [`prim`, "'+test'"]
 const evalfntest2: Eval<[[`fn`, [[`sym`, `str`]], TDDDD], [`prim`, `'test'`]], [[MakeVar<"aaa", "'aaa'">], [MakeVar<"str", "'strval'">]]> = [`prim`, "'+test'"]
+
 // test fn sym
 const evalfnsymrawtest: Eval<[[`fn`, [[`sym`, `a`]], [[`sym`, `AppendP`], [`sym`, `a`]]], [`prim`, `'test'`]]> = [`prim`, `'+test'`]
 const evalfnsymtest: Eval<[[`sym`, `f`], [`prim`, `'test'`]], [[MakeVar<"f", [`fn`, [[`sym`, `a`]], [[`sym`, `AppendP`], [`sym`, `a`]]]>]]> = [`prim`, `'+test'`]
+
 // test atomic
 const evalatomtest: Eval<[`prim`, `'test'`]> = [`prim`, `'test'`]
 const evalatomtest2: Eval<[`sym`, `test`],[[MakeVar<`test`, `'testval'`>]]> = [`prim`, `'testval'`]
 const evalatomtest3: Eval<[`sym`, `test`], [[MakeVar<`test`, [`prim`, `'prim/test'`]>]]> = [`prim`, `'prim/test'`]
 const evalatomtest4: Eval<[`sym`, `test`], [[MakeVar<`test`, [`fn`, [[`sym`, `a`]], [`sym`, `a`]]>]]> = [`fn`, [[`sym`, `a`]], [`sym`, `a`]]
+
 // test let
 // const evallettest: Eval<[`let`, [[`sym`, `t`], `'test'`], [`sym`, `t`]]> = [`prim`, "'test'"] // deprecated.
 const evallettest: Eval<[`let`, [[`sym`, `t`], `'test'`], [`sym`, `t`]]> = { error: ["EvalError7/ 2nd in let form must be Atom. No wrapped value is deprecated.", 0, ["let", [["sym", "t"], "'test'"], ["sym", "t"]]]}
 const evalletwprimtest: Eval<[`let`, [[`sym`, `t`], [`prim`, `'test'`]], [`sym`, `t`]], []> = [`prim`, "'test'"]
-
 
 // recursive test[fn]
 type AppendPWstr = [[`sym`, `AppendP`], [`sym`, `str`]]
@@ -215,7 +242,6 @@ const evalfltest0: Eval<flInnerTest> = [`prim`, `'+test'`]
 
 // recursive test[let in fn]
 type lfInnerTest =  [`fn`, [[`sym`, `fnarg`]], [`let`, [[`sym`, `str`], [`fn`, [[`sym`, `a`]], [[`sym`, `AppendP`], [`sym`, `a`]]]], [[`sym`, `str`], [`sym`, `fnarg`]]]]
-
 // ----------------------------
 // todo : gross error msg.
 // src/index.ts:218:7 - error TS2322: Type 'string[]' is not assignable to type '"AppendError"'.
@@ -225,6 +251,15 @@ type lfInnerTest =  [`fn`, [[`sym`, `fnarg`]], [`let`, [[`sym`, `str`], [`fn`, [
 // const evallftesterr: Eval<[lfInnerTest, [`prim`, `test''`]]> = [`prim`, `'+test'`]
 // ----------------------------
 const evallftest0: Eval<[lfInnerTest, [`prim`, `'test'`]]> = [`prim`, `'+test'`]
+
+// test if
+type IfTrueTest = [`if`, true, [`prim`, `'true'`], [`prim`, `'false'`]]
+type IfFalseTest = [`if`, false, [`prim`, `'true'`], [`prim`, `'false'`]]
+const evaliftest0: Eval<IfTrueTest> = [`prim`, `'true'`]
+const evaliftest1: Eval<IfFalseTest> = [`prim`, `'false'`]
+
+
+
 
 // ------------------------------------------
 // the above is in the case of not recursive sexpr.
