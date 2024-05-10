@@ -156,11 +156,14 @@ type Eval<A, env = [[]], prev = 0> =
   : A extends LetForm
     ? A extends [`let`, [[`sym`, infer LN], infer LV], infer LC]
       ? LV extends Prim & [`prim`, infer LP]
+      // todo : these lvs ugly.
       ? Eval<LC, Let<LN, LP, env>, [prev]>
       : LV extends Sym & [`sym`, infer LP]
       ? Eval<LC, Let<LN, ReadLet<LP, env>, env>, [prev]>
       : LV extends LetForm 
       ? Eval<[`let`, [[`sym`, LN], Eval<LV, env, [prev]>], LC], env, [prev]>
+      : LV extends Fn
+      ? Eval<LC, Let<LN, LV, env>, [prev]>
       : {error: [EvalError7, prev, A]} : EvalError8 // : EvalError9 : EvalError10
     : {error: [EvalError11, prev, A]}
 
@@ -205,6 +208,23 @@ type RecLetTest = [`let`,[[`sym`, `aaa`], InnerLetTest], [`let`, [[`sym`, `bbb`]
 const evalreclettest0: Eval<InnerLetTest> = [`prim`, `'+test'`]
 const evalreclettest1: Eval<OuterLetTest> = [`prim`, `'++test'`]
 const evalreclettest2: Eval<RecLetTest> = [`prim`, `'++test'`]
+
+// recursive test[fn in let]
+type flInnerTest = [`let`, [[`sym`, `str`], [`fn`, [[`sym`, `a`]], [[`sym`, `AppendP`], [`sym`, `a`]]]], [[`sym`, `str`], [`prim`, `'test'`]]]
+const evalfltest0: Eval<flInnerTest> = [`prim`, `'+test'`]
+
+// recursive test[let in fn]
+type lfInnerTest =  [`fn`, [[`sym`, `fnarg`]], [`let`, [[`sym`, `str`], [`fn`, [[`sym`, `a`]], [[`sym`, `AppendP`], [`sym`, `a`]]]], [[`sym`, `str`], [`sym`, `fnarg`]]]]
+
+// ----------------------------
+// todo : gross error msg.
+// src/index.ts:218:7 - error TS2322: Type 'string[]' is not assignable to type '"AppendError"'.
+//
+// 218 const evallftest0: Eval<[lfInnerTest, [`prim`, `test''`]]> = [`prim`, `'+test'`]
+//
+// const evallftesterr: Eval<[lfInnerTest, [`prim`, `test''`]]> = [`prim`, `'+test'`]
+// ----------------------------
+const evallftest0: Eval<[lfInnerTest, [`prim`, `'test'`]]> = [`prim`, `'+test'`]
 
 // ------------------------------------------
 // the above is in the case of not recursive sexpr.
