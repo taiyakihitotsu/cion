@@ -1,9 +1,11 @@
-type EACH = LetForm | ATOM
+type EACH = LetForm | IFForm | ATOM
 type ATOM  = Sym | Prim | Fn
+// This isn't usually way to define a sexpr, not including atomic something.
+// That role leaves to EACH.
 type SEXPR = Array<EACH | SEXPR>
 
 type Sym  = [`sym`, string]
-type Prim = [`prim`, string]
+type Prim = [`prim`, string | boolean] // todo : This boolean is appended IFForm, using boolean directly in current.
 type Args = Sym[]
 type Fn   = [`fn`, Args, EACH | Array<EACH>]
 
@@ -102,7 +104,7 @@ type EvalError7 = "EvalError7/ 2nd in let form must be Atom. No wrapped value is
 type EvalError8 = "EvalError8"
 type EvalError9 = "EvalError9"
 type EvalError10 = "EvalError10"
-type EvalError11 = "EvalError11"
+type EvalError11 = "EvalError11/ Some of elements type in SEXPR doesn't satisfy EACH."
 type EvalError12 = "EvalError12"
 
 // todo : naming
@@ -120,7 +122,9 @@ const dectest: Fn = [`fn`, [[`sym`, `a`]], [[`sym`, `a`], [`sym`, `b`]]]
 
 // -------------------------------------
 type Eq<L,R> = L extends R ? R extends L ? true : false : false
-type If<A,B,C> = A extends true ? B : C
+type If<A,B,C> = A extends [`prim`, true] ? B : C
+type IFForm = [`if`, EACH | SEXPR, EACH | SEXPR, EACH | SEXPR]
+
 const eqtest1: Eq<'a', 'a'> = true
 const eqtest2: Eq<'a', ""> = false
 const eqtest3: Eq<null, []> = false
@@ -148,6 +152,10 @@ type Eval<A, env = [[]], prev = 0> =
 	      ? Eval<D, Let<S,VVV,env>, [prev]>
 	    : EvalError5
             : EvalError7
+
+        : OPC extends IFForm & [`if`, infer IFCond, infer IFT, infer IFF]
+          ? Eval<[If<Eval<IFCond, env, [[prev]]>,IFT,IFF>, OPR], env, [prev]>
+
 	: OPC extends Sym & [`sym`, infer U]
           // todo : this shouldn't be build-in.
           //   if making def, or global env,
@@ -167,8 +175,8 @@ type Eval<A, env = [[]], prev = 0> =
             : EvalError3
         : EvalError4 : EvalError6 : EvalError2
 
-  : A extends [`if`, infer C, infer L, infer R]
-    ? Eval<If<C,L,R>, env, [prev]>
+  : A extends IFForm & [`if`, infer IFCond, infer IFT, infer IFF]
+    ? Eval<If<Eval<IFCond, env, [[prev]]>,IFT,IFF>, env, [prev]>
 
   : A extends ATOM
     ? A extends [`sym`, infer SS]
@@ -253,12 +261,23 @@ type lfInnerTest =  [`fn`, [[`sym`, `fnarg`]], [`let`, [[`sym`, `str`], [`fn`, [
 const evallftest0: Eval<[lfInnerTest, [`prim`, `'test'`]]> = [`prim`, `'+test'`]
 
 // test if
-type IfTrueTest = [`if`, true, [`prim`, `'true'`], [`prim`, `'false'`]]
-type IfFalseTest = [`if`, false, [`prim`, `'true'`], [`prim`, `'false'`]]
-const evaliftest0: Eval<IfTrueTest> = [`prim`, `'true'`]
-const evaliftest1: Eval<IfFalseTest> = [`prim`, `'false'`]
+type IfTruePrimTest = [`if`, [`prim`, true], [`prim`, true], [`prim`, false]]
+type IfFalsePrimTest = [`if`, [`prim`, false], [`prim`, true], [`prim`, false]]
+const evaliftest2: Eval<IfTruePrimTest> = [`prim`, true]
+const evaliftest3: Eval<IfFalsePrimTest> = [`prim`, false]
+type IfRecTrueTest = [`if`, IfTruePrimTest, [`prim`, true], [`prim`, false]]
+const evalifrectest0: Eval<IfRecTrueTest> = [`prim`, true]
+type IfRecFalseTest = [`if`, IfFalsePrimTest, [`prim`, true], [`prim`, false]]
+const evalifrectest1: Eval<IfRecFalseTest> = [`prim`, false]
+type IfRetFnPattern = [`if`, IfFalsePrimTest, [`fn`, [[`sym`, `ifa`]], [[`sym`, `AppendP`], [`sym`, `ifa`]]], [`fn`, [[`sym`, `ifa`]], [[`sym`, `AppendP`], [`sym`, `ifa`]]]]
+type IfRetFnSexpr = [IfRetFnPattern, [`prim`, `'test'`]]
+const evalifretfntest: Eval<IfRetFnSexpr> =  [`prim`, `'+test'`]
 
 
+
+
+// test prim error pattern.
+const evalprimerrortest: Eval<[`prim`, 0]> = {error: ["EvalError11/ Some of elements type in SEXPR doesn't satisfy EACH.", 0, [`prim`, 0]]}
 
 
 // ------------------------------------------
