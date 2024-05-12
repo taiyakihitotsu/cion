@@ -50,7 +50,7 @@ type EnvLifo = Env[]
 
 type Let<N,V,EnvLifo = Env[]> = EnvLifo extends Env[] ? [...EnvLifo, [MakeVar<N,V>]] : never
 
-type ReadLet<N, EnvLifo> = EnvLifo extends [...infer HS, infer L] ? L extends Env ? GetVar<N, L> extends NotMatch ? ReadLet<N, HS> : GetVar<N, L> : NotMatch : NotMatch
+type ReadLet<N, EnvLifo = [[]]> = EnvLifo extends [...infer HS, infer L] ? L extends Env ? GetVar<N, L> extends NotMatch ? ReadLet<N, HS> : GetVar<N, L> : NotMatch : NotMatch
 
 // test
 type LetEnvLifo = [[MakeVar<"ss", "stringer">, MakeVar<"s", "string">, MakeVar<"cc", [`prim`, "p/cc"]>]]
@@ -90,9 +90,17 @@ type Def<N,V,EnvLifo> = EnvLifo extends [infer U, ...infer R] ? U extends Env ? 
 // ----------------------------------------
 
 type AppendError = "AppendError"
-type AppendP<S> = S extends `'${infer U}'` ? [`prim`, `'+${U}'`] : AppendError
+type AppendP<S> = S extends [`prim`, `'${infer U}'`] ? [`prim`, `'+${U}'`] : AppendError
 
-const appendTest: AppendP<"'test'"> = [`prim`, "'+test'"]
+const appendTest: AppendP<[`prim`, "'test'"]> = [`prim`, "'+test'"]
+
+
+type Str<S,SS> = S extends string ? SS extends string ? `${S}${SS}` : never : never
+
+
+
+
+// -------------------------------------------
 
 type EvalError1 = "EvalError1"
 type EvalError2 = "EvalError2"
@@ -162,13 +170,22 @@ type Eval<A, env = [[]], prev = 0> =
           //   this part will be deleted.
 	  ? U extends `AppendP`
 	    ? OPR extends [`sym`, infer V]
-	      // todo : in current,
-	      //   if a sym isn't matched with an env,
-	      //   this returns appendP error, not env error (I hope to return .)
-	      ? AppendP<ReadLet<V, env>>
-	    : OPR extends [`prim`, infer W]
-	      ? AppendP<W>
-              : EvalError1
+              // todo :
+              //   This writing style cannot accept Fn.
+              //   but it should be done.
+	      ? AppendP<[`prim`, ReadLet<V, env>]>
+	    : AppendP<OPR>
+
+	  // : U extends `str`
+	  //   ? OPR extends [`sym`, infer V]
+	  //     // todo : in current,
+	  //     //   if a sym isn't matched with an env,
+	  //     //   this returns appendP error, not env error (I hope to return .)
+	  //     ? Str<ReadLet<V, env>>
+	  //   : OPR extends [`prim`, infer W]
+	  //     ? Str<W>
+          //     : EvalError1
+
           // this is fn case.
           : ReadLet<U,env> extends Fn & infer UU
             ? Eval<[UU, OPR], env, [prev]>
@@ -185,16 +202,20 @@ type Eval<A, env = [[]], prev = 0> =
       : [`prim`, ReadLet<SS, env>]
       : A
   : A extends LetForm
-    ? A extends [`let`, [[`sym`, infer LN], infer LV], infer LC]
+    ? A extends [`let`, [[`sym`, infer LN], infer LV, ...infer LRest], infer LC]
       ? LV extends Prim & [`prim`, infer LP]
-      // todo : these lvs ugly.
-      ? Eval<LC, Let<LN, LP, env>, [prev]>
+        // todo : these lvs ugly.
+        ? Eval<LC, Let<LN, LP, env>, [prev]>
       : LV extends Sym & [`sym`, infer LP]
-      ? Eval<LC, Let<LN, ReadLet<LP, env>, env>, [prev]>
+        ? Eval<LC, Let<LN, ReadLet<LP, env>, env>, [prev]>
+
+      : LRest extends [[`sym`, infer RLN], infer RLV, ...infer RLRest]
+        ? Eval<[`let`, [[`sym`, LN], LV], [`let`, [[`sym`, RLN], RLV, ...RLRest], LC]], env, [prev]>
+
       : LV extends LetForm 
-      ? Eval<[`let`, [[`sym`, LN], Eval<LV, env, [prev]>], LC], env, [prev]>
+        ? Eval<[`let`, [[`sym`, LN], Eval<LV, env, [prev]>], LC], env, [prev]>
       : LV extends Fn
-      ? Eval<LC, Let<LN, LV, env>, [prev]>
+        ? Eval<LC, Let<LN, LV, env>, [prev]>
       : {error: [EvalError7, prev, A]} : EvalError8 // : EvalError9 : EvalError10
     : {error: [EvalError11, prev, A]}
 
