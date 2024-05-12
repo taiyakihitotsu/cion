@@ -63,6 +63,16 @@ const readLetTest3:  ReadLet<"ssss", Let<"sss", "str", LetEnvLifo>> = NotMatch
 const readLetTest4: ReadLet<"sss", Let<"sss", [`prim`, `p/sss`], LetEnvLifo>> = [`prim`, `p/sss`]
 const readLetTest5:  ReadLet<"cc", Let<"sss", "str", LetEnvLifo>> = [`prim`, `p/cc`]
 
+type ReadAtom<A, EnvLifo = [[]], prev = 0> =
+  A extends [`sym`, infer S]
+    ? ReadLet<S, EnvLifo>
+    // this returns prim / fn.
+    : Eval<A, EnvLifo, [prev]>
+
+const readatomtest: ReadAtom<[`sym`, `sss`], Let<"sss", [`prim`, `p/sss`], LetEnvLifo>> = [`prim`, `p/sss`]
+const readatomtest2: ReadAtom<[`prim`, `'sss'`], Let<"sss", [`prim`, `p/sss`], LetEnvLifo>> = [`prim`, `'sss'`]
+
+ 
 //-----------------------------------------
 
 // Def
@@ -169,23 +179,8 @@ type Eval<A, env = [[]], prev = 0> =
           //   if making def, or global env,
           //   this part will be deleted.
 	  ? U extends `AppendP`
-	    ? OPR extends [`sym`, infer V]
-              // todo :
-              //   This writing style cannot accept Fn.
-              //   but it should be done.
-	      ? AppendP<[`prim`, ReadLet<V, env>]>
-	    : AppendP<OPR>
-
-	  // : U extends `str`
-	  //   ? OPR extends [`sym`, infer V]
-	  //     // todo : in current,
-	  //     //   if a sym isn't matched with an env,
-	  //     //   this returns appendP error, not env error (I hope to return .)
-	  //     ? Str<ReadLet<V, env>>
-	  //   : OPR extends [`prim`, infer W]
-	  //     ? Str<W>
-          //     : EvalError1
-
+	    ? AppendP<ReadAtom<Eval<OPR, env, [prev]>, env, prev>>
+              
           // this is fn case.
           : ReadLet<U,env> extends Fn & infer UU
             ? Eval<[UU, OPR], env, [prev]>
