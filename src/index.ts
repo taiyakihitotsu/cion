@@ -68,11 +68,21 @@ type ReadAtom<A, EnvLifo = [[]], prev = 0> =
     ? ReadLet<S, EnvLifo>
     // this returns prim / fn.
     : Eval<A, EnvLifo, [prev]>
-
+// test readatom
 const readatomtest: ReadAtom<[`sym`, `sss`], Let<"sss", [`prim`, `p/sss`], LetEnvLifo>> = [`prim`, `p/sss`]
 const readatomtest2: ReadAtom<[`prim`, `'sss'`], Let<"sss", [`prim`, `p/sss`], LetEnvLifo>> = [`prim`, `'sss'`]
 
- 
+type Reading<AS, EnvLifo = [[]], prev = 0, R = []> =
+            // todo : ugly
+   R extends Array<any>
+  ? AS extends ATOM[] & [infer H, ...infer T]
+      ? Reading<T, EnvLifo, prev, [...R,  ReadAtom<H, EnvLifo, prev>]>
+      : R
+  : never
+// test reading
+const readingtest: Reading<[[`sym`, `a`], [`sym`, `b`], [`prim`, `c-str`]], [[MakeVar<"a", [`prim`, 'a-str']>, MakeVar<"b", [`prim`, "b-str"]>]]> = [["prim", "a-str"], ["prim", "b-str"], ["prim", "c-str"]]
+
+
 //-----------------------------------------
 
 // Def
@@ -104,9 +114,11 @@ type AppendP<S> = S extends [`prim`, `'${infer U}'`] ? [`prim`, `'+${U}'`] : App
 
 const appendTest: AppendP<[`prim`, "'test'"]> = [`prim`, "'+test'"]
 
-
-type Str<S,SS> = S extends string ? SS extends string ? `${S}${SS}` : never : never
-
+// note: if `R extends string` doesn't exist, R cannot be passed into `${R}` because ts can get the type of R.
+type Str<S, R = ""> = R extends string ? S extends [[`prim`, `${infer HS}`], ...infer T] ? Str<T, `${R}${HS}`> : [`prim`, R] : never
+// test str
+const strtest1: Str<[[`prim`, `test`], [`prim`, `+`], [`prim`, `tail`]]> = [`prim`, `test+tail`]
+const strtest2: Str<[[`prim`, `test`]]> = [`prim`, `test`]
 
 
 
@@ -129,10 +141,18 @@ type EvalError12 = "EvalError12"
 // let itself isn't value and returning value, unlike fn, so maybe ok as it is.
 // todo
 // integrated let form to [[`sym`, string], EACH | Array<EACH>] in future.
-type LetArg = [[`sym`, string], string | EACH | Array<EACH> ]
-type LetForm = [`let`, LetArg, EACH | Array<EACH>]
+type LetVal = string | EACH | Array<EACH>
+type LetArg = [Sym, LetVal]
+                       // todo : too ugly.
+type LetForm = [`let`, (Sym | LetVal)[], EACH | Array<EACH>]
 // test let
 const larttest: LetArg = [[`sym`, `t`], `test`]
+
+// -----------------
+// memo
+// type arrr = [number, ...number[]]
+// const aaaaaa: arrr = [1,2,3,4]
+// ------------------
 
 
 // test fn
@@ -156,34 +176,65 @@ const eqtest10: Eq<["a"], ["a"]> = true
 const eqtest11: Eq<[""], [""]> = true
 
 
+// // --------------------------------
+// // memo
+// type tTTT<T> = T extends [infer A, ...infer B] ? B[1] : never
+// const tttt: tTTT<[[1,2],[2,3],[3,4]]> = [3,4]
+// type tTTTT<T> = T extends [...infer A, ...infer B] ? B[1] : never
+// const ttttt: tTTTT<[[1,2],[2,3],[3,4]]> = [3,4]
+// type tTTTB0<T> = T extends [infer A, ...infer B] ? B[0] : never
+// const ttttB0: tTTTB0<[[1,2],[2,3],[3,4]]> = [2,3]
+// // ------------------
+// // type tTTTA<T> = T extends [infer A, ...infer B] ? A[1] : never
+// // const ttttA: tTTTA<[[1,2],[2,3],[3,4]]> = [3,4]
+// // src/index.ts:164:51 - error TS2536: Type '1' cannot be used to index type 'A'.
+// //
+// // 164 type tTTTA<T> = T extends [infer A, ...infer B] ? A[1] : never
+// // -------------------
+// type tTTTTA<T> = T extends [...infer A, ...infer B] ? A[1] : never
+// const tttttA: tTTTTA<[[1,2],[2,3],[3,4]]> = [3,4]
+// type tTTTTAA<T> = T extends [...infer A, ...infer B] ? A[0] : never
+// const tttttAA: tTTTTAA<[[1,2],[2,3],[3,4]]> = [3,4]
+// type tTTTT__1<T> = T extends [...infer A, ...infer B] ? A[1] : never
+// const ttttt__1: tTTTTA<[[1,2],[2,3],[3,4]]> = [3,4]
+// type tTTTT__2<T> = T extends [...infer A, ...infer B] ? A[0] : never
+// const ttttt__2: tTTTTAA<[[1,2],[2,3],[3,4]]> = [3,4]
+// // --------------------------
+
+
 
 // todo : ugly
 type Eval<A, env = [[]], prev = 0> =
   A extends SEXPR
-  ? A extends [infer OPC, infer OPR]
+  ? A extends [infer OPC, ...infer OPR]
     ? env extends EnvLifo
-	? OPC extends Fn
-	  ? OPC extends Fn & [`fn`, [[`sym`, infer S]], infer D]
-	    ? OPR extends Sym & [`sym`, infer VV]
+	? OPC extends Fn & [`fn`, [[`sym`, infer S]], infer D]
+	    ? OPR[0] extends Sym & [`sym`, infer VV]
 	      ? Eval<D, Let<S,ReadLet<VV, env>,env>, [prev]>
-	    : OPR extends Prim & [`prim`, infer VVV]
+	    : OPR[0] extends Prim & [`prim`, infer VVV]
 	      ? Eval<D, Let<S,VVV,env>, [prev]>
 	    : EvalError5
-            : EvalError7
 
         : OPC extends IFForm & [`if`, infer IFCond, infer IFT, infer IFF]
-          ? Eval<[If<Eval<IFCond, env, [[prev]]>,IFT,IFF>, OPR], env, [prev]>
+          ? Eval<[If<Eval<IFCond, env, [[prev]]>,IFT,IFF>, OPR[0]], env, [prev]>
 
 	: OPC extends Sym & [`sym`, infer U]
-          // todo : this shouldn't be build-in.
-          //   if making def, or global env,
-          //   this part will be deleted.
-	  ? U extends `AppendP`
-	    ? AppendP<ReadAtom<Eval<OPR, env, [prev]>, env, prev>>
+
+        // care of double-booking.
+        ? ReadLet<U, env> extends NotMatch // `AppendP` | `str`
+
+	    ? U extends `AppendP`
+	      ? AppendP<ReadAtom<Eval<OPR[0], env, [[prev]]>, env, [prev]>>
+	    : U extends `str`
+	      ? // Reading<OPR, env, [[prev]]>
+                Str<Reading<OPR, env, [[prev]]>>
+
+          : Eval<[ReadLet<U, env>, OPR[0]], env, [prev]>
+
               
           // this is fn case.
           : ReadLet<U,env> extends Fn & infer UU
-            ? Eval<[UU, OPR], env, [prev]>
+            ? Eval<[UU, OPR[0]], env, [prev]>
             : EvalError3
         : EvalError4 : EvalError6 : EvalError2
 
@@ -198,21 +249,31 @@ type Eval<A, env = [[]], prev = 0> =
       : A
   : A extends LetForm
     ? A extends [`let`, [[`sym`, infer LN], infer LV, ...infer LRest], infer LC]
-      ? LV extends Prim & [`prim`, infer LP]
+
+      ? LRest extends [[`sym`, infer LRLN], infer LRLV]
+        ? // [`let`, [[`sym`, LN], LV], [`let`, [[`sym`, LRLN], LRLV], LC]]
+         Eval<[`let`, [[`sym`, LN], LV], [`let`, [[`sym`, LRLN], LRLV], LC]], env, [prev]>
+
+      : LV extends Prim & [`prim`, infer LP]
+        // -----------------------
         // todo : these lvs ugly.
-        ? Eval<LC, Let<LN, LP, env>, [prev]>
+        // todo : this is picked lp directly,
+        //  unwrapped from [`prim`, ].
+        //  its inconsistency .
+        // -----------------------
+        // ? Eval<LC, Let<LN, LP, env>, [prev]>
+        // -----------------------
+        ? Eval<LC, Let<LN, LV, env>, [prev]>
       : LV extends Sym & [`sym`, infer LP]
         ? Eval<LC, Let<LN, ReadLet<LP, env>, env>, [prev]>
-
-      : LRest extends [[`sym`, infer RLN], infer RLV, ...infer RLRest]
-        ? Eval<[`let`, [[`sym`, LN], LV], [`let`, [[`sym`, RLN], RLV, ...RLRest], LC]], env, [prev]>
 
       : LV extends LetForm 
         ? Eval<[`let`, [[`sym`, LN], Eval<LV, env, [prev]>], LC], env, [prev]>
       : LV extends Fn
         ? Eval<LC, Let<LN, LV, env>, [prev]>
-      : {error: [EvalError7, prev, A]} : EvalError8 // : EvalError9 : EvalError10
-    : {error: [EvalError11, prev, A]}
+      : {error: [EvalError7, prev, A]}
+    : {error: [EvalError8, prev, A]} // : EvalError9 : EvalError10
+  : {error: [EvalError11, prev, A]} 
 
 
 // test case
@@ -289,6 +350,13 @@ type IfRetFnPattern = [`if`, IfFalsePrimTest, [`fn`, [[`sym`, `ifa`]], [[`sym`, 
 type IfRetFnSexpr = [IfRetFnPattern, [`prim`, `'test'`]]
 const evalifretfntest: Eval<IfRetFnSexpr> =  [`prim`, `'+test'`]
 
+// test str
+const evalstrtest: Eval<[[`sym`, `str`], [`prim`, `head/`], [`prim`, `tail`]]> = [`prim`, `head/tail`]
+
+// test let >1
+type letmoretest = [`let`, [[`sym`, `a`], [`prim`, `text-a`], [`sym`, `b`], [`prim`, `/text-b`]], [[`sym`, `str`], [`sym`, `a`], [`sym`, `b`]]]
+const evalletmoretest1: Eval<letmoretest> = [`prim`, `text-a/text-b`]
+const aaaaaaaaa: LetForm =  [`let`, [[`sym`, `a`], [`prim`, `text-a`], [`sym`, `b`], [`prim`, `text-b`]], [[`sym`, `str`], [`sym`, `a`], [`sym`, `b`]]]
 
 
 
