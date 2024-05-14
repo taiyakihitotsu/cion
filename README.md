@@ -9,14 +9,17 @@ type Sexpr =
            :message "message"}
        cv [c cc cc]
        f (fn [a b] (if (= "in" (b a)) true false))]
-   (->> cv (filter (f b)) first :message))`
+   (->> cv
+        (filter (fn [x] (f :status x)))
+        first
+        :message))`
 
 const message: Return<Eval<Compile<Sexpr>>> = "message"
 ```
 
 ## Done & Todo
 - [x] let
-- [ ] let >1 args
+- [x] let >1 args
 - [x] fn
 - [ ] fn >1 args
 - [ ] vector
