@@ -5,7 +5,8 @@
   "scripts": {
     "build": "npx tsc",
     "build:watch": "npx tsc --watch",
-    "run": "npx ts-node src/index.ts"
+    "run": "npx ts-node src/index.ts",
+    "biome:fix": "npx @biomejs/biome check --apply ./src"
   },
   "repository": {
     "type": "git",
@@ -16,5 +17,8 @@
     "@types/node": "^18.19.22",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.2"
+  },
+  "dependencies": {
+    "biome": "^0.2.2"
   }
 }
