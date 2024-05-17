@@ -22,7 +22,7 @@ const message: Return<Eval<Compile<Sexpr>>> = "message"
 - [x] let >1 args
 - [x] fn
 - [ ] fn >1 args
-- [ ] vector
+- [ ] vector (= list / array here)
 - [ ] hashmap
 - [x] if
 - [ ] eq
