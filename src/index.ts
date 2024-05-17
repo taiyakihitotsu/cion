@@ -1,11 +1,11 @@
 type Each = LetForm | IfForm | Atom;
-type Atom = Sym | Prim | Fn;
+type Atom = Sym | Prim | Fn | Vector;
 // This isn't usually way to define a sexpr, not including atomic something.
 // That role leaves to EACH.
 type Sexpr = Array<Each | Sexpr>;
 
 type Sym = [`sym`, string];
-type Prim = [`prim`, string | boolean]; // todo : This boolean is appended IFForm, using boolean directly in current.
+type Prim = [`prim`, string | boolean | number]; // todo : This boolean is appended IFForm, using boolean directly in current.
 type Args = Sym[];
 type Fn = [`fn`, Args, Each | Array<Each>];
 
@@ -226,6 +226,7 @@ const dectest: Fn = [
 
 // -------------------------------------
 type Eq<L, R> = L extends R ? (R extends L ? true : false) : false;
+// type Not<L,R> L extends
 type If<A, B, C> = A extends [`prim`, true] ? B : C;
 type IfForm = [`if`, Each | Sexpr, Each | Sexpr, Each | Sexpr];
 
@@ -241,6 +242,195 @@ const eqtest8: Eq<["a"], ["a", ""]> = false;
 const eqtest9: Eq<[""], ["a"]> = false;
 const eqtest10: Eq<["a"], ["a"]> = true;
 const eqtest11: Eq<[""], [""]> = true;
+
+// ----------------------------------
+// vector/list/array
+type Vector = [`vec`, Atom[]];
+const vectortest: Vector & [`vec`, [[`prim`, `1`]]] = [`vec`, [[`prim`, `1`]]];
+const vectortest2: Vector & [`vec`, [[`prim`, `1`], [`prim`, `2`]]] = [
+  `vec`,
+  [
+    [`prim`, `1`],
+    [`prim`, `2`],
+  ],
+];
+const vectortest3: Vector & [`vec`, [[`vec`, [[`prim`, `2`]]]]] = [
+  `vec`,
+  [[`vec`, [[`prim`, `2`]]]],
+];
+// error TS2322: Type '"prim"' is not assignable to type '"vec"'.
+// const vectortest4: Vector = [`prim`, `1`]
+const vectortest5: Vector &
+  [
+    `vec`,
+    [[`vec`, [[`vec`, [[`prim`, true], [`prim`, `1`]]]]], [`prim`, `1`]],
+  ] = [
+  `vec`,
+  [
+    [
+      `vec`,
+      [
+        [
+          `vec`,
+          [
+            [`prim`, true],
+            [`prim`, `1`],
+          ],
+        ],
+      ],
+    ],
+    [`prim`, `1`],
+  ],
+];
+
+type GetVec<N, V> = N extends number
+  ? V extends Vector & [`vec`, infer W]
+    ? W extends Atom[]
+      ? W[N]
+      : never
+    : never
+  : never;
+const testgetvec: GetVec<
+  3,
+  [`vec`, [[`prim`, 0], [`prim`, 1], [`prim`, 2], [`prim`, 3], [`prim`, 4]]]
+> = [`prim`, 3];
+
+// map
+type HashMap = [`HashMap`, { [others: string]: Atom }];
+type GetMap<N, V> = N extends string
+  ? V extends HashMap & [`HashMap`, infer W]
+    ? W extends { [others: string]: Atom }
+      ? W[N]
+      : 7
+    : 6
+  : 5;
+
+const testgetmap: GetMap<
+  "a",
+  [`HashMap`, { a: [`prim`, `val/a`]; b: [`prim`, `val/b`] }]
+> = [`prim`, `val/a`];
+
+type Get<K, V> = V extends Vector ? GetVec<K, V> : GetMap<K, V>;
+const testgetvec1: Get<
+  3,
+  [`vec`, [[`prim`, 0], [`prim`, 1], [`prim`, 2], [`prim`, 3], [`prim`, 4]]]
+> = [`prim`, 3];
+const testgetmap1: Get<
+  "a",
+  [`HashMap`, { a: [`prim`, `val/a`]; b: [`prim`, `val/b`] }]
+> = [`prim`, `val/a`];
+
+// fns of seq
+type FirstError = "FirstError";
+type RestError = "RestError";
+type ConjError = "ConjError";
+type ConcatError = "ConcatError";
+type First<T> = T extends Vector & [`vec`, infer H, ...infer T]
+  ? H
+  : FirstError;
+type Rest<T> = T extends Vector & [`vec`, infer H, ...infer T]
+  ? T[0] extends Atom
+    ? T
+    : RestError
+  : RestError;
+type Conj<V, E> = V extends Vector
+  ? E extends Atom
+    ? [...V, E]
+    : ConjError
+  : ConjError;
+type Concat<V, W> = V extends Vector
+  ? W extends Vector
+    ? [...V, ...W]
+    : ConcatError
+  : ConcatError;
+// get, assoc, update
+// type Get<S, K> = S extends Vector & [`vec`, infer V] ? K extends number ? V[K] : never : S extends HashMap & [`HashMap`, infer V] ? K extends string ? V[K] : never : never
+
+// map, filter, remove, every, some
+type FMapError = "MapError";
+type FilterError = "FilterError";
+type RemoveError = "RemoveError";
+type EveryError = "EveryError";
+type SomeError = "SomeError";
+type FMappable<F, V> = F extends Fn ? (V extends Vector ? V : false) : false;
+type FMap<F, V, Env = [[]], prev = [0]> = FMappable<F, V> extends [
+  `vec`,
+  infer H,
+  ...infer T,
+]
+  ? [`vec`, Eval<[F, H], Env, [prev]>, ...FMap<F, T, Env, prev>]
+  : [];
+type Filter<F, V, Env = [[]], prev = [0]> = FMappable<F, V> extends [
+  `vec`,
+  infer H,
+  ...infer T,
+]
+  ? Eval<[F, H], Env, [prev]> extends [`prim`, true]
+    ? [`vec`, H, ...Filter<F, T, Env, prev>]
+    : [`vec`, ...Filter<F, T, Env, prev>]
+  : [];
+
+// -------------------------
+// bit ops
+type BitOr<B, C> = B extends `${infer BH}${infer BR}`
+  ? C extends `${infer CH}${infer CR}`
+    ? CH extends `1`
+      ? `1${BitOr<BR, CR>}`
+      : BH extends `1`
+        ? `1${BitOr<BR, CR>}`
+        : `0${BitOr<BR, CR>}`
+    : ``
+  : ``;
+const bitor1: BitOr<`1`, `1`> = `1`;
+const bitor2: BitOr<`1`, `0`> = `1`;
+const bitor3: BitOr<`0`, `1`> = `1`;
+const bitor4: BitOr<`0`, `0`> = `0`;
+const bitor5: BitOr<`010`, `000`> = `010`;
+const bitor6: BitOr<`111`, `111`> = `111`;
+const bitor7: BitOr<`110`, `110`> = `110`;
+const bitor8: BitOr<`000`, `000`> = `000`;
+
+type BitAnd<B, C> = B extends `${infer BH}${infer BR}`
+  ? C extends `${infer CH}${infer CR}`
+    ? CH extends `1`
+      ? BH extends `1`
+        ? `1${BitAnd<BR, CR>}`
+        : `0${BitAnd<BR, CR>}`
+      : `0${BitAnd<BR, CR>}`
+    : ``
+  : ``;
+const bitand1: BitAnd<`1`, `1`> = `1`;
+const bitand2: BitAnd<`1`, `0`> = `0`;
+const bitand3: BitAnd<`0`, `1`> = `0`;
+const bitand4: BitAnd<`0`, `0`> = `0`;
+const bitand5: BitAnd<`010`, `000`> = `000`;
+const bitand6: BitAnd<`111`, `111`> = `111`;
+const bitand7: BitAnd<`110`, `110`> = `110`;
+const bitand8: BitAnd<`000`, `000`> = `000`;
+
+type BitXor<B, C> = B extends `${infer BH}${infer BR}`
+  ? C extends `${infer CH}${infer CR}`
+    ? CH extends BH
+      ? `0${BitXor<BR, CR>}`
+      : `1${BitXor<BR, CR>}`
+    : ``
+  : ``;
+const bitxor1: BitXor<`1`, `1`> = `0`;
+const bitxor2: BitXor<`1`, `0`> = `1`;
+const bitxor3: BitXor<`0`, `1`> = `1`;
+const bitxor4: BitXor<`0`, `0`> = `0`;
+const bitxor5: BitXor<`010`, `000`> = `010`;
+const bitxor6: BitXor<`111`, `111`> = `000`;
+const bitxor7: BitXor<`110`, `110`> = `000`;
+const bitxor8: BitXor<`000`, `000`> = `000`;
+const bitxor9: BitXor<`101`, `001`> = `100`;
+
+// -------------------
+// memo
+// type SSS<B> = B extends `${infer U}` ? U[0] : never
+// const sss: SSS<`abcde`> = 1
+// // error TS2322: Type 'number' is not assignable to type 'string'.
+// -------------------
 
 // // --------------------------------
 // // memo
@@ -528,13 +718,7 @@ const aaaaaaaaa: LetForm = [
 ];
 
 // test prim error pattern.
-const evalprimerrortest: Eval<[`prim`, 0]> = {
-  error: [
-    "EvalError11/ Some of elements type in SEXPR doesn't satisfy EACH.",
-    0,
-    [`prim`, 0],
-  ],
-};
+const evalprimerrortest: Eval<[`prim`, 0]> = [`prim`, 0];
 
 // ------------------------------------------
 // the above is in the case of not recursive sexpr.
