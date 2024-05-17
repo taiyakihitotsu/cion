@@ -31,6 +31,7 @@ const message: Return<Eval<Compile<Sexpr>>> = "message"
 - [x] get with a key
 - [x] first
 - [ ] arrow macro
+- [ ] Compiler
 
 
 # Run
