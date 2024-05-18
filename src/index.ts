@@ -358,14 +358,13 @@ type FMap<F, V, Env = [[]], prev = [0], init = true> = FMappable<F, V> extends V
   infer H,
   ...infer T,
 ]
-   ? Eval<[F, H, T]> : never
+   ? Eval<[F, H, ...T]> : never
 // test fmaps
 type testf = Sym & [`sym`, `AppendP`]
-type testargv = Vector & [`vec`, [`prim`, `1`], [`prim`, `2`]]
 // if not directly input those sexpr, through args, this fmap eval returns any, because of ...infer T (in FMap) would be expanded unknown.
 const testargv: testargv = [`vec`, [`prim`, `1`], [`prim`, `2`]]
-const testfmappable: FMappable<[`sym`, `AppendP`], testargv> = testargv
-const testfmap: FMap<[`sym`, `AppendP`],testargv> = 1
+const testfmappable: FMappable<[`sym`, `AppendP`], typeof testargv> = testargv
+const testfmap: FMap<[`sym`, `AppendP`], typeof testargv> = 1
 
 const alala: Eval<[[`sym`, `AppendP`], [`prim`, `'1'`]]> = 1
 
