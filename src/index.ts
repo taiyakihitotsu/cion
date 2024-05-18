@@ -1,5 +1,5 @@
 type Each = LetForm | IfForm | Atom;
-type Atom = Sym | Prim | Fn | Vector | Nil;
+type Atom = Sym | Prim | Fn | Vector | HashMap | Nil;
 // This isn't usually way to define a sexpr, not including atomic something.
 // That role leaves to EACH.
 type Sexpr = Array<Each | Sexpr>;
@@ -352,21 +352,20 @@ type FilterError = "FilterError";
 type RemoveError = "RemoveError";
 type EveryError = "EveryError";
 type SomeError = "SomeError";
-type FMappable<F, V> = F extends Fn | Sym ? (V extends Vector ? V : never) : never;
-type FMap<F, V, Env = [[]], prev = [0], init = true> = FMappable<F, V> extends Vector & [
+type _FMap<F, V, Env = [[]], prev = [0]> = V extends Vector ? V extends [
   `vec`,
   infer H,
   ...infer T,
 ]
-   ? Eval<[F, H, ...T]> : never
+   ? T[0] extends Atom ? [Eval<[F,H]>, ..._FMap<F, [`vec`, ...T]>] : [Eval<[F,H]>] : [0] : [1]
+type FMap<F, V, Env = [[]], prev = [0]> = [`vec`, ..._FMap<F,V>]
 // test fmaps
 type testf = Sym & [`sym`, `AppendP`]
 // if not directly input those sexpr, through args, this fmap eval returns any, because of ...infer T (in FMap) would be expanded unknown.
-const testargv: testargv = [`vec`, [`prim`, `1`], [`prim`, `2`]]
-const testfmappable: FMappable<[`sym`, `AppendP`], typeof testargv> = testargv
-const testfmap: FMap<[`sym`, `AppendP`], typeof testargv> = 1
+const testargv = [`vec`, [`prim`, `'1'`], [`prim`, `'2'`]]
+const testfmap: FMap<[`sym`, `AppendP`],  [`vec`, [`prim`, `'1'`], [`prim`, `'2'`]]> = [`vec`, [`prim`, `'+1'`], [`prim`, `'+2'`]]
 
-const alala: Eval<[[`sym`, `AppendP`], [`prim`, `'1'`]]> = 1
+// const alala: Eval<[[`sym`, `AppendP`], [`prim`, `'1'`]]> = [`prim`, `'+1'`]
 
 
 // -------------------------
