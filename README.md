@@ -8,7 +8,7 @@ type Sexpr =
        cc {:status  "out"
            :message "message"}
        cv [c cc cc]
-       f (fn [a b] (if (= "in" (b a)) true false))]
+       f (fn [a b] (= "in" (b a)))]
    (->> cv
         (filter (fn [x] (f :status x)))
         first
