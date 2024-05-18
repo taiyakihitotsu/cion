@@ -245,65 +245,53 @@ const eqtest11: Eq<[""], [""]> = true;
 
 // ----------------------------------
 // vector/list/array
-type Vector = [`vec`, Atom[]];
-const vectortest: Vector & [`vec`, [[`prim`, `1`]]] = [`vec`, [[`prim`, `1`]]];
-const vectortest2: Vector & [`vec`, [[`prim`, `1`], [`prim`, `2`]]] = [
+type Vector = [`vec`, ...Atom[]];
+const vectortest: Vector & [`vec`, [`prim`, `1`]] = [`vec`, [`prim`, `1`]];
+const vectortest2: Vector & [`vec`, [`prim`, `1`], [`prim`, `2`]] = [
   `vec`,
-  [
-    [`prim`, `1`],
-    [`prim`, `2`],
-  ],
+
+  [`prim`, `1`],
+  [`prim`, `2`],
 ];
-const vectortest3: Vector & [`vec`, [[`vec`, [[`prim`, `2`]]]]] = [
+const vectortest3: Vector & [`vec`, [`vec`, [`prim`, `2`]]] = [
   `vec`,
-  [[`vec`, [[`prim`, `2`]]]],
+  [`vec`, [`prim`, `2`]],
 ];
 // error TS2322: Type '"prim"' is not assignable to type '"vec"'.
 // const vectortest4: Vector = [`prim`, `1`]
 const vectortest5: Vector &
-  [
-    `vec`,
-    [[`vec`, [[`vec`, [[`prim`, true], [`prim`, `1`]]]]], [`prim`, `1`]],
-  ] = [
+  [`vec`, [`vec`, [`vec`, [`prim`, true], [`prim`, `1`]], [`prim`, `1`]]] = [
   `vec`,
-  [
-    [
-      `vec`,
-      [
-        [
-          `vec`,
-          [
-            [`prim`, true],
-            [`prim`, `1`],
-          ],
-        ],
-      ],
-    ],
-    [`prim`, `1`],
-  ],
+  [`vec`, [`vec`, [`prim`, true], [`prim`, `1`]], [`prim`, `1`]],
 ];
 
+type GetVecError0 = "GetVecError0";
+type GetVecError1 = "GetVecError1";
+type GetVecError2 = "GetVecError2";
 type GetVec<N, V> = N extends number
-  ? V extends Vector & [`vec`, infer W]
+  ? V extends Vector & [`vec`, ...infer W]
     ? W extends Atom[]
       ? W[N]
-      : never
-    : never
-  : never;
+      : GetVecError0
+    : GetVecError1
+  : GetVecError2;
 const testgetvec: GetVec<
   3,
-  [`vec`, [[`prim`, 0], [`prim`, 1], [`prim`, 2], [`prim`, 3], [`prim`, 4]]]
+  [`vec`, [`prim`, 0], [`prim`, 1], [`prim`, 2], [`prim`, 3], [`prim`, 4]]
 > = [`prim`, 3];
 
 // map
 type HashMap = [`HashMap`, { [others: string]: Atom }];
+type GetMapError0 = "GetMapError0";
+type GetMapError1 = "GetMapError1";
+type GetMapError2 = "GetMapError2";
 type GetMap<N, V> = N extends string
   ? V extends HashMap & [`HashMap`, infer W]
     ? W extends { [others: string]: Atom }
       ? W[N]
-      : 7
-    : 6
-  : 5;
+      : GetMapError0
+    : GetMapError1
+  : GetMapError2;
 
 const testgetmap: GetMap<
   "a",
@@ -313,7 +301,7 @@ const testgetmap: GetMap<
 type Get<K, V> = V extends Vector ? GetVec<K, V> : GetMap<K, V>;
 const testgetvec1: Get<
   3,
-  [`vec`, [[`prim`, 0], [`prim`, 1], [`prim`, 2], [`prim`, 3], [`prim`, 4]]]
+  [`vec`, [`prim`, 0], [`prim`, 1], [`prim`, 2], [`prim`, 3], [`prim`, 4]]
 > = [`prim`, 3];
 const testgetmap1: Get<
   "a",
