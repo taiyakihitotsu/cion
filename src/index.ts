@@ -1,8 +1,10 @@
 type Each = LetForm | IfForm | Atom;
-type Atom = Sym | Prim | Fn | Vector;
+type Atom = Sym | Prim | Fn | Vector | Nil;
 // This isn't usually way to define a sexpr, not including atomic something.
 // That role leaves to EACH.
 type Sexpr = Array<Each | Sexpr>;
+type Nil = []
+const Nil: Nil = []
 
 type Sym = [`sym`, string];
 type Prim = [`prim`, string | boolean | number]; // todo : This boolean is appended IFForm, using boolean directly in current.
@@ -163,7 +165,7 @@ type Def<N, V, EnvLifo> = EnvLifo extends [infer U, ...infer R]
 type AppendError = "AppendError";
 type AppendP<S> = S extends [`prim`, `'${infer U}'`]
   ? [`prim`, `'+${U}'`]
-  : AppendError;
+  : {error: [AppendError, S]};
 
 const appendTest: AppendP<[`prim`, "'test'"]> = [`prim`, "'+test'"];
 
@@ -245,7 +247,7 @@ const eqtest11: Eq<[""], [""]> = true;
 
 // ----------------------------------
 // vector/list/array
-type Vector = [`vec`, ...Atom[]];
+type Vector = [`vec`, ...Atom[]] | [`vec`];
 const vectortest: Vector & [`vec`, [`prim`, `1`]] = [`vec`, [`prim`, `1`]];
 const vectortest2: Vector & [`vec`, [`prim`, `1`], [`prim`, `2`]] = [
   `vec`,
@@ -313,26 +315,36 @@ type FirstError = "FirstError";
 type RestError = "RestError";
 type ConjError = "ConjError";
 type ConcatError = "ConcatError";
-type First<T> = T extends Vector & [`vec`, infer H, ...infer T]
+type First<V> = V extends Vector & [`vec`, infer H, ...infer T]
   ? H
   : FirstError;
-type Rest<T> = T extends Vector & [`vec`, infer H, ...infer T]
+type Rest<V> = V extends Vector & [`vec`, infer H, ...infer T]
   ? T[0] extends Atom
-    ? T
-    : RestError
+    ? [`vec`, ...T]
+    : [`vec`]
   : RestError;
-type Conj<V, E> = V extends Vector
-  ? E extends Atom
+type Conj<V, E> = E extends Atom
+  ? V extends Vector
     ? [...V, E]
-    : ConjError
-  : ConjError;
+    : ConjError : ConjError
 type Concat<V, W> = V extends Vector
-  ? W extends Vector
-    ? [...V, ...W]
+  ? W extends Vector & [`vec`, ...infer WW]
+    ? [...V, ...WW]
     : ConcatError
   : ConcatError;
 // get, assoc, update
 // type Get<S, K> = S extends Vector & [`vec`, infer V] ? K extends number ? V[K] : never : S extends HashMap & [`HashMap`, infer V] ? K extends string ? V[K] : never : never
+
+type testvec = [`vec`, [`prim`, true], [`prim`, 0], [`prim`, 1]]
+const testfirst: First<testvec> = [`prim`, true]
+const testrest: Rest<testvec> = [`vec`, [`prim`, 0], [`prim`, 1]]
+const testrest1: Rest<Rest<testvec>> = [`vec`, [`prim`, 1]]
+const testrest2: Rest<Rest<Rest<testvec>>> = [`vec`]
+const testconj: Conj<testvec, [`prim`, false]> =  [`vec`, [`prim`, true], [`prim`, 0], [`prim`, 1], [`prim`, false]]
+const testconj1: Conj<[`vec`], [`prim`, false]> = [`vec`, [`prim`, false]]
+const testconcat: Concat<testvec, testvec> =  [`vec`, [`prim`, true], [`prim`, 0], [`prim`, 1],  [`prim`, true], [`prim`, 0], [`prim`, 1], ]
+
+
 
 // map, filter, remove, every, some
 type FMapError = "MapError";
@@ -340,23 +352,23 @@ type FilterError = "FilterError";
 type RemoveError = "RemoveError";
 type EveryError = "EveryError";
 type SomeError = "SomeError";
-type FMappable<F, V> = F extends Fn ? (V extends Vector ? V : false) : false;
-type FMap<F, V, Env = [[]], prev = [0]> = FMappable<F, V> extends [
+type FMappable<F, V> = F extends Fn | Sym ? (V extends Vector ? V : never) : never;
+type FMap<F, V, Env = [[]], prev = [0], init = true> = FMappable<F, V> extends Vector & [
   `vec`,
   infer H,
   ...infer T,
 ]
-  ? [`vec`, Eval<[F, H], Env, [prev]>, ...FMap<F, T, Env, prev>]
-  : [];
-type Filter<F, V, Env = [[]], prev = [0]> = FMappable<F, V> extends [
-  `vec`,
-  infer H,
-  ...infer T,
-]
-  ? Eval<[F, H], Env, [prev]> extends [`prim`, true]
-    ? [`vec`, H, ...Filter<F, T, Env, prev>]
-    : [`vec`, ...Filter<F, T, Env, prev>]
-  : [];
+   ? Eval<[F, H, T]> : never
+// test fmaps
+type testf = Sym & [`sym`, `AppendP`]
+type testargv = Vector & [`vec`, [`prim`, `1`], [`prim`, `2`]]
+// if not directly input those sexpr, through args, this fmap eval returns any, because of ...infer T (in FMap) would be expanded unknown.
+const testargv: testargv = [`vec`, [`prim`, `1`], [`prim`, `2`]]
+const testfmappable: FMappable<[`sym`, `AppendP`], testargv> = testargv
+const testfmap: FMap<[`sym`, `AppendP`],testargv> = 1
+
+const alala: Eval<[[`sym`, `AppendP`], [`prim`, `'1'`]]> = 1
+
 
 // -------------------------
 // bit ops
@@ -528,7 +540,7 @@ type Tdddd = [[`sym`, `AppendP`], [`sym`, `str`]];
 
 // test raw
 const evalTest: Eval<Tdsds, [[]]> = [`prim`, "'+test'"];
-const evalTest2: Eval<Tdddd, [[]]> = "AppendError";
+const evalTest2: Eval<Tdddd, [[]]> = { error: ["AppendError", ["prim", "NotMatch"]]};
 const evalTest3: Eval<Tdddd, [[MakeVar<`str`, `'strval'`>]]> = [
   `prim`,
   "'+strval'",
