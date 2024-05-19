@@ -65,10 +65,22 @@ type BitShiftLeftOne<B> = B extends `${infer H}`
     : never
   : never;
 // test
-const bitshiftl0: BitShiftLeftOne<`1111`> = `1110`;
-const bitshiftl1: BitShiftLeftOne<`0000`> = `0000`;
-const bitshiftl2: BitShiftLeftOne<`1010`> = `0100`;
+const bitshiftlg0: BitShiftLeftOne<`1111`> = `1110`;
+const bitshiftlg1: BitShiftLeftOne<`0000`> = `0000`;
+const bitshiftlg2: BitShiftLeftOne<`1010`> = `0100`;
 // todo : N pattern, with Peano
+
+type BitShiftLeft<B, N> = N extends Peano.T0
+  ? B
+  : BitShiftLeft<BitShiftLeftOne<B>, Peano.dec<N>>;
+// test
+const bitshiftl0: BitShiftLeft<`1111`, [[null]]> = `1100`;
+const bitshiftl1: BitShiftLeft<`0000`, [null]> = `0000`;
+const bitshiftl2: BitShiftLeft<`1010`, [null]> = `0100`;
+const bitshiftl3: BitShiftLeft<`1111`, [[[null]]]> = `1000`;
+const bitshiftl4: BitShiftLeft<`1111`, [[[[null]]]]> = `0000`;
+// fixme : should it be an error ?
+const bitshiftl5: BitShiftLeft<`1111`, [[[[[null]]]]]> = `0000`;
 
 type BitNot<B> = B extends `0`
   ? `1`
@@ -243,3 +255,44 @@ const bitsub0: BitSub<"00111", "00101"> = "00000010";
 const bitsub1: BitSub<"00110", "00001"> = "00000101";
 const bitsub2: BitSub<"00000", "00000"> = "00000000";
 const bitsub3: BitSub<"11111", "11111"> = "00000000";
+
+type BitMul<
+  B extends string,
+  C extends string,
+  M = MAX,
+  R extends string = BitFill<"0", M>,
+  tB extends string = BitFill<B, M>,
+  tC extends string = BitFill<C, M>,
+  N = Peano.dec<M>,
+> = tB extends `${infer H}${infer T}`
+  ? H extends "/"
+    ? R
+    : H extends "0"
+      ? BitMul<B, C, M, R, `${T}/`, tC, Peano.dec<N>>
+      : H extends "1"
+        ? BitMul<
+            B,
+            C,
+            M,
+            BitAdd<R, BitShiftLeft<tC, N>>,
+            `${T}/`,
+            tC,
+            Peano.dec<N>
+          >
+        : never
+  : never;
+// test
+// 7,5,35
+// 6,2,12
+// 0,0,0
+// 31,1,31
+// 1,1,1
+// 0,1,0
+// 1,0,0
+const bitmul0: BitMul<"00111", "00101"> = "00100011";
+const bitmul1: BitMul<"00110", "00010"> = "00001100";
+const bitmul2: BitMul<"00000", "00000"> = "00000000";
+const bitmul3: BitMul<"11111", "00001"> = "00011111";
+const bitmul4: BitMul<"00001", "00001"> = "00000001";
+const bitmul5: BitMul<"00000", "00001"> = "00000000";
+const bitmul6: BitMul<"00001", "00000"> = "00000000";
