@@ -183,7 +183,7 @@ type BitIsZero<B extends string> = BitUniform<_Zero, B> extends [
 const bitiszero0: BitIsZero<"111"> = false;
 const bitiszero1: BitIsZero<"000"> = true;
 
-type BitFill<B extends string, N> = BitPadding<B, T32> extends infer _tB
+type BitFill<B extends string, N = MAX> = BitPadding<B, T32> extends infer _tB
   ? BitCut<_tB, Peano.min<BitLen<_tB>, MAX>>
   : never;
 // test
@@ -211,8 +211,18 @@ type _BitAdd<B, C> = BitXor<B, C> extends infer _Xor
   : 2;
 
 // test
-const bitadd0: _BitAdd<"00111", "00101"> = "01100";
-const bitadd1: _BitAdd<"00110", "00001"> = "00111";
-const bitadd2: _BitAdd<"00000", "00000"> = "00000";
-// fixme :
-const bitadd3: _BitAdd<"11111", "11111"> = "11110";
+const _bitadd0: _BitAdd<"00111", "00101"> = "01100";
+const _bitadd1: _BitAdd<"00110", "00001"> = "00111";
+const _bitadd2: _BitAdd<"00000", "00000"> = "00000";
+const _bitadd3: _BitAdd<"11111", "11111"> = "11110";
+
+type BitAdd<B extends string, C extends string, M = MAX> = BitFill<B, M> extends infer _tB ? BitFill<C, M> extends infer _tC ? _BitAdd<_tB, _tC> : never : never
+// test
+// 7,5,12
+// 6,1,7
+// 0,0,0
+// 31,31,62
+const bitadd0: BitAdd<"00111", "00101"> = "00001100";
+const bitadd1: BitAdd<"00110", "00001"> = "00000111";
+const bitadd2: BitAdd<"00000", "00000"> = "00000000";
+const bitadd3: BitAdd<"11111", "11111"> = "00111110"; // shift.
