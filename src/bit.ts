@@ -1,4 +1,4 @@
-import Peano from "./peano";
+import type Peano from "./peano";
 
 // -------------------------
 // bit ops
@@ -57,7 +57,7 @@ const bitxor6: BitXor<`111`, `111`> = `000`;
 const bitxor7: BitXor<`110`, `110`> = `000`;
 const bitxor8: BitXor<`000`, `000`> = `000`;
 const bitxor9: BitXor<`101`, `001`> = `100`;
-const bitxor10: BitXor<`00111`, `00101`> = `00010`
+const bitxor10: BitXor<`00111`, `00101`> = `00010`;
 
 type BitShiftLeftOne<B> = B extends `${infer H}`
   ? `${H}0` extends `${infer C}${infer D}`
@@ -78,78 +78,141 @@ type BitNot<B> = B extends `0`
       ? `${BitNot<H>}${BitNot<T>}`
       : never;
 // test
-const bitnot0: BitNot<'0'> = '1'
-const bitnot1: BitNot<'1'> = '0'
-const bitnot2: BitNot<'11000'> = '00111'
+const bitnot0: BitNot<"0"> = "1";
+const bitnot1: BitNot<"1"> = "0";
+const bitnot2: BitNot<"11000"> = "00111";
 
-type BitEq<B, C> = B extends '' ? C extends '' ? true : false : B extends `${infer HB}${infer TB}` ? C extends `${infer HC}${infer TC}` ? C extends B ? B extends C ? BitEq<TB,TC> : false : false : false : false
+type BitEq<B, C> = B extends ""
+  ? C extends ""
+    ? true
+    : false
+  : B extends `${infer HB}${infer TB}`
+    ? C extends `${infer HC}${infer TC}`
+      ? C extends B
+        ? B extends C
+          ? BitEq<TB, TC>
+          : false
+        : false
+      : false
+    : false;
 // test
-const biteq0: BitEq<'0', '0'> = true
-const biteq1: BitEq<'0', '1'> = false
-const biteq2: BitEq<'1', '0'> = false
-const biteq3: BitEq<'1', '1'> = true
-const biteq4: BitEq<'00', '10'> = false
-const biteq5: BitEq<'11', '11'> = true
-const biteq6: BitEq<'01', '10'> = false
-const biteq7: BitEq<'', '1'> = false
-const biteq8: BitEq<'0', ''> = false
+const biteq0: BitEq<"0", "0"> = true;
+const biteq1: BitEq<"0", "1"> = false;
+const biteq2: BitEq<"1", "0"> = false;
+const biteq3: BitEq<"1", "1"> = true;
+const biteq4: BitEq<"00", "10"> = false;
+const biteq5: BitEq<"11", "11"> = true;
+const biteq6: BitEq<"01", "10"> = false;
+const biteq7: BitEq<"", "1"> = false;
+const biteq8: BitEq<"0", ""> = false;
 // todo : does init arg need?
-const biteq9: BitEq<'', ''> = true
+const biteq9: BitEq<"", ""> = true;
 
 type BitLen<B, count = Peano.T0> = B extends `${infer HB}${infer TB}`
-  ? HB extends "0" | "1" ? BitLen<TB, Peano.inc<count>> : never : count
+  ? HB extends "0" | "1"
+    ? BitLen<TB, Peano.inc<count>>
+    : never
+  : count;
 // test
-const bitlen0: BitLen<'00000000'> = [[[[[[[[null]]]]]]]]
+const bitlen0: BitLen<"00000000"> = [[[[[[[[null]]]]]]]];
 
-type BitGthan<B, C> = Peano.gthan<BitLen<B>, BitLen<C>>
+type BitGthan<B, C> = Peano.gthan<BitLen<B>, BitLen<C>>;
 // test
-const bitgthan0: BitGthan<'000', '000'> = false
-const bitgthan1: BitGthan<'000', '0001'> = false
-const bitgthan2: BitGthan<'0001', '000'> = true
+const bitgthan0: BitGthan<"000", "000"> = false;
+const bitgthan1: BitGthan<"000", "0001"> = false;
+const bitgthan2: BitGthan<"0001", "000"> = true;
 // todo : they should be an error.
-const bitgthan3: BitGthan<'', '000'> = false
-const bitgthan4: BitGthan<'', ''> = false
-const bitgthan5: BitGthan<'1', ''> = false
+const bitgthan3: BitGthan<"", "000"> = false;
+const bitgthan4: BitGthan<"", ""> = false;
+const bitgthan5: BitGthan<"1", ""> = false;
 
-type _BitNeedFill<B, L> = Peano.min<BitLen<B>, L>
+type _BitNeedFill<B, L> = Peano.min<BitLen<B>, L>;
 // test
-const bitneedfill0: _BitNeedFill<'00000000', [[[null]]]> = [[[[[null]]]]]
+const bitneedfill0: _BitNeedFill<"00000000", [[[null]]]> = [[[[[null]]]]];
 
-type BitFill<B extends string, P = Peano.T0, F = '0'> = P extends Peano.T0 ? B : F extends '0'|'1' ? BitFill<`${F}${B}`, Peano.dec<P>, F> : never
+type BitPadding<B extends string, P = Peano.T0, F = "0"> = P extends Peano.T0
+  ? B
+  : F extends "0" | "1"
+    ? BitPadding<`${F}${B}`, Peano.dec<P>, F>
+    : never;
 // test
-const bitfill0: BitFill<'10101', [null]> = '010101'
-const bitfill1: BitFill<'10101', [[null]]> = '0010101'
-const bitfill2: BitFill<'10101', [[null]], '1'> = '1110101'
+const bitpadding0: BitPadding<"10101", [null]> = "010101";
+const bitpadding1: BitPadding<"10101", [[null]]> = "0010101";
+const bitpadding2: BitPadding<"10101", [[null]], "1"> = "1110101";
 
-type BitUniform<B extends string, C extends string> = BitGthan<B,C> extends true ? [B, BitFill<C, Peano.min<BitLen<B>, BitLen<C>>>] : [BitFill<B, Peano.min<BitLen<C>, BitLen<B>>>, C]
+type BitUniform<B extends string, C extends string> = BitGthan<
+  B,
+  C
+> extends true
+  ? [B, BitPadding<C, Peano.min<BitLen<B>, BitLen<C>>>]
+  : [BitPadding<B, Peano.min<BitLen<C>, BitLen<B>>>, C];
 // test
-const bituniform0: BitUniform<'1111', '00000'> = ['01111', '00000']
-const bituniform1: BitUniform<'001111', '00000'> = ['001111', '000000']
-const bituniform2: BitUniform<'001111', '111100'> = ['001111', '111100']
+const bituniform0: BitUniform<"1111", "00000"> = ["01111", "00000"];
+const bituniform1: BitUniform<"001111", "00000"> = ["001111", "000000"];
+const bituniform2: BitUniform<"001111", "111100"> = ["001111", "111100"];
 // todo : should be an error, and inconsistency in current.
 // const bituniform3: BitUniform<'', '111100'> = ['000000', '111100']
 // const bituniform4: BitUniform<'001111', ''> = [never, '']
 
-type BitCut<B, P = Peano.T0> = P extends Peano.T0 ? B : B extends `${infer H}${infer T}` ? BitCut<T, Peano.dec<P>> : never
+type BitCut<B, P = Peano.T0> = P extends Peano.T0
+  ? B
+  : B extends `${infer H}${infer T}`
+    ? BitCut<T, Peano.dec<P>>
+    : never;
 // test
-const bitcut0: BitCut<"11111", Peano.T0> = "11111"
-const bitcut1: BitCut<"11111", [null]> = "1111"
+const bitcut0: BitCut<"11111", Peano.T0> = "11111";
+const bitcut1: BitCut<"11111", [null]> = "1111";
 // const bitcut2: BitCut<"11111", [null]> = "111" // err
-// const bitcut3: BitCut<"", [null]> = null as never 
+// const bitcut3: BitCut<"", [null]> = null as never
 
-type _Zero = BitFill<"0", [[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[Peano.T0]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]> // 32
+// CONSTANTS.
+type T8 = [[[[[[[[Peano.T0]]]]]]]];
+type T16 = Peano.mul<T8, [[null]]>;
+type T32 = Peano.mul<T16, [[null]]>;
+type MAX = T8;
+type _Zero = BitPadding<"0", T32>;
+
 // todo
-type BitIsZero<B extends string> = BitUniform<_Zero, B> extends [infer Z, infer U] ? BitEq<_Zero, U> : never
+type BitIsZero<B extends string> = BitUniform<_Zero, B> extends [
+  infer Z,
+  infer U,
+]
+  ? BitEq<_Zero, U>
+  : never;
 // test
-const bitiszero0: BitIsZero<"111"> = false
-const bitiszero1: BitIsZero<"000"> = true
+const bitiszero0: BitIsZero<"111"> = false;
+const bitiszero1: BitIsZero<"000"> = true;
+
+type BitFill<B extends string, N> = BitPadding<B, T32> extends infer _tB
+  ? BitCut<_tB, Peano.min<BitLen<_tB>, MAX>>
+  : never;
+// test
+const bitfill0: BitFill<"1111", MAX> = "00001111";
+const bitfill1: BitFill<"0000", MAX> = "00000000";
+const bitfill2: BitFill<"111", MAX> = "00000111";
+const bitfill3: BitFill<"11", MAX> = "00000011";
+const bitfill4: BitFill<"1", MAX> = "00000001";
+// fixme : want to spit an error
+const bitfill5: BitFill<"", MAX> = "00000000";
 
 // note : unsinged
-type _BitAdd<B,C> = BitXor<B, C> extends infer _Xor ? BitAnd<B,C> extends infer _And ? BitShiftLeftOne<_And> extends string & infer _Carry extends string ? BitIsZero<BitUniform<_Carry, "0"> extends [infer _C extends string, infer _R] ? _C : never> extends true ? _Xor : _BitAdd<_Xor, _Carry> : 0 : 1 : 2 
+type _BitAdd<B, C> = BitXor<B, C> extends infer _Xor
+  ? BitAnd<B, C> extends infer _And
+    ? BitShiftLeftOne<_And> extends string & infer _Carry extends string
+      ? BitIsZero<
+          BitUniform<_Carry, "0"> extends [infer _C extends string, infer _R]
+            ? _C
+            : never
+        > extends true
+        ? _Xor
+        : _BitAdd<_Xor, _Carry>
+      : 0
+    : 1
+  : 2;
 
 // test
-const bitadd0: _BitAdd<"00111", "00101"> = "01100"
-const bitadd1: _BitAdd<"00110", "00001"> = "00111"
-const bitadd2: _BitAdd<"00000", "00000"> = "00000"
+const bitadd0: _BitAdd<"00111", "00101"> = "01100";
+const bitadd1: _BitAdd<"00110", "00001"> = "00111";
+const bitadd2: _BitAdd<"00000", "00000"> = "00000";
 // fixme :
-const bitadd3: _BitAdd<"11111", "11111"> = "11110"
+const bitadd3: _BitAdd<"11111", "11111"> = "11110";
