@@ -45,7 +45,7 @@ namespace Peano {
     : never;
   export type TLesserUnion<T> = T extends [infer U] ? TELesserUnion<U> : never;
 
-  export type gthan<T, U> = U extends TLesserUnion<T> ? true : false
+  export type gthan<T, U> = U extends TLesserUnion<T> ? true : false;
 }
 
 export default Peano;
