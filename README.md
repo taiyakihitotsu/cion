@@ -8,7 +8,7 @@ type Sexpr =
        cc {:status  "out"
            :message "message"}
        cv [c cc cc]
-       f (fn [a b] (if (= "in" (b a)) true false))]
+       f (fn [a b] (= "in" (b a)))]
    (->> cv
         (filter (fn [x] (f :status x)))
         first
@@ -26,6 +26,7 @@ const message: Return<Eval<Compile<Sexpr>>> = "message"
 - [x] hashmap
 - [x] if
 - [ ] eq
+- [x] map
 - [ ] filter
 - [x] get
 - [x] get with a key
