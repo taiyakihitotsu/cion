@@ -382,61 +382,6 @@ const testfmap: FMap<
   [`vec`, [`prim`, `'1'`], [`prim`, `'2'`]]
 > = [`vec`, [`prim`, `'+1'`], [`prim`, `'+2'`]];
 
-// -------------------------
-// bit ops
-type BitOr<B, C> = B extends `${infer BH}${infer BR}`
-  ? C extends `${infer CH}${infer CR}`
-    ? CH extends `1`
-      ? `1${BitOr<BR, CR>}`
-      : BH extends `1`
-        ? `1${BitOr<BR, CR>}`
-        : `0${BitOr<BR, CR>}`
-    : ``
-  : ``;
-const bitor1: BitOr<`1`, `1`> = `1`;
-const bitor2: BitOr<`1`, `0`> = `1`;
-const bitor3: BitOr<`0`, `1`> = `1`;
-const bitor4: BitOr<`0`, `0`> = `0`;
-const bitor5: BitOr<`010`, `000`> = `010`;
-const bitor6: BitOr<`111`, `111`> = `111`;
-const bitor7: BitOr<`110`, `110`> = `110`;
-const bitor8: BitOr<`000`, `000`> = `000`;
-
-type BitAnd<B, C> = B extends `${infer BH}${infer BR}`
-  ? C extends `${infer CH}${infer CR}`
-    ? CH extends `1`
-      ? BH extends `1`
-        ? `1${BitAnd<BR, CR>}`
-        : `0${BitAnd<BR, CR>}`
-      : `0${BitAnd<BR, CR>}`
-    : ``
-  : ``;
-const bitand1: BitAnd<`1`, `1`> = `1`;
-const bitand2: BitAnd<`1`, `0`> = `0`;
-const bitand3: BitAnd<`0`, `1`> = `0`;
-const bitand4: BitAnd<`0`, `0`> = `0`;
-const bitand5: BitAnd<`010`, `000`> = `000`;
-const bitand6: BitAnd<`111`, `111`> = `111`;
-const bitand7: BitAnd<`110`, `110`> = `110`;
-const bitand8: BitAnd<`000`, `000`> = `000`;
-
-type BitXor<B, C> = B extends `${infer BH}${infer BR}`
-  ? C extends `${infer CH}${infer CR}`
-    ? CH extends BH
-      ? `0${BitXor<BR, CR>}`
-      : `1${BitXor<BR, CR>}`
-    : ``
-  : ``;
-const bitxor1: BitXor<`1`, `1`> = `0`;
-const bitxor2: BitXor<`1`, `0`> = `1`;
-const bitxor3: BitXor<`0`, `1`> = `1`;
-const bitxor4: BitXor<`0`, `0`> = `0`;
-const bitxor5: BitXor<`010`, `000`> = `010`;
-const bitxor6: BitXor<`111`, `111`> = `000`;
-const bitxor7: BitXor<`110`, `110`> = `000`;
-const bitxor8: BitXor<`000`, `000`> = `000`;
-const bitxor9: BitXor<`101`, `001`> = `100`;
-
 // -------------------
 // memo
 // type SSS<B> = B extends `${infer U}` ? U[0] : never
