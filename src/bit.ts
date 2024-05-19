@@ -216,7 +216,14 @@ const _bitadd1: _BitAdd<"00110", "00001"> = "00111";
 const _bitadd2: _BitAdd<"00000", "00000"> = "00000";
 const _bitadd3: _BitAdd<"11111", "11111"> = "11110";
 
-type BitAdd<B extends string, C extends string, M = MAX> = BitFill<B, M> extends infer _tB ? BitFill<C, M> extends infer _tC ? _BitAdd<_tB, _tC> : never : never
+type BitAdd<B extends string, C extends string, M = MAX> = BitFill<
+  B,
+  M
+> extends infer _tB
+  ? BitFill<C, M> extends infer _tC
+    ? _BitAdd<_tB, _tC>
+    : never
+  : never;
 // test
 // 7,5,12
 // 6,1,7
@@ -226,3 +233,13 @@ const bitadd0: BitAdd<"00111", "00101"> = "00001100";
 const bitadd1: BitAdd<"00110", "00001"> = "00000111";
 const bitadd2: BitAdd<"00000", "00000"> = "00000000";
 const bitadd3: BitAdd<"11111", "11111"> = "00111110"; // shift.
+
+type BitSub<B extends string, C extends string, M = MAX> = BitAdd<
+  BitFill<B, M>,
+  BitAdd<BitNot<BitFill<C, M>>, BitFill<"1", M>>
+>;
+// test
+const bitsub0: BitSub<"00111", "00101"> = "00000010";
+const bitsub1: BitSub<"00110", "00001"> = "00000101";
+const bitsub2: BitSub<"00000", "00000"> = "00000000";
+const bitsub3: BitSub<"11111", "11111"> = "00000000";
