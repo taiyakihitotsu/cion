@@ -181,8 +181,9 @@ const bitcut1: BitCut<"11111", [null]> = "1111";
 type T8 = [[[[[[[[Peano.T0]]]]]]]];
 type T16 = Peano.mul<T8, [[null]]>;
 type T32 = Peano.mul<T16, [[null]]>;
+type T64 = Peano.mul<T32, [[null]]>;
 type MAX = T8;
-type _Zero = BitPadding<"0", T32>;
+type _Zero = BitPadding<"0", MAX>;
 
 // todo
 type BitIsZero<B extends string> = BitUniform<_Zero, B> extends [
@@ -195,9 +196,12 @@ type BitIsZero<B extends string> = BitUniform<_Zero, B> extends [
 const bitiszero0: BitIsZero<"111"> = false;
 const bitiszero1: BitIsZero<"000"> = true;
 
-type BitFill<B extends string, N = MAX> = BitPadding<B, T32> extends infer _tB
-  ? BitCut<_tB, Peano.min<BitLen<_tB>, MAX>>
-  : never;
+type BitFill<
+  B extends string,
+  M = MAX,
+  tB extends string = BitPadding<B, M>,
+> = BitCut<tB, Peano.min<BitLen<tB>, M>>;
+
 // test
 const bitfill0: BitFill<"1111", MAX> = "00001111";
 const bitfill1: BitFill<"0000", MAX> = "00000000";
