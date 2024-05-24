@@ -300,3 +300,22 @@ const bitmul3: BitMul<"11111", "00001"> = "00011111";
 const bitmul4: BitMul<"00001", "00001"> = "00000001";
 const bitmul5: BitMul<"00000", "00001"> = "00000000";
 const bitmul6: BitMul<"00001", "00000"> = "00000000";
+
+type _BitShiftRight<
+  B extends string,
+  M = MAX,
+  N = Peano.T1,
+  D = Peano.min<M, N>,
+  R extends string = "",
+> = D extends Peano.T0
+  ? R extends ""
+    ? B
+    : R
+  : B extends `${infer H}${infer T}`
+    ? _BitShiftRight<`${T}`, M, N, Peano.dec<D>, `${R}${H}`>
+    : R;
+
+const bitsr0: _BitShiftRight<"111111", [[[[[[null]]]]]], [[null]]> = "1111";
+const bitsr1: _BitShiftRight<"111111", [[[[[[null]]]]]], [[[null]]]> = "111";
+// type BitShiftRight
+// type UnsignedBitShiftRight
