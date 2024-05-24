@@ -1,18 +1,18 @@
 {
-  "name": "node_sample",
-  "version": "1.0.0",
+  "name": "lots",
+  "version": "0.0.1",
   "main": "index.js",
   "scripts": {
     "build": "npx tsc",
     "build:watch": "npx tsc --watch",
     "run": "npx ts-node src/index.ts",
+    "biome": "npx @biomejs/biome check ./src",
     "biome:fix": "npx @biomejs/biome check --apply ./src"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/gorida/node_sample.git"
+    "url": "git+https://github.com/taiyakihitotsu/lots"
   },
-  "license": "ISC",
   "devDependencies": {
     "@types/node": "^18.19.22",
     "ts-node": "^10.9.2",

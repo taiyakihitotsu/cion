@@ -8,7 +8,7 @@
 namespace Peano {
   export type T0 = null;
 
-  type T1 = [T0];
+  export type T1 = [T0];
 
   export type add<T, TT> = TT extends T0
     ? T
