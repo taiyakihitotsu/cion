@@ -233,7 +233,7 @@ type EvalError12 = "EvalError12";
 type LetVal = string | Each | Each[];
 type LetArg = [Sym, LetVal];
 // todo : too ugly.
-type LetForm = [`let`, (Sym | LetVal)[], Each | Each[]];
+type LetForm = [`let`, (Sym | LetVal)[] | [Sym[], LetVal[]], Each | Each[]];
 // test let
 const larttest: LetArg = [[`sym`, `t`], `test`];
 
@@ -473,10 +473,26 @@ const testinterleave0: Interleave<[1, 2, 3], [4, 5, 6]> = [1, 4, 2, 5, 3, 6];
 const testinterleave1: Interleave<[1, 2, 3], [4, 5]> = [1, 4, 2, 5];
 const testinterleave2: Interleave<[1], [2]> = [1, 2];
 
+// multiarg fn test
+const testmultiargfn0: Eval<
+  [
+    [
+      `fn`,
+      [[`sym`, `a`], [`sym`, `b`]],
+      [[`sym`, `str`], [`sym`, `a`], [`sym`, `b`]],
+    ],
+    [`prim`, `'0'`],
+    [`prim`, `'1'`],
+  ]
+> = [`prim`, `'0''1'`];
+
 // todo : ugly
 type Eval<A, env = [[]], prev = 0> = A extends Sexpr
   ? A extends [infer OPC, ...infer OPR]
     ? env extends EnvLifo
+      ? OPC extends Fn & [`fn`, infer syms, infer D]
+        ? Eval<[`let`, Interleave<syms, OPR>, D], env, [prev]>
+        : /*
       ? OPC extends Fn & [`fn`, [[`sym`, infer S]], infer D]
         ? OPR[0] extends Sym & [`sym`, infer VV]
           ? // here is a buggy
@@ -499,13 +515,15 @@ type Eval<A, env = [[]], prev = 0> = A extends Sexpr
             //   from:
             //   ((fn [a b] (eq a b)) 1 2)
 
+
             VV extends "AppendP" | "eq" | "str"
             ? Eval<[OPC, Eval<D, env, [prev]>]>
             : Eval<D, Let<S, ReadLet<VV, env>, env>, [prev]>
           : OPR[0] extends Prim & [`prim`, infer VVV]
             ? Eval<D, Let<S, [`prim`, VVV], env>, [prev]>
             : EvalError5
-        : OPC extends IfForm & [`if`, infer IFCond, infer IFT, infer IFF]
+*/
+          OPC extends IfForm & [`if`, infer IFCond, infer IFT, infer IFF]
           ? Eval<
               [If<Eval<IFCond, env, [[prev]]>, IFT, IFF>, OPR[0]],
               env,
@@ -536,39 +554,47 @@ type Eval<A, env = [[]], prev = 0> = A extends Sexpr
           : [`prim`, ReadLet<SS, env>]
         : A
       : A extends LetForm
-        ? A extends [
-            `let`,
-            [[`sym`, infer LN], infer LV, ...infer LRest],
-            infer LC,
-          ]
-          ? LRest extends [[`sym`, infer LRLN], infer LRLV]
-            ? Eval<
-                [`let`, [[`sym`, LN], LV], [`let`, [[`sym`, LRLN], LRLV], LC]],
-                env,
-                [prev]
-              >
-            : LV extends Prim & [`prim`, infer LP]
-              ? // -----------------------
-                // todo : these lvs ugly.
-                // todo : this is picked lp directly,
-                //  unwrapped from [`prim`, ].
-                //  its inconsistency .
-                // -----------------------
-                // ? Eval<LC, Let<LN, LP, env>, [prev]>
-                // -----------------------
-                Eval<LC, Let<LN, LV, env>, [prev]>
-              : LV extends Sym & [`sym`, infer LP]
-                ? Eval<LC, Let<LN, ReadLet<LP, env>, env>, [prev]>
-                : LV extends LetForm
-                  ? Eval<
-                      [`let`, [[`sym`, LN], Eval<LV, env, [prev]>], LC],
-                      env,
-                      [prev]
-                    >
-                  : LV extends Fn
-                    ? Eval<LC, Let<LN, LV, env>, [prev]>
-                    : { error: [EvalError7, prev, A] }
-          : { error: [EvalError8, prev, A] } // : EvalError9 : EvalError10
+        ? A extends [`let`, [Sym[], LetVal[]], Sexpr]
+          ? A extends [`let`, [infer letsyms, infer letvals], infer LC]
+            ? Eval<[`let`, Interleave<letsyms, letvals>, LC], env, [prev]>
+            : never
+          : A extends [
+                `let`,
+                [[`sym`, infer LN], infer LV, ...infer LRest],
+                infer LC,
+              ]
+            ? LRest extends [[`sym`, infer LRLN], infer LRLV]
+              ? Eval<
+                  [
+                    `let`,
+                    [[`sym`, LN], LV],
+                    [`let`, [[`sym`, LRLN], LRLV], LC],
+                  ],
+                  env,
+                  [prev]
+                >
+              : LV extends Prim & [`prim`, infer LP]
+                ? // -----------------------
+                  // todo : these lvs ugly.
+                  // todo : this is picked lp directly,
+                  //  unwrapped from [`prim`, ].
+                  //  its inconsistency .
+                  // -----------------------
+                  // ? Eval<LC, Let<LN, LP, env>, [prev]>
+                  // -----------------------
+                  Eval<LC, Let<LN, LV, env>, [prev]>
+                : LV extends Sym & [`sym`, infer LP]
+                  ? Eval<LC, Let<LN, ReadLet<LP, env>, env>, [prev]>
+                  : LV extends LetForm
+                    ? Eval<
+                        [`let`, [[`sym`, LN], Eval<LV, env, [prev]>], LC],
+                        env,
+                        [prev]
+                      >
+                    : LV extends Fn
+                      ? Eval<LC, Let<LN, LV, env>, [prev]>
+                      : { error: [EvalError7, prev, A] }
+            : { error: [EvalError8, "this is not proper let-form.", prev, A] } // : EvalError9 : EvalError10
         : { error: [EvalError11, prev, A] };
 
 // test case
@@ -711,6 +737,15 @@ const evallftest0: Eval<[LfInnerTest, [`prim`, `'test'`]]> = [
   `prim`,
   `'+test'`,
 ];
+
+// test interleaved let form
+const testiletform: Eval<
+  [
+    `let`,
+    [[[`sym`, `a`], [`sym`, `b`]], [[`prim`, `'1'`], [`prim`, `'2'`]]],
+    [[`sym`, `str`], [`sym`, `a`], [`sym`, `b`]],
+  ]
+> = [`prim`, `'1''2'`];
 
 // test if
 type IfTruePrimTest = [`if`, [`prim`, true], [`prim`, true], [`prim`, false]];
