@@ -125,6 +125,12 @@ const testfnlispeqa = [
 const testfnlispeqaa = [`prim`, false];
 const testfnlispeq0 = [`prim`, false]; // todo : fix
 const testfnlispeq1 = [`prim`, true]; // todo : fix
+// interleave test
+const testinterleave0 = [1, 4, 2, 5, 3, 6];
+const testinterleave1 = [1, 4, 2, 5];
+const testinterleave2 = [1, 2];
+// multiarg fn test
+const testmultiargfn0 = [`prim`, `'0''1'`];
 // test raw
 const evalTest = [`prim`, "'+test'"];
 const evalTest2 = {
@@ -180,6 +186,8 @@ const evallftest0 = [
     `prim`,
     `'+test'`,
 ];
+// test interleaved let form
+const testiletform = [`prim`, `'1''2'`];
 const evaliftest2 = [`prim`, true];
 const evaliftest3 = [`prim`, false];
 const evalifrectest0 = [`prim`, true];
