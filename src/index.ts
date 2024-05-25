@@ -16,7 +16,7 @@ type Var = {
   value: string | Atom;
 };
 
-type Env = Var[];
+type Env = [] | Var[];
 
 type NotMatch = "NotMatch";
 const NotMatch = "NotMatch";
@@ -61,9 +61,10 @@ const EvalTest3: GetVar<
 // because this case is broken in a macro context.
 type EnvLifo = Env[];
 
+type LetError0 = "LetError";
 type Let<N, V, EnvLifo = Env[]> = EnvLifo extends Env[]
   ? [...EnvLifo, [MakeVar<N, V>]]
-  : never;
+  : LetError0;
 
 type ReadLet<N, EnvLifo = [[]]> = EnvLifo extends [...infer HS, infer L]
   ? L extends Env
@@ -117,15 +118,17 @@ const readatomtest2: ReadAtom<
   Let<"sss", [`prim`, `p/sss`], LetEnvLifo>
 > = [`prim`, `'sss'`];
 
+type ReadingError0 = "ReadingError0";
+
 type Reading<AS, EnvLifo = [[]], prev = 0, R = []> = R extends Array<Atom> // todo : ugly
   ? AS extends Atom[] & [infer H, ...infer T]
     ? Reading<T, EnvLifo, prev, [...R, ReadAtom<H, EnvLifo, prev>]>
     : R
-  : never;
+  : { error: ReadingError0; env: EnvLifo };
 // test reading
 const readingtest: Reading<
   [[`sym`, `a`], [`sym`, `b`], [`prim`, `c-str`]],
-  [[MakeVar<"a", [`prim`, "a-str"]>, MakeVar<"b", [`prim`, "b-str"]>]]
+  [[], [MakeVar<"a", [`prim`, "a-str"]>, MakeVar<"b", [`prim`, "b-str"]>]]
 > = [
   ["prim", "a-str"],
   ["prim", "b-str"],
@@ -170,17 +173,41 @@ type AppendP<S> = S extends [`prim`, `'${infer U}'`]
 const appendTest: AppendP<[`prim`, "'test'"]> = [`prim`, "'+test'"];
 
 // note: if `R extends string` doesn't exist, R cannot be passed into `${R}` because ts can get the type of R.
+type StrError0 = "StrError0";
 type Str<S, R = ""> = R extends string
   ? S extends [[`prim`, `${infer HS}`], ...infer T]
     ? Str<T, `${R}${HS}`>
     : [`prim`, R]
-  : never;
+  : StrError0;
 // test str
 const strtest1: Str<[[`prim`, `test`], [`prim`, `+`], [`prim`, `tail`]]> = [
   `prim`,
   `test+tail`,
 ];
 const strtest2: Str<[[`prim`, `test`]]> = [`prim`, `test`];
+
+// todo : naming
+type _Eq<Fst, Snd> = Fst extends Snd ? (Snd extends Fst ? Fst : never) : never;
+
+type _LispEq<S> = S extends [infer Fst, ...infer Rest]
+  ? Rest extends []
+    ? Fst
+    : _Eq<Fst, _LispEq<Rest>>
+  : never;
+
+type LispEq<S> = S extends [infer Fst, ...infer Rest]
+  ? [`prim`, Eq<Fst, _LispEq<S>>]
+  : [`prim`, false];
+
+// test
+const lispeqtest: _Eq<[`prim`, "'a'"], [`prim`, "'a'"]> = [`prim`, "'a'"];
+const lispeqtest1: LispEq<[[`prim`, "'a'"], [`prim`, "'a'"]]> = [`prim`, true];
+const lispeqtest2: LispEq<[[`prim`, "'a'"], [`prim`, "'b'"]]> = [`prim`, false];
+const lispeqtest3: LispEq<[[`prim`, "'a'"], [`prim`, "'b'"], [`prim`, "'a'"]]> =
+  [`prim`, false];
+const lispeqtest4: LispEq<[[`prim`, "'a'"], [`prim`, "'a'"], [`prim`, "'a'"]]> =
+  [`prim`, true];
+const lispeqtest5: LispEq<[[`prim`, "'a'"], [`prim`, "''"]]> = [`prim`, false];
 
 // -------------------------------------------
 
@@ -382,6 +409,53 @@ const testfmap: FMap<
   [`vec`, [`prim`, `'1'`], [`prim`, `'2'`]]
 > = [`vec`, [`prim`, `'+1'`], [`prim`, `'+2'`]];
 
+type _Filter<F, V, Env = [[]], prev = [0]> = V extends Vector
+  ? V extends [`vec`, infer H, ...infer T]
+    ? T[0] extends Atom
+      ? Eval<[F, H]> extends [`prim`, true]
+        ? [H, ..._Filter<F, [`vec`, ...T]>]
+        : [..._Filter<F, [`vec`, ...T]>]
+      : Eval<[F, H]> extends [`prim`, true]
+        ? [H]
+        : []
+    : ["notvecatom"]
+  : ["notvec"];
+
+type Filter<F, V, Env = [[]], prev = [0]> = [`vec`, ..._Filter<F, V>];
+
+const testfilter: Filter<
+  [`fn`, [[`sym`, `a`]], [[`sym`, `eq`], [`sym`, `a`], [`prim`, 1]]],
+  [`vec`, [`prim`, 0], [`prim`, 1], [`prim`, 1], [`prim`, 2]]
+> = [`vec`, [`prim`, 1], [`prim`, 1]];
+
+const testfnlispeqa: Eval<[[`sym`, `eq`], [`prim`, 0], [`prim`, 1]]> = [
+  `prim`,
+  false,
+];
+const testfnlispeqaa: Eval<
+  [[`sym`, `eq`], [`sym`, `a`], [`prim`, 1]],
+  [[MakeVar<`a`, [`prim`, 0]>]]
+> = [`prim`, false];
+
+const testfnlispeq0: Eval<
+  [
+    [`fn`, [[`sym`, `a`]], [[`sym`, `eq`], [`sym`, `a`], [`prim`, `'1'`]]],
+    [`prim`, `'0'`],
+  ]
+> = [`prim`, false]; // todo : fix
+
+const testfnlispeq1: Eval<
+  [
+    [`fn`, [[`sym`, `a`]], [[`sym`, `eq`], [`sym`, `a`], [`prim`, `'1'`]]],
+    [`prim`, `'1'`],
+  ]
+> = [`prim`, true]; // todo : fix
+
+// const evalfntest2: Eval<
+//   [[`fn`, [[`sym`, `str`]], Tdddd], [`prim`, `'test'`]],
+//   [[MakeVar<"aaa", "'aaa'">], [MakeVar<"str", "'strval'">]]
+// > = [`prim`, "'+test'"];
+
 // -------------------
 // memo
 // type SSS<B> = B extends `${infer U}` ? U[0] : never
@@ -420,9 +494,31 @@ type Eval<A, env = [[]], prev = 0> = A extends Sexpr
     ? env extends EnvLifo
       ? OPC extends Fn & [`fn`, [[`sym`, infer S]], infer D]
         ? OPR[0] extends Sym & [`sym`, infer VV]
-          ? Eval<D, Let<S, ReadLet<VV, env>, env>, [prev]>
+          ? // here is a buggy
+            // because S of [`sym`, infer S]
+            // would be a built-in, then spit an error.
+            //
+            // should it be expanded to let form
+            // if fn has following contents?
+            //
+            // ? Eval<D, Let<S, ReadLet<VV, env>, env>, [prev]>
+
+            // todo : refactoring
+            //   I want to expand fn to let form and omit Let
+            //   by hand.
+            // to do so, let form should be able to catch
+            //   this pattern:
+            //   (let [[a b c] [1 2 3]] ...)
+            // or reform fn form to:
+            //   (let [a 1] ((fn [b] (eq a b)) 2))
+            //   from:
+            //   ((fn [a b] (eq a b)) 1 2)
+
+            VV extends "AppendP" | "eq" | "str"
+            ? Eval<[OPC, Eval<D, env, [prev]>]>
+            : Eval<D, Let<S, ReadLet<VV, env>, env>, [prev]>
           : OPR[0] extends Prim & [`prim`, infer VVV]
-            ? Eval<D, Let<S, VVV, env>, [prev]>
+            ? Eval<D, Let<S, [`prim`, VVV], env>, [prev]>
             : EvalError5
         : OPC extends IfForm & [`if`, infer IFCond, infer IFT, infer IFF]
           ? Eval<
@@ -436,15 +532,15 @@ type Eval<A, env = [[]], prev = 0> = A extends Sexpr
               ? U extends `AppendP`
                 ? AppendP<ReadAtom<Eval<OPR[0], env, [[prev]]>, env, [prev]>>
                 : U extends `str`
-                  ? // Reading<OPR, env, [[prev]]>
-                    Str<Reading<OPR, env, [[prev]]>>
-                  : Eval<[ReadLet<U, env>, OPR[0]], env, [prev]>
-              : // this is fn case.
-                ReadLet<U, env> extends Fn & infer UU
+                  ? Str<Reading<OPR, env, [[prev]]>>
+                  : U extends `eq`
+                    ? LispEq<Reading<OPR, env, [[prev]]>>
+                    : Eval<[ReadLet<U, env>, OPR[0]], env, [prev]>
+              : ReadLet<U, env> extends Fn & infer UU
                 ? Eval<[UU, OPR[0]], env, [prev]>
                 : EvalError3
             : EvalError4
-      : EvalError6
+      : { error: [EvalError6, "env 1st shouldn't be [].", prev, A]; env: env }
     : EvalError2
   : A extends IfForm & [`if`, infer IFCond, infer IFT, infer IFF]
     ? Eval<If<Eval<IFCond, env, [[prev]]>, IFT, IFF>, env, [prev]>
@@ -461,8 +557,7 @@ type Eval<A, env = [[]], prev = 0> = A extends Sexpr
             infer LC,
           ]
           ? LRest extends [[`sym`, infer LRLN], infer LRLV]
-            ? // [`let`, [[`sym`, LN], LV], [`let`, [[`sym`, LRLN], LRLV], LC]]
-              Eval<
+            ? Eval<
                 [`let`, [[`sym`, LN], LV], [`let`, [[`sym`, LRLN], LRLV], LC]],
                 env,
                 [prev]
@@ -678,6 +773,19 @@ const aaaaaaaaa: LetForm = [
 
 // test prim error pattern.
 const evalprimerrortest: Eval<[`prim`, 0]> = [`prim`, 0];
+
+// test lispeq
+const evallispeqtest0: Eval<[[`sym`, `eq`], [`prim`, 0], [`prim`, 0]]> = [
+  `prim`,
+  true,
+];
+const evallispeqtest1: Eval<[[`sym`, `eq`], [`prim`, 1], [`prim`, 0]]> = [
+  `prim`,
+  false,
+];
+const evallispeqtest2: Eval<
+  [[`sym`, `eq`], [`prim`, 0], [`prim`, 0], [`prim`, 0]]
+> = [`prim`, true];
 
 // ------------------------------------------
 // the above is in the case of not recursive sexpr.

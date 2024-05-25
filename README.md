@@ -25,9 +25,9 @@ const message: Return<Eval<Compile<Sexpr>>> = "message"
 - [x] vector (= list / array here)
 - [x] hashmap
 - [x] if
-- [ ] eq
+- [x] eq
 - [x] map
-- [ ] filter
+- [x] filter
 - [x] get
 - [x] get with a key
 - [x] first
