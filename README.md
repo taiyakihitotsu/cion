@@ -21,7 +21,7 @@ const message: Return<Eval<Compile<Sexpr>>> = "message"
 - [x] let
 - [x] let >1 args
 - [x] fn
-- [ ] fn >1 args
+- [x] fn >1 args
 - [x] vector (= list / array here)
 - [x] hashmap
 - [x] if
@@ -31,7 +31,7 @@ const message: Return<Eval<Compile<Sexpr>>> = "message"
 - [x] get
 - [x] get with a key
 - [x] first
-- [ ] number
+- [ ] number (bit operators)
 - [ ] arrow macro
 - [ ] Compiler
 
