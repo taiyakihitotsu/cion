@@ -456,37 +456,22 @@ const testfnlispeq1: Eval<
 //   [[MakeVar<"aaa", "'aaa'">], [MakeVar<"str", "'strval'">]]
 // > = [`prim`, "'+test'"];
 
-// -------------------
-// memo
-// type SSS<B> = B extends `${infer U}` ? U[0] : never
-// const sss: SSS<`abcde`> = 1
-// // error TS2322: Type 'number' is not assignable to type 'string'.
-// -------------------
+// todo : error handle properly
+type InterleaveError = "InterleaveError";
+type Interleave<V, W> = V extends [infer HeadV, ...infer TailV]
+  ? W extends [infer HeadW, ...infer TailW]
+    ? TailW extends never
+      ? []
+      : TailV extends never
+        ? []
+        : [HeadV, HeadW, ...Interleave<TailV, TailW>]
+    : []
+  : [];
 
-// // --------------------------------
-// // memo
-// type tTTT<T> = T extends [infer A, ...infer B] ? B[1] : never
-// const tttt: tTTT<[[1,2],[2,3],[3,4]]> = [3,4]
-// type tTTTT<T> = T extends [...infer A, ...infer B] ? B[1] : never
-// const ttttt: tTTTT<[[1,2],[2,3],[3,4]]> = [3,4]
-// type tTTTB0<T> = T extends [infer A, ...infer B] ? B[0] : never
-// const ttttB0: tTTTB0<[[1,2],[2,3],[3,4]]> = [2,3]
-// // ------------------
-// // type tTTTA<T> = T extends [infer A, ...infer B] ? A[1] : never
-// // const ttttA: tTTTA<[[1,2],[2,3],[3,4]]> = [3,4]
-// // src/index.ts:164:51 - error TS2536: Type '1' cannot be used to index type 'A'.
-// //
-// // 164 type tTTTA<T> = T extends [infer A, ...infer B] ? A[1] : never
-// // -------------------
-// type tTTTTA<T> = T extends [...infer A, ...infer B] ? A[1] : never
-// const tttttA: tTTTTA<[[1,2],[2,3],[3,4]]> = [3,4]
-// type tTTTTAA<T> = T extends [...infer A, ...infer B] ? A[0] : never
-// const tttttAA: tTTTTAA<[[1,2],[2,3],[3,4]]> = [3,4]
-// type tTTTT__1<T> = T extends [...infer A, ...infer B] ? A[1] : never
-// const ttttt__1: tTTTTA<[[1,2],[2,3],[3,4]]> = [3,4]
-// type tTTTT__2<T> = T extends [...infer A, ...infer B] ? A[0] : never
-// const ttttt__2: tTTTTAA<[[1,2],[2,3],[3,4]]> = [3,4]
-// // --------------------------
+// interleave test
+const testinterleave0: Interleave<[1, 2, 3], [4, 5, 6]> = [1, 4, 2, 5, 3, 6];
+const testinterleave1: Interleave<[1, 2, 3], [4, 5]> = [1, 4, 2, 5];
+const testinterleave2: Interleave<[1], [2]> = [1, 2];
 
 // todo : ugly
 type Eval<A, env = [[]], prev = 0> = A extends Sexpr
