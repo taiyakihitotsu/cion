@@ -38,6 +38,13 @@ const strtest1 = [
     `test+tail`,
 ];
 const strtest2 = [`prim`, `test`];
+// test
+const lispeqtest = [`prim`, "'a'"];
+const lispeqtest1 = [`prim`, true];
+const lispeqtest2 = [`prim`, false];
+const lispeqtest3 = [`prim`, false];
+const lispeqtest4 = [`prim`, true];
+const lispeqtest5 = [`prim`, false];
 // test let
 const larttest = [[`sym`, `t`], `test`];
 // -----------------
@@ -110,6 +117,14 @@ const testconcat = [
 // if not directly input those sexpr, through args, this fmap eval returns any, because of ...infer T (in FMap) would be expanded unknown.
 const testargv = [`vec`, [`prim`, `'1'`], [`prim`, `'2'`]];
 const testfmap = [`vec`, [`prim`, `'+1'`], [`prim`, `'+2'`]];
+const testfilter = [`vec`, [`prim`, 1], [`prim`, 1]];
+const testfnlispeqa = [
+    `prim`,
+    false,
+];
+const testfnlispeqaa = [`prim`, false];
+const testfnlispeq0 = [`prim`, false]; // todo : fix
+const testfnlispeq1 = [`prim`, true]; // todo : fix
 // test raw
 const evalTest = [`prim`, "'+test'"];
 const evalTest2 = {
@@ -189,6 +204,16 @@ const aaaaaaaaa = [
 ];
 // test prim error pattern.
 const evalprimerrortest = [`prim`, 0];
+// test lispeq
+const evallispeqtest0 = [
+    `prim`,
+    true,
+];
+const evallispeqtest1 = [
+    `prim`,
+    false,
+];
+const evallispeqtest2 = [`prim`, true];
 //test (no env)
 const rbiTest = [
     `prim`,
