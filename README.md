@@ -1,5 +1,4 @@
 # RoadMap
-
 ## Goal
 ```typescript
 type Sexpr =
@@ -23,7 +22,7 @@ const message: Return<Eval<Compile<Sexpr>>> = "message"
 - [x] fn
 - [x] fn >1 args
 - [x] vector (= list / array here)
-- [x] hashmap
+- [ ] hashmap
 - [x] if
 - [x] eq
 - [x] map
@@ -32,27 +31,16 @@ const message: Return<Eval<Compile<Sexpr>>> = "message"
 - [x] get with a key
 - [x] first
 - [ ] number (bit operators)
+only for 2bit and lack of div.
 - [ ] arrow macro
-- [ ] Compiler
-
-
-# Run
-```bash
-$ npm run build:watch
-```
+- [x] Compiler
 
 # Env
 - ts-node: 9.6.5
 - tsc: 5.4.5
 
 # Author
-https://github.com/taiyakihitotsu/
+taiyakihitotsu
 
 # License
 3-clause BSD license
-
-
-
-
-
-
