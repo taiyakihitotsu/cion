@@ -877,3 +877,61 @@ const rbiTest5: RecEval<
 const defined: [`sym`, `test`] = null as any;
 const readdef: typeof defined = [`sym`, `test`]; // null as any
 // const readdef2: typeof defined = [`sym`, `tet`] // null as any
+
+
+
+// -------------------------------
+// -- Compiler
+// -------------------------------
+
+
+type Split<Sexpr> =
+  Sexpr extends ` (${infer U}`
+    ? ['(', ...Split<` ${U}`>]
+  : Sexpr extends ` ${infer V} ${infer W}`
+    ? V extends `${infer x})`
+      ? [x, ')', ...Split<` ${W}`>] 
+      : [V, ...Split<` ${W}`>]
+  : Sexpr extends ` ${infer W})${infer Rest}`
+    ? [W, ')', ...Split<` ${Rest}`>]
+  : Sexpr extends ''
+    ? []
+  : []
+
+const aaaaa: Split<' (x ((if a b c) y))'> = 'a'
+const bbbbb: Split<' (x (if a b c) y)'> = 'a'
+const ccccc: Split<' ((f))'> = 'a'
+
+type StackMachine<
+    Splited extends Array<unknown>
+    , Current extends Array<unknown> = []
+    , Stack extends Array<unknown> = []> =
+  Splited extends [infer U, ...infer UU]
+  ? U extends `(${infer X}`
+  ? StackMachine<UU, [X], [Current, ...Stack]>
+  : U extends 
+  : U extends `${infer Y})`
+    ? Stack extends [infer Cont, ...infer Rest]
+    ? Rest extends []
+    ? Current
+    : StackMachine<UU, [Cont, [...Current, Y]], Rest>
+    : StackMachine<UU, [...Current, U], Stack>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
