@@ -917,6 +917,19 @@ const parseeeeee: SPerser<' (let [a 1 b 2] (if true t f))'> = ['(','let', '[', '
 
 
 
+
+type SSymlator<MSym> = 
+  MSym extends `${infer H}${infer _}`
+  // note : only accepting 2bit number for now.
+  ? H extends '0' | '1' | "'"
+    ? [`prim`, MSym]
+    : MSym extends 'if' | 'let' | 'fn'
+      ? MSym
+      : MSym extends 'true' | 'false'
+        ? [`prim`, MSym]
+        : [`sym`, MSym]
+  : never
+
 type SCompiler<
     Parsed extends Array<unknown>,
     Current extends Array<unknown> = [],
@@ -926,15 +939,15 @@ type SCompiler<
   : Parsed extends [infer H, ...infer R]
     ? R extends []
       ? Current
-      : H extends ')'
+      : H extends ')' | ']'
         ? SCompiler<R, Stack extends Array<unknown> ? [...Stack[0], Current] : never, Stack extends [infer _, ...infer R extends unknown[][]] ? R : never>
-        : H extends '('
+        : H extends '(' | '['
           ? SCompiler<R, [], [Current, ...Stack]>
-          : SCompiler<R, [...Current, H], Stack>
+          : SCompiler<R, [...Current, SSymlator<H>], Stack>
     : never
 
-const compileraaaa: SCompiler<['(', '+', '2', '(', 'inc', '1', ')', ')']> = 'a'
-
+const compileraaaa: SCompiler<['(', '+', '0', '(', 'inc', '1', ')', ')']> = [['sym', '+'], ['prim', '0'], [['sym', 'inc'], ['prim', '1']]]
+const compilerbbbb: SCompiler<['(', 'let', '[', 'a', '1', ']', '(', 'if', 'true', 't', 'f', ')', ')']> = ['let', [['sym', 'a'], ['prim', '1']], ['if', ['prim', 'true'], ['sym', 't'], ['sym', 'f']]]
 
 
 
