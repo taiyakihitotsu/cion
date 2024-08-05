@@ -886,12 +886,21 @@ const readdef: typeof defined = [`sym`, `test`]; // null as any
 
 
 type SPerser<Sexpr> =
+  // -- ()
   Sexpr extends ` (${infer U}`
     ? ['(', ...SPerser<` ${U}`>]
   : Sexpr extends ` ${infer V} ${infer W}`
     ? [...SPerser<` ${V}`>, ...SPerser<` ${W}`>]
   : Sexpr extends ` ${infer C})`
     ? [...SPerser<` ${C}`>, ')']
+  // -- []
+  : Sexpr extends ` [${infer U}`
+    ? ['[', ...SPerser<` ${U}`>]
+  : Sexpr extends ` ${infer V} ${infer W}`
+    ? [...SPerser<` ${V}`>, ...SPerser<` ${W}`>]
+  : Sexpr extends ` ${infer C}]`
+    ? [...SPerser<` ${C}`>, ']']
+  // -- _
   : Sexpr extends ` ${infer CC}`
     ? [CC]
   : []
@@ -904,6 +913,9 @@ const parseccccc: SPerser<' ((f))'> =
     ['(', '(', 'f', ')', ')']
 const parseddddd: SPerser<' ((((((x))))))'> =
     ['(', '(', '(', '(', '(', '(', 'x', ')', ')', ')', ')', ')', ')']
+const parseeeeee: SPerser<' (let [a 1 b 2] (if true t f))'> = ['(','let', '[', 'a', '1', 'b', '2', ']', '(', 'if', 'true', 't', 'f', ')', ')']
+
+
 
 type SCompiler<
     Parsed extends Array<unknown>,
