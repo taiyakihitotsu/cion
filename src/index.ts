@@ -884,36 +884,37 @@ const readdef: typeof defined = [`sym`, `test`]; // null as any
 // -- Compiler
 // -------------------------------
 
+type SPad<S extends string> = S extends ` ${infer SS}` ? SS  : ` ${S}`
 
-type SPerser<Sexpr> =
+type SParser<Sexpr> =
   // -- ()
   Sexpr extends ` (${infer U}`
-    ? ['(', ...SPerser<` ${U}`>]
+    ? ['(', ...SParser<` ${U}`>]
   : Sexpr extends ` ${infer V} ${infer W}`
-    ? [...SPerser<` ${V}`>, ...SPerser<` ${W}`>]
+    ? [...SParser<` ${V}`>, ...SParser<` ${W}`>]
   : Sexpr extends ` ${infer C})`
-    ? [...SPerser<` ${C}`>, ')']
+    ? [...SParser<` ${C}`>, ')']
   // -- []
   : Sexpr extends ` [${infer U}`
-    ? ['[', ...SPerser<` ${U}`>]
+    ? ['[', ...SParser<` ${U}`>]
   : Sexpr extends ` ${infer V} ${infer W}`
-    ? [...SPerser<` ${V}`>, ...SPerser<` ${W}`>]
+    ? [...SParser<` ${V}`>, ...SParser<` ${W}`>]
   : Sexpr extends ` ${infer C}]`
-    ? [...SPerser<` ${C}`>, ']']
+    ? [...SParser<` ${C}`>, ']']
   // -- _
   : Sexpr extends ` ${infer CC}`
     ? [CC]
   : []
 
-const parseaaaaa: SPerser<' (x ((if a b c) y))'> =
+const parseaaaaa: SParser<' (x ((if a b c) y))'> =
     ['(', 'x', '(', '(', 'if', 'a', 'b', 'c', ')', 'y', ')', ')']
-const parsebbbbb: SPerser<' (x (if a b c) y)'> =
+const parsebbbbb: SParser<' (x (if a b c) y)'> =
     ['(', 'x', '(', 'if', 'a', 'b', 'c', ')', 'y', ')']
-const parseccccc: SPerser<' ((f))'> =
+const parseccccc: SParser<' ((f))'> =
     ['(', '(', 'f', ')', ')']
-const parseddddd: SPerser<' ((((((x))))))'> =
+const parseddddd: SParser<' ((((((x))))))'> =
     ['(', '(', '(', '(', '(', '(', 'x', ')', ')', ')', ')', ')', ')']
-const parseeeeee: SPerser<' (let [a 1 b 2] (if true t f))'> = ['(','let', '[', 'a', '1', 'b', '2', ']', '(', 'if', 'true', 't', 'f', ')', ')']
+const parseeeeee: SParser<' (let [a 1 b 2] (if true t f))'> = ['(','let', '[', 'a', '1', 'b', '2', ']', '(', 'if', 'true', 't', 'f', ')', ')']
 
 
 
@@ -921,9 +922,9 @@ const parseeeeee: SPerser<' (let [a 1 b 2] (if true t f))'> = ['(','let', '[', '
 type SSymlator<MSym> = 
   MSym extends `${infer H}${infer _}`
   // note : only accepting 2bit number for now.
-  ? H extends '0' | '1' | "'"
+  ? H extends '0' | '1' | "'" | '"'
     ? [`prim`, MSym]
-    : MSym extends 'if' | 'let' | 'fn'
+    : MSym extends 'if' | 'let' | 'fn' // | ''
       ? MSym
       : MSym extends 'true' | 'false'
         ? [`prim`, MSym]
@@ -948,6 +949,27 @@ type SCompiler<
 
 const compileraaaa: SCompiler<['(', '+', '0', '(', 'inc', '1', ')', ')']> = [['sym', '+'], ['prim', '0'], [['sym', 'inc'], ['prim', '1']]]
 const compilerbbbb: SCompiler<['(', 'let', '[', 'a', '1', ']', '(', 'if', 'true', 't', 'f', ')', ')']> = ['let', [['sym', 'a'], ['prim', '1']], ['if', ['prim', 'true'], ['sym', 't'], ['sym', 'f']]]
+
+
+// ----------------------------
+// -- Main
+// ----------------------------
+
+const maintest0: Eval<SCompiler<SParser<SPad<"(eq 'a' 'b')">>>> = [`prim`, false]
+const maintest1: Eval<SCompiler<SParser<SPad<"(eq 'a' 'a')">>>> = [`prim`, true]
+const maintest2: Eval<SCompiler<SParser<SPad<"(let [a 'a'] (eq a 'a'))">>>> = [`prim`, true]
+const maintest3: Eval<SCompiler<SParser<SPad<"(let [a 'b'] (eq a 'a'))">>>> = [`prim`, false]
+// todo :
+// string split works but not correctly, in current.
+// Use _ as space until I will have implemented a string parser. 
+const maintest4: Eval<SCompiler<SParser<SPad<"(let [a 'a'] (if (eq a 'a') 'this_is_true', 'this_is_false')">>>> = [`prim`, "'this_is_false'"]
+
+
+
+
+
+
+
 
 
 
