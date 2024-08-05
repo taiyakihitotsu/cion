@@ -889,18 +889,22 @@ type Split<Sexpr> =
   Sexpr extends ` (${infer U}`
     ? ['(', ...Split<` ${U}`>]
   : Sexpr extends ` ${infer V} ${infer W}`
-    ? V extends `${infer x})`
-      ? [x, ')', ...Split<` ${W}`>] 
-      : [V, ...Split<` ${W}`>]
-  : Sexpr extends ` ${infer W})${infer Rest}`
-    ? [W, ')', ...Split<` ${Rest}`>]
-  : Sexpr extends ''
-    ? []
+    ? [...Split<` ${V}`>, ...Split<` ${W}`>]
+  : Sexpr extends ` ${infer C})`
+    ? [...Split<` ${C}`>, ')']
+  : Sexpr extends ` ${infer CC}`
+    ? [CC]
   : []
 
-const aaaaa: Split<' (x ((if a b c) y))'> = 'a'
-const bbbbb: Split<' (x (if a b c) y)'> = 'a'
-const ccccc: Split<' ((f))'> = 'a'
+const aaaaa: Split<' (x ((if a b c) y))'> =
+    ['(', 'x', '(', '(', 'if', 'a', 'b', 'c', ')', 'y', ')', ')']
+const bbbbb: Split<' (x (if a b c) y)'> =
+    ['(', 'x', '(', 'if', 'a', 'b', 'c', ')', 'y', ')']
+const ccccc: Split<' ((f))'> =
+    ['(', '(', 'f', ')', ')']
+const ddddd: Split<' ((((((x))))))'> =
+    ['(', '(', '(', '(', '(', '(', 'x', ')', ')', ')', ')', ')', ')']
+
 
 type StackMachine<
     Splited extends Array<unknown>
@@ -916,22 +920,4 @@ type StackMachine<
     ? Current
     : StackMachine<UU, [Cont, [...Current, Y]], Rest>
     : StackMachine<UU, [...Current, U], Stack>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
