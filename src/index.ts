@@ -885,39 +885,47 @@ const readdef: typeof defined = [`sym`, `test`]; // null as any
 // -------------------------------
 
 
-type Split<Sexpr> =
+type SPerser<Sexpr> =
   Sexpr extends ` (${infer U}`
-    ? ['(', ...Split<` ${U}`>]
+    ? ['(', ...SPerser<` ${U}`>]
   : Sexpr extends ` ${infer V} ${infer W}`
-    ? [...Split<` ${V}`>, ...Split<` ${W}`>]
+    ? [...SPerser<` ${V}`>, ...SPerser<` ${W}`>]
   : Sexpr extends ` ${infer C})`
-    ? [...Split<` ${C}`>, ')']
+    ? [...SPerser<` ${C}`>, ')']
   : Sexpr extends ` ${infer CC}`
     ? [CC]
   : []
 
-const aaaaa: Split<' (x ((if a b c) y))'> =
+const parseaaaaa: SPerser<' (x ((if a b c) y))'> =
     ['(', 'x', '(', '(', 'if', 'a', 'b', 'c', ')', 'y', ')', ')']
-const bbbbb: Split<' (x (if a b c) y)'> =
+const parsebbbbb: SPerser<' (x (if a b c) y)'> =
     ['(', 'x', '(', 'if', 'a', 'b', 'c', ')', 'y', ')']
-const ccccc: Split<' ((f))'> =
+const parseccccc: SPerser<' ((f))'> =
     ['(', '(', 'f', ')', ')']
-const ddddd: Split<' ((((((x))))))'> =
+const parseddddd: SPerser<' ((((((x))))))'> =
     ['(', '(', '(', '(', '(', '(', 'x', ')', ')', ')', ')', ')', ')']
 
+type SCompiler<
+    Parsed extends Array<unknown>,
+    Current extends Array<unknown> = [],
+    Stack extends Array<Array<unknown>> = []> = 
+  Parsed extends []
+  ? Current
+  : Parsed extends [infer H, ...infer R]
+    ? R extends []
+      ? Current
+      : H extends ')'
+        ? SCompiler<R, Stack extends Array<unknown> ? [...Stack[0], Current] : never, Stack extends [infer _, ...infer R extends unknown[][]] ? R : never>
+        : H extends '('
+          ? SCompiler<R, [], [Current, ...Stack]>
+          : SCompiler<R, [...Current, H], Stack>
+    : never
 
-type StackMachine<
-    Splited extends Array<unknown>
-    , Current extends Array<unknown> = []
-    , Stack extends Array<unknown> = []> =
-  Splited extends [infer U, ...infer UU]
-  ? U extends `(${infer X}`
-  ? StackMachine<UU, [X], [Current, ...Stack]>
-  : U extends 
-  : U extends `${infer Y})`
-    ? Stack extends [infer Cont, ...infer Rest]
-    ? Rest extends []
-    ? Current
-    : StackMachine<UU, [Cont, [...Current, Y]], Rest>
-    : StackMachine<UU, [...Current, U], Stack>
+const compileraaaa: SCompiler<['(', '+', '2', '(', 'inc', '1', ')', ')']> = 'a'
+
+
+
+
+
+
 
