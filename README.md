@@ -1,6 +1,12 @@
 # RoadMap
 ## Goal
 ```typescript
+(let [a 'a'
+      f (fn [c] (str '+' c '+'))]
+  (if (eq '+a+' (f a)) 'this_is_true' 'this_is_false'))
+```
+
+```typescript
 type Sexpr =
 `(let [c  {:status  "in"
            :message "message"}
@@ -33,7 +39,11 @@ const message: Return<Eval<Compile<Sexpr>>> = "message"
 - [ ] number (bit operators)
 only for 2bit and lack of div.
 - [ ] arrow macro
+- [ ] string parser
 - [x] Compiler
+
+# Implemented
+if, fn, let, eq, str.
 
 # Env
 - ts-node: 9.6.5
