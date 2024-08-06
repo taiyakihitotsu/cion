@@ -486,6 +486,16 @@ const testmultiargfn0: Eval<
   ]
 > = [`prim`, `'0''1'`];
 
+
+
+
+
+// ---------------------------------------
+// -- Eval
+// ---------------------------------------
+
+
+
 // todo : ugly
 type Eval<A, env = [[]], prev = 0> = A extends Sexpr
   ? A extends [infer OPC, ...infer OPR]
@@ -534,6 +544,7 @@ type Eval<A, env = [[]], prev = 0> = A extends Sexpr
               ReadLet<U, env> extends NotMatch // `AppendP` | `str`
               ? U extends `AppendP`
                 ? AppendP<ReadAtom<Eval<OPR[0], env, [[prev]]>, env, [prev]>>
+              // note : built-in functions
                 : U extends `str`
                   ? Str<Reading<OPR, env, [[prev]]>>
                   : U extends `eq`
@@ -926,9 +937,11 @@ type SSymlator<MSym> =
     ? [`prim`, MSym]
     : MSym extends 'if' | 'let' | 'fn' // | ''
       ? MSym
-      : MSym extends 'true' | 'false'
-        ? [`prim`, MSym]
-        : [`sym`, MSym]
+      : MSym extends 'true'
+        ? [`prim`, true]
+          : MSym extends 'false'
+            ? [`prim`, false]
+            : [`sym`, MSym]
   : never
 
 type SCompiler<
@@ -963,16 +976,5 @@ const maintest3: Eval<SCompiler<SParser<SPad<"(let [a 'b'] (eq a 'a'))">>>> = [`
 // string split works but not correctly, in current.
 // Use _ as space until I will have implemented a string parser. 
 const maintest4: Eval<SCompiler<SParser<SPad<"(let [a 'a'] (if (eq a 'a') 'this_is_true', 'this_is_false')">>>> = [`prim`, "'this_is_false'"]
-
-
-
-
-
-
-
-
-
-
-
-
-
+const maintest5: Eval<SCompiler<SParser<SPad<"(if true 01 10)">>>> = ['prim', '01']
+const maintest6: Eval<SCompiler<SParser<SPad<"(if true (let [a 'astr' b 'bstr'] (str a b)) 11)">>>> = ['prim', `"astrbstr"`]
