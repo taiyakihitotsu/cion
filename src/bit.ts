@@ -382,3 +382,29 @@ const bitsr1: _BitShiftRight<"111111", [[[[[[null]]]]]], [[[null]]]> = "111";
 // note : 
 // I think peano number 2 should be written from [[null]] to [null,null].
 // If so, implementing div with comparing and add is good performance than minus or some hack.
+// Because we can use concat in this case.
+
+type _BitDiv<
+  B extends string
+, C extends string
+, Ret extends string = "00000000"> =
+  BitLT<B,C> extends true
+  ? Ret
+  : _BitDiv<BitSub<B,C>, C, BitAdd<Ret, "00000001">>
+
+// todo
+type Nil  = [`nil`, `nil`]
+const nil: Nil = [`nil`, `nil`] 
+
+type BitDiv<
+  B extends string
+, C extends string> =
+  BitIsZero<C> extends true
+  ? Nil
+  : _BitDiv<B,C>
+
+const testbitdiv0: BitDiv<"00001001", "00000001"> = "00001001"
+const testbitdiv1: BitDiv<"00001001", "00000011"> = "00000011"
+const testbitdiv2: BitDiv<"00001001", "00000010"> = "00000100"
+const testbitdiv3: BitDiv<"00001001", "00000000"> = nil
+const testbitdiv4: BitDiv<"00000010", "00001010"> = "00000000"
