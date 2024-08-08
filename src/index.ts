@@ -172,19 +172,24 @@ type AppendP<S> = S extends [`prim`, `'${infer U}'`]
 
 const appendTest: AppendP<[`prim`, "'test'"]> = [`prim`, "'+test'"];
 
-// note: if `R extends string` doesn't exist, R cannot be passed into `${R}` because ts can get the type of R.
+// note:
+// if `R extends string` doesn't exist, 
+// R cannot be passed into `${R}` because ts can get the type of R.
 type StrError0 = "StrError0";
 type Str<S, R = ""> = R extends string
   ? S extends [[`prim`, `${infer HS}`], ...infer T]
-    ? Str<T, `${R}${HS}`>
-    : [`prim`, R]
+    ? HS extends `'${infer hs}'` | `'${infer hs}'`
+      ? Str<T, `${R}${hs}`>
+      : Str<T, `${R}${HS}`>
+    : [`prim`, `'${R}'`]
   : StrError0;
+
 // test str
 const strtest1: Str<[[`prim`, `test`], [`prim`, `+`], [`prim`, `tail`]]> = [
   `prim`,
-  `test+tail`,
+  `'test+tail'`,
 ];
-const strtest2: Str<[[`prim`, `test`]]> = [`prim`, `test`];
+const strtest2: Str<[[`prim`, `test`]]> = [`prim`, `'test'`];
 
 // todo : naming
 type _Eq<Fst, Snd> = Fst extends Snd ? (Snd extends Fst ? Fst : never) : never;
@@ -484,7 +489,17 @@ const testmultiargfn0: Eval<
     [`prim`, `'0'`],
     [`prim`, `'1'`],
   ]
-> = [`prim`, `'0''1'`];
+> = [`prim`, `'01'`];
+
+
+
+
+
+// ---------------------------------------
+// -- Eval
+// ---------------------------------------
+
+
 
 // todo : ugly
 type Eval<A, env = [[]], prev = 0> = A extends Sexpr
@@ -534,6 +549,7 @@ type Eval<A, env = [[]], prev = 0> = A extends Sexpr
               ReadLet<U, env> extends NotMatch // `AppendP` | `str`
               ? U extends `AppendP`
                 ? AppendP<ReadAtom<Eval<OPR[0], env, [[prev]]>, env, [prev]>>
+              // note : built-in functions
                 : U extends `str`
                   ? Str<Reading<OPR, env, [[prev]]>>
                   : U extends `eq`
@@ -745,7 +761,7 @@ const testiletform: Eval<
     [[[`sym`, `a`], [`sym`, `b`]], [[`prim`, `'1'`], [`prim`, `'2'`]]],
     [[`sym`, `str`], [`sym`, `a`], [`sym`, `b`]],
   ]
-> = [`prim`, `'1''2'`];
+> = [`prim`, `'12'`];
 
 // test if
 type IfTruePrimTest = [`if`, [`prim`, true], [`prim`, true], [`prim`, false]];
@@ -767,7 +783,7 @@ const evalifretfntest: Eval<IfRetFnSexpr> = [`prim`, `'+test'`];
 
 // test str
 const evalstrtest: Eval<[[`sym`, `str`], [`prim`, `head/`], [`prim`, `tail`]]> =
-  [`prim`, `head/tail`];
+  [`prim`, `'head/tail'`];
 
 // test let >1
 type Letmoretest = [
@@ -775,7 +791,7 @@ type Letmoretest = [
   [[`sym`, `a`], [`prim`, `text-a`], [`sym`, `b`], [`prim`, `/text-b`]],
   [[`sym`, `str`], [`sym`, `a`], [`sym`, `b`]],
 ];
-const evalletmoretest1: Eval<Letmoretest> = [`prim`, `text-a/text-b`];
+const evalletmoretest1: Eval<Letmoretest> = [`prim`, `'text-a/text-b'`];
 const aaaaaaaaa: LetForm = [
   `let`,
   [
@@ -877,3 +893,93 @@ const rbiTest5: RecEval<
 const defined: [`sym`, `test`] = null as any;
 const readdef: typeof defined = [`sym`, `test`]; // null as any
 // const readdef2: typeof defined = [`sym`, `tet`] // null as any
+
+
+
+// -------------------------------
+// -- Compiler
+// -------------------------------
+
+type SPad<S extends string> = S extends ` ${infer SS}` ? SS  : ` ${S}`
+
+type SParser<Sexpr> =
+  // -- ()
+  Sexpr extends ` (${infer U}`
+    ? ['(', ...SParser<` ${U}`>]
+  : Sexpr extends ` ${infer V} ${infer W}`
+    ? [...SParser<` ${V}`>, ...SParser<` ${W}`>]
+  : Sexpr extends ` ${infer C})`
+    ? [...SParser<` ${C}`>, ')']
+  // -- []
+  : Sexpr extends ` [${infer U}`
+    ? ['[', ...SParser<` ${U}`>]
+  : Sexpr extends ` ${infer V} ${infer W}`
+    ? [...SParser<` ${V}`>, ...SParser<` ${W}`>]
+  : Sexpr extends ` ${infer C}]`
+    ? [...SParser<` ${C}`>, ']']
+  // -- _
+  : Sexpr extends ` ${infer CC}`
+    ? [CC]
+  : []
+
+const parseaaaaa: SParser<' (x ((if a b c) y))'> =
+    ['(', 'x', '(', '(', 'if', 'a', 'b', 'c', ')', 'y', ')', ')']
+const parsebbbbb: SParser<' (x (if a b c) y)'> =
+    ['(', 'x', '(', 'if', 'a', 'b', 'c', ')', 'y', ')']
+const parseccccc: SParser<' ((f))'> =
+    ['(', '(', 'f', ')', ')']
+const parseddddd: SParser<' ((((((x))))))'> =
+    ['(', '(', '(', '(', '(', '(', 'x', ')', ')', ')', ')', ')', ')']
+const parseeeeee: SParser<' (let [a 1 b 2] (if true t f))'> = ['(','let', '[', 'a', '1', 'b', '2', ']', '(', 'if', 'true', 't', 'f', ')', ')']
+
+
+
+
+type SSymlator<MSym> = 
+  MSym extends `${infer H}${infer _}`
+  // note : only accepting 2bit number for now.
+  ? H extends '0' | '1' | "'" | '"'
+    ? [`prim`, MSym]
+    : MSym extends 'if' | 'let' | 'fn' // | ''
+      ? MSym
+      : MSym extends 'true'
+        ? [`prim`, true]
+          : MSym extends 'false'
+            ? [`prim`, false]
+            : [`sym`, MSym]
+  : never
+
+type SCompiler<
+    Parsed extends Array<unknown>,
+    Current extends Array<unknown> = [],
+    Stack extends Array<Array<unknown>> = []> = 
+  Parsed extends []
+  ? Current
+  : Parsed extends [infer H, ...infer R]
+    ? R extends []
+      ? Current
+      : H extends ')' | ']'
+        ? SCompiler<R, Stack extends Array<unknown> ? [...Stack[0], Current] : never, Stack extends [infer _, ...infer R extends unknown[][]] ? R : never>
+        : H extends '(' | '['
+          ? SCompiler<R, [], [Current, ...Stack]>
+          : SCompiler<R, [...Current, SSymlator<H>], Stack>
+    : never
+
+const compileraaaa: SCompiler<['(', '+', '0', '(', 'inc', '1', ')', ')']> = [['sym', '+'], ['prim', '0'], [['sym', 'inc'], ['prim', '1']]]
+const compilerbbbb: SCompiler<['(', 'let', '[', 'a', '1', ']', '(', 'if', 'true', 't', 'f', ')', ')']> = ['let', [['sym', 'a'], ['prim', '1']], ['if', ['prim', true], ['sym', 't'], ['sym', 'f']]]
+
+
+// ----------------------------
+// -- Main
+// ----------------------------
+
+const maintest0: Eval<SCompiler<SParser<SPad<"(eq 'a' 'b')">>>> = [`prim`, false]
+const maintest1: Eval<SCompiler<SParser<SPad<"(eq 'a' 'a')">>>> = [`prim`, true]
+const maintest2: Eval<SCompiler<SParser<SPad<"(let [a 'a'] (eq a 'a'))">>>> = [`prim`, true]
+const maintest3: Eval<SCompiler<SParser<SPad<"(let [a 'b'] (eq a 'a'))">>>> = [`prim`, false]
+// todo :
+// string split works but not correctly, in current.
+// Use _ as space until I will have implemented a string parser. 
+const maintest4: Eval<SCompiler<SParser<SPad<"(let [a 'a'] (if (eq a 'a') 'this_is_true', 'this_is_false')">>>> = [`prim`, "'this_is_false'"]
+const maintest5: Eval<SCompiler<SParser<SPad<"(if true 01 10)">>>> = ['prim', '01']
+const maintest6: Eval<SCompiler<SParser<SPad<"(if true (let [a 'astr' b 'bstr'] (str a b)) 11)">>>> = ['prim', `'astrbstr'`]
