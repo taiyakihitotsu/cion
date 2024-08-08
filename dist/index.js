@@ -35,9 +35,9 @@ const appendTest = [`prim`, "'+test'"];
 // test str
 const strtest1 = [
     `prim`,
-    `test+tail`,
+    `'test+tail'`,
 ];
-const strtest2 = [`prim`, `test`];
+const strtest2 = [`prim`, `'test'`];
 // test
 const lispeqtest = [`prim`, "'a'"];
 const lispeqtest1 = [`prim`, true];
@@ -130,7 +130,7 @@ const testinterleave0 = [1, 4, 2, 5, 3, 6];
 const testinterleave1 = [1, 4, 2, 5];
 const testinterleave2 = [1, 2];
 // multiarg fn test
-const testmultiargfn0 = [`prim`, `'0''1'`];
+const testmultiargfn0 = [`prim`, `'01'`];
 // test raw
 const evalTest = [`prim`, "'+test'"];
 const evalTest2 = {
@@ -187,15 +187,15 @@ const evallftest0 = [
     `'+test'`,
 ];
 // test interleaved let form
-const testiletform = [`prim`, `'1''2'`];
+const testiletform = [`prim`, `'12'`];
 const evaliftest2 = [`prim`, true];
 const evaliftest3 = [`prim`, false];
 const evalifrectest0 = [`prim`, true];
 const evalifrectest1 = [`prim`, false];
 const evalifretfntest = [`prim`, `'+test'`];
 // test str
-const evalstrtest = [`prim`, `head/tail`];
-const evalletmoretest1 = [`prim`, `text-a/text-b`];
+const evalstrtest = [`prim`, `'head/tail'`];
+const evalletmoretest1 = [`prim`, `'text-a/text-b'`];
 const aaaaaaaaa = [
     `let`,
     [
@@ -237,4 +237,23 @@ const rbiTest5 = [`prim`, "'+test'"];
 // biome-ignore lint/suspicious/noExplicitAny:
 const defined = null;
 const readdef = [`sym`, `test`]; // null as any
-// const readdef2: typeof defined = [`sym`, `tet`] // null as any
+const parseaaaaa = ['(', 'x', '(', '(', 'if', 'a', 'b', 'c', ')', 'y', ')', ')'];
+const parsebbbbb = ['(', 'x', '(', 'if', 'a', 'b', 'c', ')', 'y', ')'];
+const parseccccc = ['(', '(', 'f', ')', ')'];
+const parseddddd = ['(', '(', '(', '(', '(', '(', 'x', ')', ')', ')', ')', ')', ')'];
+const parseeeeee = ['(', 'let', '[', 'a', '1', 'b', '2', ']', '(', 'if', 'true', 't', 'f', ')', ')'];
+const compileraaaa = [['sym', '+'], ['prim', '0'], [['sym', 'inc'], ['prim', '1']]];
+const compilerbbbb = ['let', [['sym', 'a'], ['prim', '1']], ['if', ['prim', true], ['sym', 't'], ['sym', 'f']]];
+// ----------------------------
+// -- Main
+// ----------------------------
+const maintest0 = [`prim`, false];
+const maintest1 = [`prim`, true];
+const maintest2 = [`prim`, true];
+const maintest3 = [`prim`, false];
+// todo :
+// string split works but not correctly, in current.
+// Use _ as space until I will have implemented a string parser. 
+const maintest4 = [`prim`, "'this_is_false'"];
+const maintest5 = ['prim', '01'];
+const maintest6 = ['prim', `'astrbstr'`];
