@@ -128,15 +128,15 @@ type BitLen<B, count = Peano.T0> = B extends `${infer HB}${infer TB}`
 // test
 const bitlen0: BitLen<"00000000"> = [[[[[[[[null]]]]]]]];
 
-type BitGthan<B, C> = Peano.gthan<BitLen<B>, BitLen<C>>;
+type BitLenGthan<B, C> = Peano.gthan<BitLen<B>, BitLen<C>>;
 // test
-const bitgthan0: BitGthan<"000", "000"> = false;
-const bitgthan1: BitGthan<"000", "0001"> = false;
-const bitgthan2: BitGthan<"0001", "000"> = true;
+const bitgthan0: BitLenGthan<"000", "000"> = false;
+const bitgthan1: BitLenGthan<"000", "0001"> = false;
+const bitgthan2: BitLenGthan<"0001", "000"> = true;
 // todo : they should be an error.
-const bitgthan3: BitGthan<"", "000"> = false;
-const bitgthan4: BitGthan<"", ""> = false;
-const bitgthan5: BitGthan<"1", ""> = false;
+const bitgthan3: BitLenGthan<"", "000"> = false;
+const bitgthan4: BitLenGthan<"", ""> = false;
+const bitgthan5: BitLenGthan<"1", ""> = false;
 
 type _BitNeedFill<B, L> = Peano.min<BitLen<B>, L>;
 // test
@@ -152,7 +152,7 @@ const bitpadding0: BitPadding<"10101", [null]> = "010101";
 const bitpadding1: BitPadding<"10101", [[null]]> = "0010101";
 const bitpadding2: BitPadding<"10101", [[null]], "1"> = "1110101";
 
-type BitUniform<B extends string, C extends string> = BitGthan<
+type BitUniform<B extends string, C extends string> = BitLenGthan<
   B,
   C
 > extends true
@@ -259,6 +259,65 @@ const bitsub0: BitSub<"00111", "00101"> = "00000010";
 const bitsub1: BitSub<"00110", "00001"> = "00000101";
 const bitsub2: BitSub<"00000", "00000"> = "00000000";
 const bitsub3: BitSub<"11111", "11111"> = "00000000";
+//
+// const bitsub4: BitSub<"00111", "01000"> = "00000000"
+// const bitsub5: BitSub<"00000", "11111"> = "00000000"
+
+type BitGTE<
+  B extends string
+, C extends string> =
+  BitSub<B,C> extends `${infer H}${infer _}`
+  ? H extends '1'
+    ? false
+    : true
+  : never
+
+const bitsub0gte: BitGTE<"00111", "00101"> = true
+const bitsub1gte: BitGTE<"00110", "00001"> = true
+const bitsub2gte: BitGTE<"00000", "00000"> = true
+const bitsub3gte: BitGTE<"11111", "11111"> = true
+const bitsub4gte: BitGTE<"00111", "01000"> = false
+const bitsub5gte: BitGTE<"00000", "11111"> = false
+
+type BitGT<
+  B extends string
+, C extends string> =
+  BitGTE<B,C> extends true
+  ? B extends C ? C extends B
+    ? false
+    : true : true
+  : false
+
+const bitsub0gt: BitGT<"00111", "00101"> = true
+const bitsub1gt: BitGT<"00110", "00001"> = true
+const bitsub2gt: BitGT<"00000", "00000"> = false
+const bitsub3gt: BitGT<"11111", "11111"> = false
+const bitsub4gt: BitGT<"00111", "01000"> = false
+const bitsub5gt: BitGT<"00000", "11111"> = false
+
+type BitLT<
+  B extends string
+, C extends string> = 
+  BitGTE<B,C> extends true ? false : true
+
+const bitsub0lt: BitLT<"00111", "00101"> = false
+const bitsub1lt: BitLT<"00110", "00001"> = false
+const bitsub2lt: BitLT<"00000", "00000"> = false
+const bitsub3lt: BitLT<"11111", "11111"> = false
+const bitsub4lt: BitLT<"00111", "01000"> = true
+const bitsub5lt: BitLT<"00000", "11111"> = true
+
+type BitLTE<
+  B extends string
+, C extends string> =
+  BitGT<B,C> extends true ? false : true
+
+const bitsub0lte: BitLTE<"00111", "00101"> = false
+const bitsub1lte: BitLTE<"00110", "00001"> = false
+const bitsub2lte: BitLTE<"00000", "00000"> = true
+const bitsub3lte: BitLTE<"11111", "11111"> = true
+const bitsub4lte: BitLTE<"00111", "01000"> = true
+const bitsub5lte: BitLTE<"00000", "11111"> = true
 
 type BitMul<
   B extends string,
@@ -319,3 +378,7 @@ const bitsr0: _BitShiftRight<"111111", [[[[[[null]]]]]], [[null]]> = "1111";
 const bitsr1: _BitShiftRight<"111111", [[[[[[null]]]]]], [[[null]]]> = "111";
 // type BitShiftRight
 // type UnsignedBitShiftRight
+
+// note : 
+// I think peano number 2 should be written from [[null]] to [null,null].
+// If so, implementing div with comparing and add is good performance than minus or some hack.
