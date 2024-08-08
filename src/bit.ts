@@ -408,3 +408,24 @@ const testbitdiv1: BitDiv<"00001001", "00000011"> = "00000011"
 const testbitdiv2: BitDiv<"00001001", "00000010"> = "00000100"
 const testbitdiv3: BitDiv<"00001001", "00000000"> = nil
 const testbitdiv4: BitDiv<"00000010", "00001010"> = "00000000"
+
+type _BitMod<
+  B extends string
+, C extends string
+, Ret extends string = B> =
+  BitLT<Ret,C> extends true
+  ? Ret
+  : _BitMod<B,C,BitSub<Ret,C>>
+
+type BitMod<
+  B extends string
+, C extends string> =
+  BitIsZero<C> extends true
+  ? Nil
+  : _BitMod<B,C>
+
+const testbitmod0: BitMod<"00001001", "00000001"> = "00000000"
+const testbitmod1: BitMod<"00001001", "00000011"> = "00000000"
+const testbitmod2: BitMod<"00001001", "00000010"> = "00000001"
+const testbitmod3: BitMod<"00001001", "00000000"> = nil
+const testbitmod4: BitMod<"00000010", "00001010"> = "00000010"
