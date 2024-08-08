@@ -1,7 +1,9 @@
 {
-  "name": "lots",
-  "version": "0.0.1",
-  "main": "index.js",
+  "name": "cion",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Clojure implemented on type-level with TypeScript.",
+  "main": "index.ts",
   "scripts": {
     "build": "npx tsc",
     "build:watch": "npx tsc --watch",
@@ -19,5 +21,7 @@
   },
   "dependencies": {
     "tsc": "^2.0.4"
-  }
+  },
+  "author": "taiyakihitotsu <nel3_nel1@protonmail.com> https://github.com/taiyakihitotsu",
+  "license": "3-clause BSD license"
 }
