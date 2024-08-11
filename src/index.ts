@@ -1,3 +1,5 @@
+import type Bit from './bit.ts'
+
 type Each = LetForm | IfForm | Atom;
 type Atom = Sym | Prim | Fn | Vector | HashMap | Nil;
 // This isn't usually way to define a sexpr, not including atomic something.
@@ -5,6 +7,8 @@ type Atom = Sym | Prim | Fn | Vector | HashMap | Nil;
 type Sexpr = Array<Each | Sexpr>;
 type Nil = [];
 const Nil: Nil = [];
+// type Nil = [`prim`, 'nil']
+// const Nil = [`prim`, 'nil']
 
 type Sym = [`sym`, string];
 type Prim = [`prim`, string | boolean | number]; // todo : This boolean is appended IFForm, using boolean directly in current.
@@ -283,6 +287,119 @@ const lispeqtest3: LispEq<[[`prim`, "'a'"], [`prim`, "'b'"], [`prim`, "'a'"]]> =
 const lispeqtest4: LispEq<[[`prim`, "'a'"], [`prim`, "'a'"], [`prim`, "'a'"]]> =
   [`prim`, true];
 const lispeqtest5: LispEq<[[`prim`, "'a'"], [`prim`, "''"]]> = [`prim`, false];
+
+// -------------------------------
+// -- Bit Operators
+// -------------------------------
+
+type LispAdd<
+  S extends Array<unknown>
+  , R extends string = "00000000"> = 
+  S['length'] extends 0
+    ? [`prim`, R]
+    : S extends [infer Fst, ...infer Rest]
+      ? Fst extends [`prim`, infer FstP extends string]
+        ? LispAdd<Rest, Bit.BitAdd<R, FstP>>
+        : never
+      : never
+
+const testlispadd0: LispAdd<[[`prim`, '00000011'], [`prim`, '0000001']]> = [`prim`, '00000100']
+const testlispadd1: LispAdd<[[`prim`, '00000011'], [`prim`, '0000001'], [`prim`, '00000011']]> = [`prim`, '00000111']
+
+type LispSub<
+  S extends Array<unknown>
+  , R extends string = "00000000"
+  , Init extends boolean = true> = 
+  S['length'] extends 0
+    ? [`prim`, R]
+    : S extends [[`prim`, infer Fst extends string], ...infer Rest extends string[][]]
+      ? Init extends true
+        ? LispSub<Rest, Fst, false>
+        : LispSub<Rest, Bit.BitSub<R,Fst>, false>
+      : 'never1'
+
+const testlispsub0: LispSub<[[`prim`, '00000011'], [`prim`, '0000001']]> = [`prim`, '00000010']
+const testlispsub1: LispSub<[[`prim`, '00001111'], [`prim`, '0000001'], [`prim`, '00000011']]> = [`prim`, '00001011']
+
+type LispMul<
+  S extends Array<unknown>
+  , R extends string = "00000000"
+  , Init extends boolean = true> = 
+  S['length'] extends 0
+    ? [`prim`, R]
+    : S extends [[`prim`, infer Fst extends string], ...infer Rest extends string[][]]
+      ? Init extends true
+        ? LispMul<Rest, Fst, false>
+        : LispMul<Rest, Bit.BitMul<R,Fst>, false>
+      : 'never1'
+
+const testlispmul0: LispMul<[[`prim`, '00000011'], [`prim`, '0000001']]> = [`prim`, '00000011']
+const testlispmul1: LispMul<[[`prim`, '00001111'], [`prim`, '0000001'], [`prim`, '00000011']]> = [`prim`, '00101101']
+
+
+type LispDiv<
+  S extends Array<unknown>
+  , R extends string = "00000001"
+  , Init extends boolean = true> = 
+  S['length'] extends 0
+    ? [`prim`, R]
+    : S extends [[`prim`, infer Fst extends string], ...infer Rest extends string[][]]
+      ? Init extends true
+        ? LispDiv<Rest, Fst, false>
+        : Bit.BitDiv<R,Fst> extends Bit.Nil | string & infer Div
+            // ----------------------------
+            // ? Div extends Bit.Nil
+            //   ? Bit.Nil
+            //   : LispDiv<Rest, Div, false>
+            // : never 
+            // -----------------------------
+            // note : this is ts error 2344, what?
+            // -----------------------------
+            ? Div extends string
+              ? LispDiv<Rest, Div, false>
+              : Bit.Nil
+            : never 
+          : never
+
+const testlispdiv0: LispDiv<[[`prim`, '00000011'], [`prim`, '0000001']]> = [`prim`, '00000011']
+const testlispdiv1: LispDiv<[[`prim`, '00001111'], [`prim`, '0000001'], [`prim`, '00000011']]> = [`prim`, '00000101']
+const testlispdiv2: LispDiv<[[`prim`, '00000011'], [`prim`, '0000000']]> = [`prim`, 'nil']
+
+
+// type LispMod
+type LispMod<
+  S extends Array<unknown>
+  , R extends string = "00000001"
+  , Init extends boolean = true> = 
+  S['length'] extends 0
+    ? [`prim`, R]
+    : S extends [[`prim`, infer Fst extends string], ...infer Rest extends string[][]]
+      ? Init extends true
+        ? LispMod<Rest, Fst, false>
+        : Bit.BitMod<R,Fst> extends Bit.Nil | string & infer Mod
+            ? Mod extends string
+              ? LispMod<Rest, Mod, false>
+              : Bit.Nil
+            : never 
+          : never
+
+const testlispmod0: LispMod<[[`prim`, '00000011'], [`prim`, '0000001']]> = [`prim`, '00000000']
+const testlispmod1: LispMod<[[`prim`, '00001111'], [`prim`, '0000001'], [`prim`, '00000011']]> = [`prim`, '00000000']
+const testlispmod2: LispMod<[[`prim`, '00000011'], [`prim`, '0000000']]> = [`prim`, 'nil']
+const testlispmod3: LispMod<[[`prim`, '00000101'], [`prim`, '0000010']]> = [`prim`, '00000001']
+const testlispmod4: LispMod<[[`prim`, '00010001'], [`prim`, '00000011']]> = [`prim`, '00000010']
+
+// type LispGT
+// type LispGTE
+// type LispLT
+// type LispLTE
+
+
+
+
+
+
+
 
 // -------------------------------------------
 
