@@ -389,17 +389,48 @@ const testlispmod2: LispMod<[[`prim`, '00000011'], [`prim`, '0000000']]> = [`pri
 const testlispmod3: LispMod<[[`prim`, '00000101'], [`prim`, '0000010']]> = [`prim`, '00000001']
 const testlispmod4: LispMod<[[`prim`, '00010001'], [`prim`, '00000011']]> = [`prim`, '00000010']
 
-// type LispGT
-// type LispGTE
-// type LispLT
-// type LispLTE
+type LispRelation<
+    Name extends string
+  , S extends Array<unknown>
+  , R extends string = "00000000"
+  , Init extends boolean = true
+  , Next extends boolean = true> = 
+  S['length'] extends 0
+    // note :
+    // a bit pitfall, this shouln't be [`prim`, true]
+    // see in the case of '>' and the args are two.
+    ? [`prim`, Next]
+    : S extends [[`prim`, infer Fst extends string], ...infer Rest extends string[][]]
+      ? Init extends true
+        ? LispRelation<Name, Rest, Fst, false, Next>
+        : Next extends true
+          ? Name extends '>'
+            ? LispRelation<Name, Rest, Fst, false, Bit.BitGT<R,Fst>>
+          : Name extends '<'
+            ? LispRelation<Name, Rest, Fst, false, Bit.BitLT<R,Fst>>
+          : Name extends '>='
+            ? LispRelation<Name, Rest, Fst, false, Bit.BitGTE<R,Fst>>
+          : Name extends '<='
+            ? LispRelation<Name, Rest, Fst, false, Bit.BitLTE<R,Fst>>
+            : never
+          : [`prim`, false]
+      : 'never1'
+ 
+const testlispgt0: LispRelation<'>',  [[`prim`, '00000011'], [`prim`, '0000001']]> = [`prim`, true]
+const testlispgt1: LispRelation<'>',  [[`prim`, '00001111'], [`prim`, '00000011'], [`prim`, '0000001']]> = [`prim`, true]
+const testlispgt2: LispRelation<'>',  [[`prim`, '00001111'], [`prim`, '00001111'], [`prim`, '00001111']]> = [`prim`, false]
 
+const testlisplt0: LispRelation<'<',  [[`prim`, '00000011'], [`prim`, '0000001']]> = [`prim`, false]
+const testlisplt1: LispRelation<'<',  [[`prim`, '00001111'], [`prim`, '00000011'], [`prim`, '0000001']]> = [`prim`, false]
+const testlisplt2: LispRelation<'<',  [[`prim`, '00001111'], [`prim`, '00001111'], [`prim`, '00001111']]> = [`prim`, false]
 
+const testlispgte0: LispRelation<'>=',  [[`prim`, '00000011'], [`prim`, '0000001']]> = [`prim`, true]
+const testlispgte1: LispRelation<'>=',  [[`prim`, '00001111'], [`prim`, '00000011'], [`prim`, '0000001']]> = [`prim`, true]
+const testlispgte2: LispRelation<'<=',  [[`prim`, '00001111'], [`prim`, '00001111'], [`prim`, '00001111']]> = [`prim`, true]
 
-
-
-
-
+const testlisplte0: LispRelation<'<=',  [[`prim`, '00000011'], [`prim`, '0000001']]> = [`prim`, false]
+const testlisplte1: LispRelation<'<=',  [[`prim`, '00001111'], [`prim`, '00000011'], [`prim`, '0000001']]> = [`prim`, false]
+const testlisplte2: LispRelation<'<=',  [[`prim`, '00001111'], [`prim`, '00001111'], [`prim`, '00001111']]> = [`prim`, true]
 
 // -------------------------------------------
 
