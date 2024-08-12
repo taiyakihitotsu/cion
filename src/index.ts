@@ -293,9 +293,9 @@ const lispeqtest5: LispEq<[[`prim`, "'a'"], [`prim`, "''"]]> = [`prim`, false];
 // -------------------------------
 
 type LispAdd<
-  S extends Array<unknown>
+  S
   , R extends string = "00000000"> = 
-  S['length'] extends 0
+  S extends []
     ? [`prim`, R]
     : S extends [infer Fst, ...infer Rest]
       ? Fst extends [`prim`, infer FstP extends string]
@@ -307,10 +307,10 @@ const testlispadd0: LispAdd<[[`prim`, '00000011'], [`prim`, '0000001']]> = [`pri
 const testlispadd1: LispAdd<[[`prim`, '00000011'], [`prim`, '0000001'], [`prim`, '00000011']]> = [`prim`, '00000111']
 
 type LispSub<
-  S extends Array<unknown>
+  S
   , R extends string = "00000000"
   , Init extends boolean = true> = 
-  S['length'] extends 0
+  S extends []  
     ? [`prim`, R]
     : S extends [[`prim`, infer Fst extends string], ...infer Rest extends string[][]]
       ? Init extends true
@@ -322,10 +322,10 @@ const testlispsub0: LispSub<[[`prim`, '00000011'], [`prim`, '0000001']]> = [`pri
 const testlispsub1: LispSub<[[`prim`, '00001111'], [`prim`, '0000001'], [`prim`, '00000011']]> = [`prim`, '00001011']
 
 type LispMul<
-  S extends Array<unknown>
+  S
   , R extends string = "00000000"
   , Init extends boolean = true> = 
-  S['length'] extends 0
+  S extends []
     ? [`prim`, R]
     : S extends [[`prim`, infer Fst extends string], ...infer Rest extends string[][]]
       ? Init extends true
@@ -338,10 +338,10 @@ const testlispmul1: LispMul<[[`prim`, '00001111'], [`prim`, '0000001'], [`prim`,
 
 
 type LispDiv<
-  S extends Array<unknown>
+  S
   , R extends string = "00000001"
   , Init extends boolean = true> = 
-  S['length'] extends 0
+  S extends []
     ? [`prim`, R]
     : S extends [[`prim`, infer Fst extends string], ...infer Rest extends string[][]]
       ? Init extends true
@@ -365,13 +365,11 @@ const testlispdiv0: LispDiv<[[`prim`, '00000011'], [`prim`, '0000001']]> = [`pri
 const testlispdiv1: LispDiv<[[`prim`, '00001111'], [`prim`, '0000001'], [`prim`, '00000011']]> = [`prim`, '00000101']
 const testlispdiv2: LispDiv<[[`prim`, '00000011'], [`prim`, '0000000']]> = [`prim`, 'nil']
 
-
-// type LispMod
 type LispMod<
-  S extends Array<unknown>
+  S
   , R extends string = "00000001"
   , Init extends boolean = true> = 
-  S['length'] extends 0
+  S extends []
     ? [`prim`, R]
     : S extends [[`prim`, infer Fst extends string], ...infer Rest extends string[][]]
       ? Init extends true
@@ -390,12 +388,12 @@ const testlispmod3: LispMod<[[`prim`, '00000101'], [`prim`, '0000010']]> = [`pri
 const testlispmod4: LispMod<[[`prim`, '00010001'], [`prim`, '00000011']]> = [`prim`, '00000010']
 
 type LispRelation<
-    Name extends string
-  , S extends Array<unknown>
+  Name extends string
+  , S
   , R extends string = "00000000"
   , Init extends boolean = true
   , Next extends boolean = true> = 
-  S['length'] extends 0
+  S extends []
     // note :
     // a bit pitfall, this shouln't be [`prim`, true]
     // see in the case of '>' and the args are two.
@@ -776,6 +774,18 @@ type Eval<A, env = [[]], prev = 0> = A extends Sexpr
                   ? LispAnd<Reading<OPR, env, [[prev]]>>
                 : U extends `or`
                   ? LispOr<Reading<OPR, env, [[prev]]>> 
+                : U extends `+`
+                  ? LispAdd<Reading<OPR, env, [[prev]]>>
+                : U extends `-`
+                  ? LispSub<Reading<OPR, env, [[prev]]>>
+                : U extends `*`
+                  ? LispMul<Reading<OPR, env, [[prev]]>>
+                : U extends `/`
+                  ? LispDiv<Reading<OPR, env, [[prev]]>>
+                : U extends `mod` | `%`
+                  ? LispMod<Reading<OPR, env, [[prev]]>>
+                : U extends `>` | `<` | `>=` | `<=`
+                  ? LispRelation<U, Reading<OPR, env, [[prev]]>>
                 : Eval<[ReadLet<U, env>, OPR[0]], env, [prev]>
               : ReadLet<U, env> extends Fn & infer UU
                 ? Eval<[UU, OPR[0]], env, [prev]>
@@ -1225,3 +1235,28 @@ const maintest7_1_or: Lisp<"(or true true true)"> = ['prim', true]
 const maintest8_1_or: Lisp<"(or false true false)"> = ['prim', true]
 const maintest9_1_or: Lisp<"(or false false false)"> = ['prim', false]
 const maintest10_1_or: Lisp<"(or false true true)"> = ['prim', true]
+
+const maintest11_gt_0: Lisp<"(> 00001111 00001110)"> = [`prim`, true]
+const maintest11_gt_1: Lisp<"(> 00001111 00001110 00001100)"> = [`prim`, true]
+const maintest11_gt_2: Lisp<"(> 00001111 00001110 00010000)"> = [`prim`, false]
+
+const maintest11_lt_0: Lisp<"(< 00001111 00001110)"> = [`prim`, false]
+const maintest11_lt_1: Lisp<"(< 00001111 00001110 00001100)"> = [`prim`, false]
+const maintest11_lt_0_1: Lisp<"(< 00001110 00001111)"> = [`prim`, true]
+const maintest11_lt_1_1: Lisp<"(< 00001100 00001110 00001111)"> = [`prim`, true]
+const maintest11_lt_2: Lisp<"(< 00001111 00001110 00010000)"> = [`prim`, false]
+
+const maintest11_gte_0: Lisp<"(>= 00001111 00001110)"> = [`prim`, true]
+const maintest11_gte_1: Lisp<"(>= 00001111 00001110 00001100)"> = [`prim`, true]
+const maintest11_gte_2: Lisp<"(>= 00001111 00001110 00010000)"> = [`prim`, false]
+const maintest11_gte_0_1: Lisp<"(>= 00001110 00001111)"> = [`prim`, false]
+const maintest11_gte_1_1: Lisp<"(>= 00001100 00001110 00001111)"> = [`prim`, false]
+const maintest11_gte_2_1: Lisp<"(>= 00001111 00001111 00001111)"> = [`prim`, true]
+
+const maintest11_lte_0: Lisp<"(<= 00001111 00001110)"> = [`prim`, false]
+const maintest11_lte_1: Lisp<"(<= 00001111 00001110 00001100)"> = [`prim`, false]
+const maintest11_lte_2: Lisp<"(<= 00001111 00001110 00010000)"> = [`prim`, false]
+const maintest11_lte_0_1: Lisp<"(<= 00001110 00001111)"> = [`prim`, true]
+const maintest11_lte_1_1: Lisp<"(<= 00001100 00001110 00001111)"> = [`prim`, true]
+const maintest11_lte_2_1: Lisp<"(<= 00001111 00001111 00001111)"> = [`prim`, true]
+
