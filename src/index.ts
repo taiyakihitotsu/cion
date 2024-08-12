@@ -1,3 +1,5 @@
+import type Bit from './bit.ts'
+
 type Each = LetForm | IfForm | Atom;
 type Atom = Sym | Prim | Fn | Vector | HashMap | Nil;
 // This isn't usually way to define a sexpr, not including atomic something.
@@ -5,6 +7,8 @@ type Atom = Sym | Prim | Fn | Vector | HashMap | Nil;
 type Sexpr = Array<Each | Sexpr>;
 type Nil = [];
 const Nil: Nil = [];
+// type Nil = [`prim`, 'nil']
+// const Nil = [`prim`, 'nil']
 
 type Sym = [`sym`, string];
 type Prim = [`prim`, string | boolean | number]; // todo : This boolean is appended IFForm, using boolean directly in current.
@@ -191,6 +195,76 @@ const strtest1: Str<[[`prim`, `test`], [`prim`, `+`], [`prim`, `tail`]]> = [
 ];
 const strtest2: Str<[[`prim`, `test`]]> = [`prim`, `'test'`];
 
+
+
+// --------------------------------------------
+// -- Logical Operators
+// --------------------------------------------
+
+type _And<Fst, Snd> = Fst extends false ? false : Snd extends false ? false : true
+
+type _LispAnd<S> = S extends [infer Fst, ...infer Rest]
+  ? Fst extends [`prim`, infer Boolean]
+    ? Boolean extends `nil`
+      ? false 
+      : Rest extends []
+        ? Boolean
+        : _And<Boolean, _LispAnd<Rest>>
+    : never
+  : never;
+
+// note : all truthy only excepts false and nil.
+type LispAnd<S> = S extends [infer _, ...infer __]
+  ? [`prim`, _LispAnd<S>]
+  : [`prim`, false];
+
+const lispandtest1: LispAnd<[[`prim`, true], [`prim`, true]]> = [`prim`, true];
+const lispandtest2: LispAnd<[[`prim`, true], [`prim`, false]]> = [`prim`, false];
+const lispandtest2_1: LispAnd<[[`prim`, false], [`prim`, true]]> = [`prim`, false];
+const lispandtest3: LispAnd<[[`prim`, true], [`prim`, false], [`prim`, true]]> =
+  [`prim`, false];
+const lispandtest3_1: LispAnd<[[`prim`, false], [`prim`, false], [`prim`, true]]> =
+  [`prim`, false];
+const lispandtest4: LispAnd<[[`prim`, true], [`prim`, true], [`prim`, true]]> =
+  [`prim`, true];
+const lispandtest5: LispAnd<[[`prim`, true], [`prim`, "nil"]]> = [`prim`, false];
+const lispandtest6: LispAnd<[[`prim`, "nil"], [`prim`, "''"]]> = [`prim`, false];
+const lispandtest7: LispAnd<[[`prim`, "nil"], [`prim`, "nil"]]> = [`prim`, false];
+const lispandtest8: LispAnd<[[`prim`, "nil"], [`prim`, false]]> = [`prim`, false];
+const lispandtest9: LispAnd<[[`prim`, false], [`prim`, "nil"]]> = [`prim`, false];
+
+type _Or<Fst, Snd> = Fst extends true ? true : Snd extends true ? true : false
+
+// todo : optimize
+type _LispOr<S> = 
+S extends []
+  ? false
+  : S extends [infer Fst, ...infer Rest]
+    ? Fst extends [`prim`, false] | [`prim`, 'nil']
+      ? _LispOr<Rest>
+      : true
+    : never
+
+// note : all truthy only excepts false or nil.
+type LispOr<S> = S extends [infer _, ...infer __]
+  ? [`prim`, _LispOr<S>]
+  : [`prim`, false];
+
+const lisportest1: LispOr<[[`prim`, true], [`prim`, true]]> = [`prim`, true];
+const lisportest2: LispOr<[[`prim`, true], [`prim`, false]]> = [`prim`, true];
+const lisportest2_1: LispOr<[[`prim`, false], [`prim`, true]]> = [`prim`, true];
+const lisportest3: LispOr<[[`prim`, true], [`prim`, false], [`prim`, true]]> =
+  [`prim`, true];
+const lisportest3_1: LispOr<[[`prim`, false], [`prim`, false], [`prim`, true]]> =
+  [`prim`, true];
+const lisportest4: LispOr<[[`prim`, true], [`prim`, true], [`prim`, true]]> =
+  [`prim`, true];
+const lisportest5: LispOr<[[`prim`, true], [`prim`, "nil"]]> = [`prim`, true];
+const lisportest6: LispOr<[[`prim`, "nil"], [`prim`, "''"]]> = [`prim`, true];
+const lisportest7: LispOr<[[`prim`, "nil"], [`prim`, "nil"]]> = [`prim`, false];
+const lisportest8: LispOr<[[`prim`, "nil"], [`prim`, false]]> = [`prim`, false];
+const lisportest9: LispOr<[[`prim`, false], [`prim`, "nil"]]> = [`prim`, false];
+
 // todo : naming
 type _Eq<Fst, Snd> = Fst extends Snd ? (Snd extends Fst ? Fst : never) : never;
 
@@ -213,6 +287,148 @@ const lispeqtest3: LispEq<[[`prim`, "'a'"], [`prim`, "'b'"], [`prim`, "'a'"]]> =
 const lispeqtest4: LispEq<[[`prim`, "'a'"], [`prim`, "'a'"], [`prim`, "'a'"]]> =
   [`prim`, true];
 const lispeqtest5: LispEq<[[`prim`, "'a'"], [`prim`, "''"]]> = [`prim`, false];
+
+// -------------------------------
+// -- Bit Operators
+// -------------------------------
+
+type LispAdd<
+  S
+  , R extends string = "00000000"> = 
+  S extends []
+    ? [`prim`, R]
+    : S extends [infer Fst, ...infer Rest]
+      ? Fst extends [`prim`, infer FstP extends string]
+        ? LispAdd<Rest, Bit.BitAdd<R, FstP>>
+        : never
+      : never
+
+const testlispadd0: LispAdd<[[`prim`, '00000011'], [`prim`, '0000001']]> = [`prim`, '00000100']
+const testlispadd1: LispAdd<[[`prim`, '00000011'], [`prim`, '0000001'], [`prim`, '00000011']]> = [`prim`, '00000111']
+
+type LispSub<
+  S
+  , R extends string = "00000000"
+  , Init extends boolean = true> = 
+  S extends []  
+    ? [`prim`, R]
+    : S extends [[`prim`, infer Fst extends string], ...infer Rest extends string[][]]
+      ? Init extends true
+        ? LispSub<Rest, Fst, false>
+        : LispSub<Rest, Bit.BitSub<R,Fst>, false>
+      : 'never1'
+
+const testlispsub0: LispSub<[[`prim`, '00000011'], [`prim`, '0000001']]> = [`prim`, '00000010']
+const testlispsub1: LispSub<[[`prim`, '00001111'], [`prim`, '0000001'], [`prim`, '00000011']]> = [`prim`, '00001011']
+
+type LispMul<
+  S
+  , R extends string = "00000000"
+  , Init extends boolean = true> = 
+  S extends []
+    ? [`prim`, R]
+    : S extends [[`prim`, infer Fst extends string], ...infer Rest extends string[][]]
+      ? Init extends true
+        ? LispMul<Rest, Fst, false>
+        : LispMul<Rest, Bit.BitMul<R,Fst>, false>
+      : 'never1'
+
+const testlispmul0: LispMul<[[`prim`, '00000011'], [`prim`, '0000001']]> = [`prim`, '00000011']
+const testlispmul1: LispMul<[[`prim`, '00001111'], [`prim`, '0000001'], [`prim`, '00000011']]> = [`prim`, '00101101']
+
+
+type LispDiv<
+  S
+  , R extends string = "00000001"
+  , Init extends boolean = true> = 
+  S extends []
+    ? [`prim`, R]
+    : S extends [[`prim`, infer Fst extends string], ...infer Rest extends string[][]]
+      ? Init extends true
+        ? LispDiv<Rest, Fst, false>
+        : Bit.BitDiv<R,Fst> extends Bit.Nil | string & infer Div
+            // ----------------------------
+            // ? Div extends Bit.Nil
+            //   ? Bit.Nil
+            //   : LispDiv<Rest, Div, false>
+            // : never 
+            // -----------------------------
+            // note : this is ts error 2344, what?
+            // -----------------------------
+            ? Div extends string
+              ? LispDiv<Rest, Div, false>
+              : Bit.Nil
+            : never 
+          : never
+
+const testlispdiv0: LispDiv<[[`prim`, '00000011'], [`prim`, '0000001']]> = [`prim`, '00000011']
+const testlispdiv1: LispDiv<[[`prim`, '00001111'], [`prim`, '0000001'], [`prim`, '00000011']]> = [`prim`, '00000101']
+const testlispdiv2: LispDiv<[[`prim`, '00000011'], [`prim`, '0000000']]> = [`prim`, 'nil']
+
+type LispMod<
+  S
+  , R extends string = "00000001"
+  , Init extends boolean = true> = 
+  S extends []
+    ? [`prim`, R]
+    : S extends [[`prim`, infer Fst extends string], ...infer Rest extends string[][]]
+      ? Init extends true
+        ? LispMod<Rest, Fst, false>
+        : Bit.BitMod<R,Fst> extends Bit.Nil | string & infer Mod
+            ? Mod extends string
+              ? LispMod<Rest, Mod, false>
+              : Bit.Nil
+            : never 
+          : never
+
+const testlispmod0: LispMod<[[`prim`, '00000011'], [`prim`, '0000001']]> = [`prim`, '00000000']
+const testlispmod1: LispMod<[[`prim`, '00001111'], [`prim`, '0000001'], [`prim`, '00000011']]> = [`prim`, '00000000']
+const testlispmod2: LispMod<[[`prim`, '00000011'], [`prim`, '0000000']]> = [`prim`, 'nil']
+const testlispmod3: LispMod<[[`prim`, '00000101'], [`prim`, '0000010']]> = [`prim`, '00000001']
+const testlispmod4: LispMod<[[`prim`, '00010001'], [`prim`, '00000011']]> = [`prim`, '00000010']
+
+type LispRelation<
+  Name extends string
+  , S
+  , R extends string = "00000000"
+  , Init extends boolean = true
+  , Next extends boolean = true> = 
+  S extends []
+    // note :
+    // a bit pitfall, this shouln't be [`prim`, true]
+    // see in the case of '>' and the args are two.
+    ? [`prim`, Next]
+    : S extends [[`prim`, infer Fst extends string], ...infer Rest extends string[][]]
+      ? Init extends true
+        ? LispRelation<Name, Rest, Fst, false, Next>
+        : Next extends true
+          ? Name extends '>'
+            ? LispRelation<Name, Rest, Fst, false, Bit.BitGT<R,Fst>>
+          : Name extends '<'
+            ? LispRelation<Name, Rest, Fst, false, Bit.BitLT<R,Fst>>
+          : Name extends '>='
+            ? LispRelation<Name, Rest, Fst, false, Bit.BitGTE<R,Fst>>
+          : Name extends '<='
+            ? LispRelation<Name, Rest, Fst, false, Bit.BitLTE<R,Fst>>
+            : never
+          : [`prim`, false]
+      : 'never1'
+ 
+const testlispgt0: LispRelation<'>',  [[`prim`, '00000011'], [`prim`, '0000001']]> = [`prim`, true]
+const testlispgt1: LispRelation<'>',  [[`prim`, '00001111'], [`prim`, '00000011'], [`prim`, '0000001']]> = [`prim`, true]
+const testlispgt2: LispRelation<'>',  [[`prim`, '00001111'], [`prim`, '00001111'], [`prim`, '00001111']]> = [`prim`, false]
+
+const testlisplt0: LispRelation<'<',  [[`prim`, '00000011'], [`prim`, '0000001']]> = [`prim`, false]
+const testlisplt1: LispRelation<'<',  [[`prim`, '00001111'], [`prim`, '00000011'], [`prim`, '0000001']]> = [`prim`, false]
+const testlisplt2: LispRelation<'<',  [[`prim`, '00001111'], [`prim`, '00001111'], [`prim`, '00001111']]> = [`prim`, false]
+
+const testlispgte0: LispRelation<'>=',  [[`prim`, '00000011'], [`prim`, '0000001']]> = [`prim`, true]
+const testlispgte1: LispRelation<'>=',  [[`prim`, '00001111'], [`prim`, '00000011'], [`prim`, '0000001']]> = [`prim`, true]
+const testlispgte2: LispRelation<'<=',  [[`prim`, '00001111'], [`prim`, '00001111'], [`prim`, '00001111']]> = [`prim`, true]
+
+const testlisplte0: LispRelation<'<=',  [[`prim`, '00000011'], [`prim`, '0000001']]> = [`prim`, false]
+const testlisplte1: LispRelation<'<=',  [[`prim`, '00001111'], [`prim`, '00000011'], [`prim`, '0000001']]> = [`prim`, false]
+const testlisplte2: LispRelation<'<=',  [[`prim`, '00001111'], [`prim`, '00001111'], [`prim`, '00001111']]> = [`prim`, true]
 
 // -------------------------------------------
 
@@ -552,9 +768,25 @@ type Eval<A, env = [[]], prev = 0> = A extends Sexpr
               // note : built-in functions
                 : U extends `str`
                   ? Str<Reading<OPR, env, [[prev]]>>
-                  : U extends `eq`
-                    ? LispEq<Reading<OPR, env, [[prev]]>>
-                    : Eval<[ReadLet<U, env>, OPR[0]], env, [prev]>
+                : U extends `eq` | `=`
+                  ? LispEq<Reading<OPR, env, [[prev]]>>
+                : U extends `and`
+                  ? LispAnd<Reading<OPR, env, [[prev]]>>
+                : U extends `or`
+                  ? LispOr<Reading<OPR, env, [[prev]]>> 
+                : U extends `+`
+                  ? LispAdd<Reading<OPR, env, [[prev]]>>
+                : U extends `-`
+                  ? LispSub<Reading<OPR, env, [[prev]]>>
+                : U extends `*`
+                  ? LispMul<Reading<OPR, env, [[prev]]>>
+                : U extends `/`
+                  ? LispDiv<Reading<OPR, env, [[prev]]>>
+                : U extends `mod` | `%`
+                  ? LispMod<Reading<OPR, env, [[prev]]>>
+                : U extends `>` | `<` | `>=` | `<=`
+                  ? LispRelation<U, Reading<OPR, env, [[prev]]>>
+                : Eval<[ReadLet<U, env>, OPR[0]], env, [prev]>
               : ReadLet<U, env> extends Fn & infer UU
                 ? Eval<[UU, OPR[0]], env, [prev]>
                 : EvalError3
@@ -973,13 +1205,58 @@ const compilerbbbb: SCompiler<['(', 'let', '[', 'a', '1', ']', '(', 'if', 'true'
 // -- Main
 // ----------------------------
 
-const maintest0: Eval<SCompiler<SParser<SPad<"(eq 'a' 'b')">>>> = [`prim`, false]
-const maintest1: Eval<SCompiler<SParser<SPad<"(eq 'a' 'a')">>>> = [`prim`, true]
-const maintest2: Eval<SCompiler<SParser<SPad<"(let [a 'a'] (eq a 'a'))">>>> = [`prim`, true]
-const maintest3: Eval<SCompiler<SParser<SPad<"(let [a 'b'] (eq a 'a'))">>>> = [`prim`, false]
+type Lisp<S extends string> = Eval<SCompiler<SParser<SPad<S>>>>
+
+const maintest0: Lisp<"(eq 'a' 'b')"> = [`prim`, false]
+const maintest1: Lisp<"(eq 'a' 'a')"> = [`prim`, true]
+const maintest2: Lisp<"(let [a 'a'] (eq a 'a'))"> = [`prim`, true]
+const maintest3: Lisp<"(let [a 'b'] (eq a 'a'))"> = [`prim`, false]
 // todo :
 // string split works but not correctly, in current.
 // Use _ as space until I will have implemented a string parser. 
-const maintest4: Eval<SCompiler<SParser<SPad<"(let [a 'a'] (if (eq a 'a') 'this_is_true', 'this_is_false')">>>> = [`prim`, "'this_is_false'"]
-const maintest5: Eval<SCompiler<SParser<SPad<"(if true 01 10)">>>> = ['prim', '01']
-const maintest6: Eval<SCompiler<SParser<SPad<"(if true (let [a 'astr' b 'bstr'] (str a b)) 11)">>>> = ['prim', `'astrbstr'`]
+const maintest4: Lisp<"(let [a 'a'] (if (eq a 'a') 'this_is_true', 'this_is_false')"> = [`prim`, "'this_is_false'"]
+const maintest5: Lisp<"(if true 01 10)"> = ['prim', '01']
+const maintest6: Lisp<"(if true (let [a 'astr' b 'bstr'] (str a b)) 11)"> = ['prim', `'astrbstr'`]
+
+const maintest7_and: Lisp<"(and true true)"> = ['prim', true]
+const maintest8_and: Lisp<"(and true false)"> = ['prim', false]
+const maintest9_and: Lisp<"(and false false)"> = ['prim', false]
+const maintest10_and: Lisp<"(and false true)"> = ['prim', false]
+const maintest7_1_and: Lisp<"(and true true true)"> = ['prim', true]
+const maintest8_1_and: Lisp<"(and false true false)"> = ['prim', false]
+const maintest9_1_and: Lisp<"(and false false false)"> = ['prim', false]
+const maintest10_1_and: Lisp<"(and false true true)"> = ['prim', false]
+
+const maintest7_or: Lisp<"(or true true)"> = ['prim', true]
+const maintest8_or: Lisp<"(or true false)"> = ['prim', true]
+const maintest9_or: Lisp<"(or false false)"> = ['prim', false]
+const maintest10_or: Lisp<"(or false true)"> = ['prim', true]
+const maintest7_1_or: Lisp<"(or true true true)"> = ['prim', true]
+const maintest8_1_or: Lisp<"(or false true false)"> = ['prim', true]
+const maintest9_1_or: Lisp<"(or false false false)"> = ['prim', false]
+const maintest10_1_or: Lisp<"(or false true true)"> = ['prim', true]
+
+const maintest11_gt_0: Lisp<"(> 00001111 00001110)"> = [`prim`, true]
+const maintest11_gt_1: Lisp<"(> 00001111 00001110 00001100)"> = [`prim`, true]
+const maintest11_gt_2: Lisp<"(> 00001111 00001110 00010000)"> = [`prim`, false]
+
+const maintest11_lt_0: Lisp<"(< 00001111 00001110)"> = [`prim`, false]
+const maintest11_lt_1: Lisp<"(< 00001111 00001110 00001100)"> = [`prim`, false]
+const maintest11_lt_0_1: Lisp<"(< 00001110 00001111)"> = [`prim`, true]
+const maintest11_lt_1_1: Lisp<"(< 00001100 00001110 00001111)"> = [`prim`, true]
+const maintest11_lt_2: Lisp<"(< 00001111 00001110 00010000)"> = [`prim`, false]
+
+const maintest11_gte_0: Lisp<"(>= 00001111 00001110)"> = [`prim`, true]
+const maintest11_gte_1: Lisp<"(>= 00001111 00001110 00001100)"> = [`prim`, true]
+const maintest11_gte_2: Lisp<"(>= 00001111 00001110 00010000)"> = [`prim`, false]
+const maintest11_gte_0_1: Lisp<"(>= 00001110 00001111)"> = [`prim`, false]
+const maintest11_gte_1_1: Lisp<"(>= 00001100 00001110 00001111)"> = [`prim`, false]
+const maintest11_gte_2_1: Lisp<"(>= 00001111 00001111 00001111)"> = [`prim`, true]
+
+const maintest11_lte_0: Lisp<"(<= 00001111 00001110)"> = [`prim`, false]
+const maintest11_lte_1: Lisp<"(<= 00001111 00001110 00001100)"> = [`prim`, false]
+const maintest11_lte_2: Lisp<"(<= 00001111 00001110 00010000)"> = [`prim`, false]
+const maintest11_lte_0_1: Lisp<"(<= 00001110 00001111)"> = [`prim`, true]
+const maintest11_lte_1_1: Lisp<"(<= 00001100 00001110 00001111)"> = [`prim`, true]
+const maintest11_lte_2_1: Lisp<"(<= 00001111 00001111 00001111)"> = [`prim`, true]
+

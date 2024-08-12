@@ -36,8 +36,8 @@ const message: Return<Eval<Compile<Sexpr>>> = "message"
 - [x] get
 - [x] get with a key
 - [x] first
-- [ ] logical operation: and, or, not, >, <, =, >=, <=.
-- [ ] number (bit operators)
+- [x] logical operation: and, or, not, >, <, =, >=, <=.
+- [x] number (bit operators)
 only for 2bit and lack of div in current.
 - [ ] arrow macro
 - [ ] string parser
