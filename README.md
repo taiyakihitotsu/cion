@@ -40,7 +40,7 @@ const message: Return<Eval<Compile<Sexpr>>> = "message"
 - [x] number (bit operators)
 only for 2bit and lack of div in current.
 - [ ] arrow macro
-- [ ] string parser
+- [x] string parser, only supporting texts which has no two or more connected-spaces such like "a  b".
 - [x] Compiler
 
 # Builtin
