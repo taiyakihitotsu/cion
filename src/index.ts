@@ -1149,10 +1149,17 @@ type SParser<Sexpr> =
     ? [...SParser<` ${V}`>, ...SParser<` ${W}`>]
   : Sexpr extends ` ${infer C}]`
     ? [...SParser<` ${C}`>, ']']
-  // -- _
+  // -- ""
+  : Sexpr extends ` "${infer U}`
+    ? ['"', ...SParser<` ${U}`>]
+  : Sexpr extends ` ${infer V} ${infer W}`
+    ? [...SParser<` ${V}`>, ...SParser<` ${W}`>]
+  : Sexpr extends ` ${infer C}"`
+    ? [...SParser<` ${C}`>, '"']
+  // -- _, as default.
   : Sexpr extends ` ${infer CC}`
     ? [CC]
-  : []
+    : []
 
 const parseaaaaa: SParser<' (x ((if a b c) y))'> =
     ['(', 'x', '(', '(', 'if', 'a', 'b', 'c', ')', 'y', ')', ')']
@@ -1163,7 +1170,7 @@ const parseccccc: SParser<' ((f))'> =
 const parseddddd: SParser<' ((((((x))))))'> =
     ['(', '(', '(', '(', '(', '(', 'x', ')', ')', ')', ')', ')', ')']
 const parseeeeee: SParser<' (let [a 1 b 2] (if true t f))'> = ['(','let', '[', 'a', '1', 'b', '2', ']', '(', 'if', 'true', 't', 'f', ')', ')']
-
+const parsestrtest0: SParser<' (let [a "test is this"] (str "a b" a))'> = ['(', 'let', '[', 'a', '"', 'test', 'is', 'this','"', ']', '(', 'str', '"', 'a', 'b', '"', 'a', ')', ')']
 
 
 
@@ -1184,21 +1191,41 @@ type SSymlator<MSym> =
 type SCompiler<
     Parsed extends Array<unknown>,
     Current extends Array<unknown> = [],
-    Stack extends Array<Array<unknown>> = []> = 
+    Stack extends Array<Array<unknown>> = [],
+    StrStack extends string = ""> = 
   Parsed extends []
   ? Current
   : Parsed extends [infer H, ...infer R]
+    // -- terminate
     ? R extends []
-      ? Current
-      : H extends ')' | ']'
+      ? H extends '"'
+        ? [`prim`, `${StrStack}"`]
+        : Current
+    // -- Not String Case
+    : StrStack extends ""
+      ? H extends ')' | ']'
         ? SCompiler<R, Stack extends Array<unknown> ? [...Stack[0], Current] : never, Stack extends [infer _, ...infer R extends unknown[][]] ? R : never>
         : H extends '(' | '['
           ? SCompiler<R, [], [Current, ...Stack]>
-          : SCompiler<R, [...Current, SSymlator<H>], Stack>
+          // -- Jump To String Case
+          : H extends '"'
+            ? SCompiler<R, Current, Stack, `${StrStack}${H}`>
+            : SCompiler<R, [...Current, SSymlator<H>], Stack>
+      // -- String Case
+      : H extends '"'
+        ? SCompiler<R, [...Current, [`prim`, `${StrStack}"`]], Stack, "">
+        : H extends string
+          ? StrStack extends '"'
+            ? SCompiler<R, Current, Stack, `${StrStack}${H}`>
+            : SCompiler<R, Current, Stack, `${StrStack} ${H}`>
+          : never
     : never
 
 const compileraaaa: SCompiler<['(', '+', '0', '(', 'inc', '1', ')', ')']> = [['sym', '+'], ['prim', '0'], [['sym', 'inc'], ['prim', '1']]]
 const compilerbbbb: SCompiler<['(', 'let', '[', 'a', '1', ']', '(', 'if', 'true', 't', 'f', ')', ')']> = ['let', [['sym', 'a'], ['prim', '1']], ['if', ['prim', true], ['sym', 't'], ['sym', 'f']]]
+// -- String Parser
+const compilerStrT0: SCompiler<['"', 'aaa', 'bbb','"']> = ['prim', '"aaa bbb"']
+const compilerStrT1: SCompiler<['(', 'let', '[', 'a', '"', 'aaa', 'bbb','"',']', ')']> = ['let', [['sym', 'a'], ['prim', '"aaa bbb"']]]
 
 
 // ----------------------------
