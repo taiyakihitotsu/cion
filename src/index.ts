@@ -1234,7 +1234,8 @@ type SCompiler<
     Parsed extends Array<unknown>,
     Current extends Array<unknown> = [],
     Stack extends Array<Array<unknown>> = [],
-    StrStack extends string = ""> = 
+    StrStack extends string = "",
+    > = 
   Parsed extends []
   ? Current
   : Parsed extends [infer H, ...infer R]
@@ -1242,16 +1243,30 @@ type SCompiler<
     ? R extends []
       ? H extends '"'
         ? [`prim`, `${StrStack}"`]
-        : Current
+        // -- Hash Case
+        : H extends "}"
+          ? ['map', Current] : Current
+//        : Current
     // -- Not String Case
     : StrStack extends ""
-      ? H extends ')' | ']'
+      ? H extends ')' | ']' // | '}'
         ? SCompiler<R, Stack extends Array<unknown> ? [...Stack[0], Current] : never, Stack extends [infer _, ...infer R extends unknown[][]] ? R : never>
+        // -- Hash Case Done.
+        : H extends '}'
+          ? SCompiler<R, Stack extends Array<unknown> ? [...Stack[0], ['map', Current]] : never, Stack extends [infer _, ...infer R extends unknown[][]] ? R : never>
+        // -- Bracket Start
         : H extends '(' | '['
           ? SCompiler<R, [], [Current, ...Stack]>
+          // -- Hash Case
+        : H extends '{'
+          ? SCompiler<R, [], [Current, ...Stack]>
+          // -- Keyword Case
+        : H extends `:${infer _}`
+          ? SCompiler<R, [...Current, [`key`, H]], Stack>
           // -- Jump To String Case
           : H extends '"'
             ? SCompiler<R, Current, Stack, `${StrStack}${H}`>
+            // -- Symbol or Primitive case -- Default
             : SCompiler<R, [...Current, SSymlator<H>], Stack>
       // -- String Case
       : H extends '"'
@@ -1268,6 +1283,15 @@ const compilerbbbb: SCompiler<['(', 'let', '[', 'a', '1', ']', '(', 'if', 'true'
 // -- String Parser
 const compilerStrT0: SCompiler<['"', 'aaa', 'bbb','"']> = ['prim', '"aaa bbb"']
 const compilerStrT1: SCompiler<['(', 'let', '[', 'a', '"', 'aaa', 'bbb','"',']', ')']> = ['let', [['sym', 'a'], ['prim', '"aaa bbb"']]]
+// -- Hash map
+const compilerHashT0: SCompiler<['{', ':a', '01', ':b', '10', '}']> =
+// 1
+// ['map', ['key', ':a'], ['prim', '01'], ['key', ':b'], ['prim', '10']]
+['map', [['key', ':a'], ['prim', '01'], ['key', ':b'], ['prim', '10']]]
+const compilerHashT1: SCompiler<['{', ':a', '01', ':b', '10', ':c', '{', ':c1', '101', '}', '}']> =
+// 1
+// ['map', ['key', ':a'], ['prim', '01'], ['key', ':b'], ['prim', '10'], ['key', ':c'], ['map', ['key', ':c1'], ['prim', '101']]]
+['map', [['key', ':a'], ['prim', '01'], ['key', ':b'], ['prim', '10'], ['key', ':c'], ['map', [['key', ':c1'], ['prim', '101']]]]]
 
 
 // ----------------------------
