@@ -1,7 +1,14 @@
 import type Bit from './bit.ts'
 
-type Each = LetForm | IfForm | Atom;
-type Atom = Sym | Prim | Fn | Vector | HashMap | Nil;
+// type TMapAtom = ['map', TMapAtom[]] | Atom
+// type TMap = Exclude<TMapAtom, Atom>
+
+// type Each = LetForm | IfForm | Atom
+// type Atom = Sym | Prim | Fn | Vector | Keyword | Nil
+type Each = LetForm | IfForm | Atom
+type Atom = ['map', Atom[]] | Sym | Prim | Fn | Vector | Keyword | Nil
+type TMap = Exclude<Atom, Sym | Prim | Fn | Vector | Keyword | Nil>
+
 // This isn't usually way to define a sexpr, not including atomic something.
 // That role leaves to EACH.
 type Sexpr = Array<Each | Sexpr>;
@@ -10,6 +17,7 @@ const Nil: Nil = [];
 // type Nil = [`prim`, 'nil']
 // const Nil = [`prim`, 'nil']
 
+type Keyword = [`key`, string]
 type Sym = [`sym`, string];
 type Prim = [`prim`, string | boolean | number]; // todo : This boolean is appended IFForm, using boolean directly in current.
 type Args = Sym[];
@@ -532,6 +540,28 @@ const testgetvec: GetVec<
 
 // map
 type HashMap = [`HashMap`, { [others: string]: Atom }];
+
+type TConcat<
+    V extends Array<Array<unknown>>
+    , Stack extends Array<unknown> = []> = 
+  V['length'] extends 0
+  ? Stack
+  : V extends [infer Head extends Array<unknown>, ...infer Rest extends Array<Array<unknown>>]
+    ? TConcat<Rest, [...Stack, ...Head]>
+    : never
+
+const tconcattest0: TConcat<[[0,1], [2,3], [4,5]]> = [0,1,2,3,4,5]
+
+const ttm: TMap = ['map', [['key', ':b'], ['key', ':b']]]
+
+
+type IsKeyword<T> = 
+  T extends ['key', `:${infer S}`]
+  ? true
+  : false
+
+type IsMap<T> = T extends TMap ? true : false
+
 type GetMapError0 = "GetMapError0";
 type GetMapError1 = "GetMapError1";
 type GetMapError2 = "GetMapError2";
@@ -1055,6 +1085,10 @@ const evallispeqtest2: Eval<
   [[`sym`, `eq`], [`prim`, 0], [`prim`, 0], [`prim`, 0]]
 > = [`prim`, true];
 
+
+
+
+
 // ------------------------------------------
 // the above is in the case of not recursive sexpr.
 // -----------------------------------------
@@ -1149,6 +1183,13 @@ type SParser<Sexpr> =
     ? [...SParser<` ${V}`>, ...SParser<` ${W}`>]
   : Sexpr extends ` ${infer C}]`
     ? [...SParser<` ${C}`>, ']']
+  // -- {}
+  : Sexpr extends ` {${infer U}`
+    ? ['{', ...SParser<` ${U}`>]
+  : Sexpr extends ` ${infer V} ${infer W}`
+    ? [...SParser<` ${V}`>, ...SParser<` ${W}`>]
+  : Sexpr extends ` ${infer C}}`
+    ? [...SParser<` ${C}`>, '}']
   // -- ""
   : Sexpr extends ` "${infer U}`
     ? ['"', ...SParser<` ${U}`>]
@@ -1171,7 +1212,8 @@ const parseddddd: SParser<' ((((((x))))))'> =
     ['(', '(', '(', '(', '(', '(', 'x', ')', ')', ')', ')', ')', ')']
 const parseeeeee: SParser<' (let [a 1 b 2] (if true t f))'> = ['(','let', '[', 'a', '1', 'b', '2', ']', '(', 'if', 'true', 't', 'f', ')', ')']
 const parsestrtest0: SParser<' (let [a "test is this"] (str "a b" a))'> = ['(', 'let', '[', 'a', '"', 'test', 'is', 'this','"', ']', '(', 'str', '"', 'a', 'b', '"', 'a', ')', ')']
-
+// --- hash map ---
+const parsehashtest0: SParser<' (let [a {:a 1 :b 2}] (> (:a a) (:b a)))'> = ['(', 'let', '[', 'a', '{', ':a', '1', ':b', '2', '}', ']', '(', '>', '(', ':a', 'a', ')', '(', ':b', 'a', ')', ')', ')']
 
 
 type SSymlator<MSym> = 
