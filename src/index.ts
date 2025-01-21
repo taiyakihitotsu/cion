@@ -454,6 +454,14 @@ type EvalError10 = "EvalError10";
 type EvalError11 =
   "EvalError11/ Some of elements type in SEXPR doesn't satisfy EACH.";
 type EvalError12 = "EvalError12";
+type EvalError13 = "EvalError13"
+type EvalError14 = "EvalError14"
+type EvalError15 = "EvalError15"
+type EvalError16 = "EvalError16"
+type EvalError17 = "EvalError17"
+type EvalError18 = "EvalError18"
+type EvalError19 = "EvalError19"
+type EvalError20 = "EvalError20"
 
 // todo : naming
 // let itself isn't value and returning value, unlike fn, so maybe ok as it is.
@@ -539,7 +547,6 @@ const testgetvec: GetVec<
 > = [`prim`, 3];
 
 // map
-type HashMap = [`HashMap`, { [others: string]: Atom }];
 
 type TConcat<
     V extends Array<Array<unknown>>
@@ -562,31 +569,56 @@ type IsKeyword<T> =
 
 type IsMap<T> = T extends TMap ? true : false
 
+type IsKeyMapSexpr<S> = 
+  S extends [infer Fst, infer Snd]
+    ? IsKeyword<Fst> extends true
+      ? IsMap<Snd> extends true
+        ? true
+        : false
+      : IsKeyword<Snd> extends true
+        ? IsMap<Fst> extends true
+          ? true
+          : false
+        : false
+    : false
+
+const iskeymapsexprtest0: IsKeyMapSexpr<[['key', ':a'],['key', ':b']]> = false
+const iskeymapsexprtest1: IsKeyMapSexpr<[['map', [['key', ':a'], ['prim', '0']]],['map', [['key', ':a'], ['prim', '1']]]]> = false
+const iskeymapsexprtest2: IsKeyMapSexpr<[['key', ':a'],['map', [['key', ':a'], ['prim', '0']]]]> = true
+const iskeymapsexprtest3: IsKeyMapSexpr<[['map', [['key', ':a'], ['prim', '0']]],['key', ':a']]> = true
+
 type GetMapError0 = "GetMapError0";
 type GetMapError1 = "GetMapError1";
 type GetMapError2 = "GetMapError2";
-type GetMap<N, V> = N extends string
-  ? V extends HashMap & [`HashMap`, infer W]
-    ? W extends { [others: string]: Atom }
-      ? W[N]
-      : GetMapError0
-    : GetMapError1
-  : GetMapError2;
 
-const testgetmap: GetMap<
-  "a",
-  [`HashMap`, { a: [`prim`, `val/a`]; b: [`prim`, `val/b`] }]
-> = [`prim`, `val/a`];
+type GetMap<K,V,sV = V extends [infer _, infer i] ? i : never> = 
+  sV extends [infer k, infer v, ... infer _]
+  ? k extends K
+    ? v
+    : GetMap<K,V,sV extends [infer _, infer __, ...infer i] ? i : never>
+  : Nil
+
+const testgetmap0: GetMap<['key', ':a'], ['map', [['key', ':a'], ['prim', '0']]]> = ['prim', '0']
+const testgetmap1: GetMap<['key', ':a'], ['map', [['key', ':b'], ['prim', '10'], ['key', ':a'], ['prim', '0']]]> = ['prim', '0']
+const testgetmap2: GetMap<['key', ':c'], ['map', [['key', ':b'], ['prim', '10'], ['key', ':a'], ['prim', '0']]]> = Nil
 
 type Get<K, V> = V extends Vector ? GetVec<K, V> : GetMap<K, V>;
-const testgetvec1: Get<
+const testget0: Get<
   3,
   [`vec`, [`prim`, 0], [`prim`, 1], [`prim`, 2], [`prim`, 3], [`prim`, 4]]
 > = [`prim`, 3];
-const testgetmap1: Get<
-  "a",
-  [`HashMap`, { a: [`prim`, `val/a`]; b: [`prim`, `val/b`] }]
-> = [`prim`, `val/a`];
+const testget1: Get<['key', ':a'], ['map', [['key', ':a'], ['prim', '0']]]> = ['prim', '0']
+const testget2: Get<['key', ':a'], ['map', [['key', ':b'], ['prim', '10'], ['key', ':a'], ['prim', '0']]]> = ['prim', '0']
+const testget3: Get<['key', ':c'], ['map', [['key', ':b'], ['prim', '10'], ['key', ':a'], ['prim', '0']]]> = Nil
+
+type LispGetError0 = "LispGetError0"
+type LispGet<S> =
+    S extends [infer Map extends TMap, infer Key extends Keyword]
+      ? Get<Key, Map>
+      : S extends [infer Vec extends Vector, infer Idx extends ['prim', string]]
+        ? Get<Idx, Vec>
+        : {error: [LispGetError0, S, "this is not map and key or vector and idx-num."]
+           sexpr: S}
 
 // fns of seq
 type FirstError = "FirstError";
@@ -793,11 +825,14 @@ type Eval<A, env = [[]], prev = 0> = A extends Sexpr
           : OPC extends Sym & [`sym`, infer U]
             ? // care of double-booking.
               ReadLet<U, env> extends NotMatch // `AppendP` | `str`
+              // todo : remove and replate this.
               ? U extends `AppendP`
                 ? AppendP<ReadAtom<Eval<OPR[0], env, [[prev]]>, env, [prev]>>
               // note : built-in functions
                 : U extends `str`
                   ? Str<Reading<OPR, env, [[prev]]>>
+                : U extends `get`
+                  ? LispGet<Reading<OPR, env, [[prev]]>>
                 : U extends `eq` | `=`
                   ? LispEq<Reading<OPR, env, [[prev]]>>
                 : U extends `and`
@@ -819,9 +854,25 @@ type Eval<A, env = [[]], prev = 0> = A extends Sexpr
                 : Eval<[ReadLet<U, env>, OPR[0]], env, [prev]>
               : ReadLet<U, env> extends Fn & infer UU
                 ? Eval<[UU, OPR[0]], env, [prev]>
-                : EvalError3
-            : EvalError4
-      : { error: [EvalError6, "env 1st shouldn't be [].", prev, A]; env: env }
+                : {error: [EvalError3, 'the 1st is not a function but it should be.']
+                   env: env}
+
+          // note : (:key map) and (map :key)
+          : IsKeyMapSexpr<A> extends true
+            ? IsKeyword<OPC> extends true
+              ? LispGet<Reading<[...OPR, OPC], env, [[prev]]>>
+              : IsKeyword<OPR[0]> extends true
+                ? LispGet<Reading<[OPC, ...OPR], env, [[prev]]>>
+                : { error: [EvalError12
+			   , 'the 1st and 2nd is not keyword.']
+		    , env: env
+		    , sexpr: A}
+          : { error: [EvalError4, 'the 1st is not a symbol but it should be.']
+	      , env: env
+	      , sexpr: A}
+        : { error: [EvalError6, "env 1st shouldn't be [].", prev, A]
+	    , env: env
+	    , sexpr: A}
     : EvalError2
   : A extends IfForm & [`if`, infer IFCond, infer IFT, infer IFF]
     ? Eval<If<Eval<IFCond, env, [[prev]]>, IFT, IFF>, env, [prev]>
@@ -874,6 +925,13 @@ type Eval<A, env = [[]], prev = 0> = A extends Sexpr
                       : { error: [EvalError7, prev, A] }
             : { error: [EvalError8, "this is not proper let-form.", prev, A] } // : EvalError9 : EvalError10
         : { error: [EvalError11, prev, A] };
+
+// test get
+const evallisp_get_0: IsKeyMapSexpr<[['key', ':a'], ['map', [['key', ':a'], ['prim', '0']]]]> = true
+const evallisp_get_1: Eval<[['key', ':a'], ['map', [['key', ':a'], ['prim', '0']]]]> = ['prim', '0']
+const test_get_0: LispGet<[['map', [['key', ':a'], ['prim', '0']]], ['key', ':a']]> = ['prim', '0']
+const evallisp_get_2: IsKeyMapSexpr<[['map', [['key', ':a'], ['prim', '0']]],['key', ':a']]> = true
+const evallisp_get_3: Eval<[['map', [['key', ':a'], ['prim', '0']]], ['key', ':a']]> = ['prim', '0']
 
 // test case
 type Tdsds = [[`sym`, `AppendP`], [`prim`, `'test'`]];
@@ -1352,4 +1410,17 @@ const maintest11_lte_2: Lisp<"(<= 00001111 00001110 00010000)"> = [`prim`, false
 const maintest11_lte_0_1: Lisp<"(<= 00001110 00001111)"> = [`prim`, true]
 const maintest11_lte_1_1: Lisp<"(<= 00001100 00001110 00001111)"> = [`prim`, true]
 const maintest11_lte_2_1: Lisp<"(<= 00001111 00001111 00001111)"> = [`prim`, true]
+
+const maintest12_get_0: Lisp<"(:a {:a 1})"> = ['prim', '1']
+const maintest12_get_1: Lisp<"(:a {:a 1 :b 2})"> = ['prim', '1']
+const maintest12_get_2: Lisp<"({:a 1 :b 2} :a)"> = ['prim', '1']
+const maintest12_get_3: Lisp<"(:c {:a 1 :b 2})"> = []
+const maintest12_get_4: Lisp<"({:a 1 :b 2} :c)"> = []
+const maintest12_get_5: Lisp<"(get {:a 1 :b 2} :a)"> = ['prim', '1']
+
+
+
+
+
+
 
