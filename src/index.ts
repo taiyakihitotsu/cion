@@ -810,6 +810,134 @@ const testttt0: Eval<[['fn', [['sym', 'a'], ['sym', 'b']], [['sym', '+'], ['sym'
 const testttt1: Eval<['let', [], ['prim', '1']]> = ['prim', '1']
 const testttt2: Eval<[['fn', [['sym', 'a'], ['sym', 'b']], [['sym', '+'], ['sym', 'a'], ['sym', 'b']]], ['prim', '10'], ['prim', '11']]> = ['prim', '00000101']
 
+
+type ReverseError0 = 'ReverseError0'
+type Reverse<V, R extends Array<unknown> = []> = 
+  V extends [infer H, ...infer T]
+  ? T['length'] extends 0
+    ? [H, ...R]
+    : Reverse<T, [H, ...R]>
+  : V extends []
+    ? []
+    : {error: [ReverseError0]}
+const reversetest0: Reverse<[0,1,2,3,4]> = [4,3,2,1,0]
+const reversetest1: Reverse<[]> = []
+const reversetest2: Reverse<[1]> = [1]
+
+// note : for threading macros: insertsecond, insertlast, vecwrap
+type InsertSecondError0 = 'InsertSecondError0'
+type InsertSecondError1 = 'InsertSecondError1'
+type InsertSecond<V, E> = 
+  V extends [infer H, ...infer R]
+    ? [H, E, ...R]
+    : V extends [...infer R]
+      ? [E, ...R]
+      : {error: [InsertSecondError0]}
+
+const insert2ndtest0: InsertSecond<[0,1,2,3], 'x'> = [0,'x',1,2,3]
+const insert2ndtest1: InsertSecond<[0], 'x'> = [0,'x']
+const insert2ndtest2: InsertSecond<[], 'x'> = ['x']
+
+type InsertLastError0 = 'InsertLastError0'
+type InsertLast<V, E> = 
+  V extends [...infer R]
+  ? [...R, E]
+  : {error: [InsertLastError0]}
+const insertlasttest0: InsertLast<[0,1,2,3], 'x'> = [0,1,2,3,'x']
+const insertlasttest1: InsertLast<[0], 'x'> = [0,'x']
+const insertlasttest2: InsertLast<[], 'x'> = ['x']
+
+type VecWrapError0 = 'VecWrapError0'
+// note : any sexpr and any atom of them should be rendered 
+//        such as [['sym', 'inc'], ['prim', '0']] and ['prim', '0'].
+type VecWrap<V> = V extends unknown[][] ? V : [V]
+
+type ThreadFirstError0 = 'ThreadFirstError0'
+type ThreadFirstError1 = 'ThreadFirstError1'
+type ThreadFirstError2 = 'ThreadFirstError2'
+type ThreadFirstError3 = 'ThreadFirstError3'
+type ThreadFirst<
+Fst
+, V extends unknown[]
+, R extends unknown[] = []
+, Init extends boolean = true
+> =
+  V['length'] extends 0
+    ? InsertSecond<VecWrap<Fst>, R> 
+    : V extends [infer Head, ...infer Tail]
+      ? Init extends false 
+        ? ThreadFirst<Head, Tail, InsertSecond<VecWrap<Fst>, R>, false>
+        : Tail extends [infer N, ...infer M]
+          ? ThreadFirst<N, M, InsertSecond<VecWrap<Head>, Fst>, false>
+          : InsertSecond<VecWrap<Head>, Fst>
+      : {error: [ThreadFirstError1]}
+const threadfirsttest0: ThreadFirst<[0], [[[1]], [[2]], [[3]], [[4]]]> = [[4], [[3], [[2], [[1], [0]]]]]
+const threadfirsttest1: ThreadFirst<[0], [[[1]], [[2], [22]], [[3]], [[4]]]> = [[4], [[3], [[2], [[1], [0]], [22]]]]
+const threadfirsttest2: ThreadFirst<[0], [[[1]], [[2], [22]], [3], [[4]]]> = [[4], [[3], [[2], [[1], [0]], [22]]]]
+const threadfirsttest3: ThreadFirst<[[0]], [[[1]], [[2]], [[3]], [[4]]]> = [[4], [[3], [[2], [[1], [[0]]]]]]
+const threadfirsttest4: ThreadFirst<[[0]], [[[1]], [[2], [22]], [[3]], [[4]]]> = [[4], [[3], [[2], [[1], [[0]]], [22]]]]
+const threadfirsttest5: ThreadFirst<[[0]], [[[1]], [[2], [22]], [3], [[4]]]> = [[4], [[3], [[2], [[1], [[0]]], [22]]]]
+const threadfirsttest6: ThreadFirst<[0], [[1]]> = [[1], [0]]
+
+type LispThreadFirstError0 = 'LispThreadFirstError0'
+type LispThreadFirst<V> =
+  V extends [infer H, ...infer T]
+    ? T['length'] extends 0
+      ? V
+      : ThreadFirst<H,T>
+    : {error: [LispThreadFirstError0]}
+const lispthreadfirsttest0: LispThreadFirst<[[0], [[1]], [[2]], [[3]], [[4]]]> = [[4], [[3], [[2], [[1], [0]]]]]
+const lispthreadfirsttest1: LispThreadFirst<[[0], [[1]], [[2], [22]], [[3]], [[4]]]> = [[4], [[3], [[2], [[1], [0]], [22]]]]
+const lispthreadfirsttest2: LispThreadFirst<[[0], [[1]], [[2], [22]], [3], [[4]]]> = [[4], [[3], [[2], [[1], [0]], [22]]]]
+const lispthreadfirsttest3: LispThreadFirst<[[[0]], [[1]], [[2]], [[3]], [[4]]]> = [[4], [[3], [[2], [[1], [[0]]]]]]
+const lispthreadfirsttest4: LispThreadFirst<[[[0]], [[1]], [[2], [22]], [[3]], [[4]]]> = [[4], [[3], [[2], [[1], [[0]]], [22]]]]
+const lispthreadfirsttest5: LispThreadFirst<[[[0]], [[1]], [[2], [22]], [3], [[4]]]> = [[4], [[3], [[2], [[1], [[0]]], [22]]]]
+const lispthreadfirsttest6: LispThreadFirst<[[0], [1]]> = [[1], [0]]
+  
+
+
+type ThreadLastError0 = 'ThreadLastError0'
+type ThreadLastError1 = 'ThreadLastError1'
+type ThreadLastError2 = 'ThreadLastError2'
+type ThreadLastError3 = 'ThreadLastError3'
+type ThreadLast<
+Fst
+, V extends unknown[]
+, R extends unknown[] = []
+, Init extends boolean = true
+> =
+  V['length'] extends 0
+    ? InsertLast<VecWrap<Fst>, R> 
+    : V extends [infer Head, ...infer Tail]
+      ? Init extends false 
+        ? ThreadLast<Head, Tail, InsertLast<VecWrap<Fst>, R>, false>
+        : Tail extends [infer N, ...infer M]
+          ? ThreadLast<N, M, InsertLast<VecWrap<Head>, Fst>, false>
+          : InsertLast<VecWrap<Head>, Fst>
+      : {error: [ThreadLastError1]}
+const threadlasttest0: ThreadLast<[0], [[[1]], [[2]], [[3]], [[4]]]> = [[4], [[3], [[2], [[1], [0]]]]]
+const threadlasttest1: ThreadLast<[0], [[[1]], [[2], [22]], [[3]], [[4]]]> = [[4], [[3], [[2], [22],[[1],[0]]]]]
+const threadlasttest2: ThreadLast<[0], [[[1]], [[2], [22]], [3], [[4]]]> = [[4], [[3], [[2], [22], [[1], [0]]]]]
+const threadlasttest3: ThreadLast<[[0]], [[[1]], [[2]], [[3]], [[4]]]> = [[4], [[3], [[2], [[1], [[0]]]]]]
+const threadlasttest4: ThreadLast<[[0]], [[[1]], [[2], [22]], [[3]], [[4]]]> = [[4], [[3], [[2],[22],[[1], [[0]]]]]]
+const threadlasttest5: ThreadLast<[[0]], [[[1]], [[2], [22]], [3], [[4]]]> = [[4], [[3], [[2],[22], [[1], [[0]]]]]]
+
+type LispThreadLastError0 = 'LispThreadLastError0'
+type LispThreadLast<V> =
+  V extends [infer H, ...infer T]
+    ? T['length'] extends 0
+      ? V
+      : ThreadLast<H,T>
+    : {error: [LispThreadLastError0]}
+const lispthreadlasttest0: LispThreadLast<[[0], [[1]], [[2]], [[3]], [[4]]]> = [[4], [[3], [[2], [[1], [0]]]]]
+const lispthreadlasttest1: LispThreadLast<[[0], [[1]], [[2], [22]], [[3]], [[4]]]> = [[4], [[3], [[2], [22], [[1], [0]]]]]
+const lispthreadlasttest2: LispThreadLast<[[0], [[1]], [[2], [22]], [3], [[4]]]> = [[4], [[3], [[2], [22],  [[1], [0]]]]]
+const lispthreadlasttest3: LispThreadLast<[[[0]], [[1]], [[2]], [[3]], [[4]]]> = [[4], [[3], [[2], [[1], [[0]]]]]]
+const lispthreadlasttest4: LispThreadLast<[[[0]], [[1]], [[2], [22]], [[3]], [[4]]]> = [[4], [[3], [[2], [22], [[1], [[0]]]]]]
+const lispthreadlasttest5: LispThreadLast<[[[0]], [[1]], [[2], [22]], [3], [[4]]]> = [[4], [[3], [[2], [22], [[1], [[0]]]]]]
+const lispthreadlasttest6: LispThreadLast<[[0], [1]]> = [[1], [0]]
+  
+
 // multiarg fn test
 const testmultiargfn0: Eval<
   [
@@ -884,6 +1012,13 @@ type Eval<A, env = [[]], prev = 0> = A extends Sexpr
               // todo : remove and replate this.
               ? U extends `AppendP`
                 ? AppendP<ReadAtom<Eval<OPR[0], env, [[prev]]>, env, [prev]>>
+              // threading macro: ->, ->>
+              // note : place it here
+              //   because a number of macros will be up.
+                : U extends '->'
+                  ? Eval<LispThreadFirst<OPR>, env, [[prev]]>
+                : U extends '->>'
+                  ? Eval<LispThreadLast<OPR>, env, [[prev]]>
               // note : built-in functions
                 : U extends `str`
                   ? Str<Reading<OPR, env, [[prev]]>>
@@ -1412,6 +1547,9 @@ const compilerHashT1: SCompiler<['{', ':a', '01', ':b', '10', ':c', '{', ':c1', 
 ['map', [['key', ':a'], ['prim', '01'], ['key', ':b'], ['prim', '10'], ['key', ':c'], ['map', [['key', ':c1'], ['prim', '101']]]]]
 
 
+
+
+
 // ----------------------------
 // -- Main
 // ----------------------------
@@ -1481,9 +1619,14 @@ const maintest12_get_3: Lisp<"(:c {:a 1 :b 2})"> = []
 const maintest12_get_4: Lisp<"({:a 1 :b 2} :c)"> = []
 const maintest12_get_5: Lisp<"(get {:a 1 :b 2} :a)"> = ['prim', '1']
 
+const maintest_threadf_0: Lisp<"(-> 's' (str '01'))"> = ['prim', "'s01'"]
+const maintest_threadf_1: Lisp<"(-> 'a' (str '01') (str 's'))"> = ['prim', "'a01s'"]
+const maintest_threadf_2: Lisp<"(str 'a' (str '01' 's'))"> = ['prim', "'a01s'"]
+const maintest_threadf_3: Lisp<"(-> 01 (+ 01) (+ 10))"> = ['prim', '00000100']
+const maintest_threadf_4: Lisp<"(+ 10 (+ 01 01))"> = ['prim', '00000100']
 
-
-
-
-
-
+const maintest_threadl_0: Lisp<"(->> 's' (str '01'))"> = ['prim', "'01s'"]
+const maintest_threadl_1: Lisp<"(->> 'a' (str '01') (str 's'))"> = ['prim', "'s01a'"]
+const maintest_threadl_2: Lisp<"(str 'a' (str '01' 's'))"> = ['prim', "'a01s'"]
+const maintest_threadl_3: Lisp<"(->> 01 (+ 01) (+ 10))"> = ['prim', '00000100']
+const maintest_threadl_4: Lisp<"(+ 10 (+ 01 01))"> = ['prim', '00000100']
