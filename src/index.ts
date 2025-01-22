@@ -131,12 +131,24 @@ const readatomtest2: ReadAtom<
 > = [`prim`, `'sss'`];
 
 type ReadingError0 = "ReadingError0";
+type ReadingError1 = "ReadingError1";
+type ReadingError2 = "ReadingError2";
+type ReadingError3 = "ReadingError3";
 
-type Reading<AS, EnvLifo = [[]], prev = 0, R = []> = R extends Array<Atom> // todo : ugly
-  ? AS extends Atom[] & [infer H, ...infer T]
-    ? Reading<T, EnvLifo, prev, [...R, ReadAtom<H, EnvLifo, prev>]>
-    : R
-  : { error: [ReadingError0]; env: EnvLifo };
+type Reading<
+    AS,
+    EnvLifo = [[]],
+    prev = 0,
+    R = []> =
+  R extends Atom[]
+    ? AS extends [infer H, ...infer T]
+      ? H extends Atom
+        ? Reading<T, EnvLifo, prev, [...R, ReadAtom<H, EnvLifo, prev>]>
+        : H extends Sexpr
+          ? Reading<T, EnvLifo, prev, [...R, Eval<H, EnvLifo, prev>]>
+          : { error: [ReadingError1]}
+      : R
+    : { error: [ReadingError0]; env: EnvLifo };
 // test reading
 const readingtest0: Reading<
   [[`sym`, `a`], [`sym`, `b`], [`prim`, `c-str`]],
@@ -150,6 +162,11 @@ const readingtest1: Reading<
   [['sym', 'a']],
   [[]]
 > = {error: ['ReadingError0'], env: [[]]}
+const readingtest2: Reading<
+[['sym', 'a'], ['sym', 'b'], [['sym', 'str'], ['prim', "'s1'"], ['prim', "'s2'"]]],
+[[],
+ [MakeVar<"a", ['sym', 'str']>, 
+  MakeVar<'b', ['prim', "'bs'"]>]]> = [['sym', 'str'], ['prim', "'bs'"], ['prim', "'s1s2'"]]
 
 
 
@@ -1400,6 +1417,9 @@ const compilerHashT1: SCompiler<['{', ':a', '01', ':b', '10', ':c', '{', ':c1', 
 // ----------------------------
 
 type Lisp<S extends string> = Eval<SCompiler<SParser<SPad<S>>>>
+
+const lisptest_str_0: SCompiler<SParser<SPad<"(str 'a' (str 's1' 's2'))">>> = [['sym', 'str'], ['prim', "'a'"], [['sym', 'str'], ['prim', "'s1'"], ['prim', "'s2'"]]]
+const lisptest_plus_0: SCompiler<SParser<SPad<"(+ 01 (+ 10 11))">>> = [['sym', '+'], ['prim', '01'], [['sym', '+'], ['prim', '10'], ['prim', '11']]]
 
 const maintest0: Lisp<"(eq 'a' 'b')"> = [`prim`, false]
 const maintest1: Lisp<"(eq 'a' 'a')"> = [`prim`, true]
