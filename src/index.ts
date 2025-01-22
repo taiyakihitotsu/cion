@@ -771,6 +771,28 @@ const testinterleave0: Interleave<[1, 2, 3], [4, 5, 6]> = [1, 4, 2, 5, 3, 6];
 const testinterleave1: Interleave<[1, 2, 3], [4, 5]> = [1, 4, 2, 5];
 const testinterleave2: Interleave<[1], [2]> = [1, 2];
 
+type ReduceError0 = 'ReduceError0'
+type ReduceError1 = 'ReduceError1'
+type _Reduce<F, Init, V> =
+  V extends [infer H, ...infer T]
+  ? T['length'] extends 0
+    ? Eval<[F, Init, H]>
+    : _Reduce<F, Eval<[F, Init, H]>, T>
+  : {error: [ReduceError0]}
+type Reduce<F,Init,V> =
+  V extends ['vec', ...infer v]
+    ? _Reduce<F,Init,v>
+    : {error: [ReduceError1]}
+
+const testreduce0: Reduce<
+    ['fn', [['sym', 'a'], ['sym', 'b']], [['sym', '+'], ['sym', 'a'], ['sym', 'b']]],
+    ['prim', '0'],
+    ['vec', ['prim', '01'], ['prim', '10']]
+> = ['prim', '00000011']
+const testttt0: Eval<[['fn', [['sym', 'a'], ['sym', 'b']], [['sym', '+'], ['sym', 'a'], ['sym', 'b']]]]> = {error: ['LispAddError1']}
+const testttt1: Eval<['let', [], ['prim', '1']]> = ['prim', '1']
+const testttt2: Eval<[['fn', [['sym', 'a'], ['sym', 'b']], [['sym', '+'], ['sym', 'a'], ['sym', 'b']]], ['prim', '10'], ['prim', '11']]> = ['prim', '00000101']
+
 // multiarg fn test
 const testmultiargfn0: Eval<
   [
