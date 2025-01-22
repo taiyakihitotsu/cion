@@ -136,9 +136,9 @@ type Reading<AS, EnvLifo = [[]], prev = 0, R = []> = R extends Array<Atom> // to
   ? AS extends Atom[] & [infer H, ...infer T]
     ? Reading<T, EnvLifo, prev, [...R, ReadAtom<H, EnvLifo, prev>]>
     : R
-  : { error: ReadingError0; env: EnvLifo };
+  : { error: [ReadingError0]; env: EnvLifo };
 // test reading
-const readingtest: Reading<
+const readingtest0: Reading<
   [[`sym`, `a`], [`sym`, `b`], [`prim`, `c-str`]],
   [[], [MakeVar<"a", [`prim`, "a-str"]>, MakeVar<"b", [`prim`, "b-str"]>]]
 > = [
@@ -146,6 +146,12 @@ const readingtest: Reading<
   ["prim", "b-str"],
   ["prim", "c-str"],
 ];
+const readingtest1: Reading<
+  [['sym', 'a']],
+  [[]]
+> = {error: ['ReadingError0'], env: [[]]}
+
+
 
 //-----------------------------------------
 
@@ -300,6 +306,8 @@ const lispeqtest5: LispEq<[[`prim`, "'a'"], [`prim`, "''"]]> = [`prim`, false];
 // -- Bit Operators
 // -------------------------------
 
+type LispAddError0 = 'LispAddError0'
+type LispAddError1 = 'LispAddError1'
 type LispAdd<
   S
   , R extends string = "00000000"> = 
@@ -308,12 +316,13 @@ type LispAdd<
     : S extends [infer Fst, ...infer Rest]
       ? Fst extends [`prim`, infer FstP extends string]
         ? LispAdd<Rest, Bit.BitAdd<R, FstP>>
-        : never
-      : never
+        : {errop: [LispAddError0]}
+      : {error: [LispAddError1]}
 
 const testlispadd0: LispAdd<[[`prim`, '00000011'], [`prim`, '0000001']]> = [`prim`, '00000100']
 const testlispadd1: LispAdd<[[`prim`, '00000011'], [`prim`, '0000001'], [`prim`, '00000011']]> = [`prim`, '00000111']
 
+type LispSubError0 = 'LispSubError0'
 type LispSub<
   S
   , R extends string = "00000000"
@@ -324,11 +333,12 @@ type LispSub<
       ? Init extends true
         ? LispSub<Rest, Fst, false>
         : LispSub<Rest, Bit.BitSub<R,Fst>, false>
-      : 'never1'
+      : {error: [LispSubError0]}
 
 const testlispsub0: LispSub<[[`prim`, '00000011'], [`prim`, '0000001']]> = [`prim`, '00000010']
 const testlispsub1: LispSub<[[`prim`, '00001111'], [`prim`, '0000001'], [`prim`, '00000011']]> = [`prim`, '00001011']
 
+type LispMulError0 = 'LispMulError0'
 type LispMul<
   S
   , R extends string = "00000000"
@@ -339,12 +349,13 @@ type LispMul<
       ? Init extends true
         ? LispMul<Rest, Fst, false>
         : LispMul<Rest, Bit.BitMul<R,Fst>, false>
-      : 'never1'
+      : {error: [LispMulError0]}
 
 const testlispmul0: LispMul<[[`prim`, '00000011'], [`prim`, '0000001']]> = [`prim`, '00000011']
 const testlispmul1: LispMul<[[`prim`, '00001111'], [`prim`, '0000001'], [`prim`, '00000011']]> = [`prim`, '00101101']
 
-
+type LispDivError0 = 'LispDivError0'
+type LispDivError1 = 'LispDivError1'
 type LispDiv<
   S
   , R extends string = "00000001"
@@ -366,13 +377,15 @@ type LispDiv<
             ? Div extends string
               ? LispDiv<Rest, Div, false>
               : Bit.Nil
-            : never 
-          : never
+            : {error: [LispDivError0]}
+          : {error: [LispDivError1]}
 
 const testlispdiv0: LispDiv<[[`prim`, '00000011'], [`prim`, '0000001']]> = [`prim`, '00000011']
 const testlispdiv1: LispDiv<[[`prim`, '00001111'], [`prim`, '0000001'], [`prim`, '00000011']]> = [`prim`, '00000101']
 const testlispdiv2: LispDiv<[[`prim`, '00000011'], [`prim`, '0000000']]> = [`prim`, 'nil']
 
+type LispModError0 = 'LispModError0'
+type LispModError1 = 'LispModError1'
 type LispMod<
   S
   , R extends string = "00000001"
@@ -386,8 +399,8 @@ type LispMod<
             ? Mod extends string
               ? LispMod<Rest, Mod, false>
               : Bit.Nil
-            : never 
-          : never
+            : {error: [LispModError0]}
+          : {error: [LispModError1]}
 
 const testlispmod0: LispMod<[[`prim`, '00000011'], [`prim`, '0000001']]> = [`prim`, '00000000']
 const testlispmod1: LispMod<[[`prim`, '00001111'], [`prim`, '0000001'], [`prim`, '00000011']]> = [`prim`, '00000000']
@@ -395,6 +408,8 @@ const testlispmod2: LispMod<[[`prim`, '00000011'], [`prim`, '0000000']]> = [`pri
 const testlispmod3: LispMod<[[`prim`, '00000101'], [`prim`, '0000010']]> = [`prim`, '00000001']
 const testlispmod4: LispMod<[[`prim`, '00010001'], [`prim`, '00000011']]> = [`prim`, '00000010']
 
+type LispRelationError0 = 'LispRelationError0'
+type LispRelationError1 = 'LispRelationError1'
 type LispRelation<
   Name extends string
   , S
@@ -418,9 +433,9 @@ type LispRelation<
             ? LispRelation<Name, Rest, Fst, false, Bit.BitGTE<R,Fst>>
           : Name extends '<='
             ? LispRelation<Name, Rest, Fst, false, Bit.BitLTE<R,Fst>>
-            : never
+            : {error: [LispRelationError0]}
           : [`prim`, false]
-      : 'never1'
+      : {error: [LispRelationError1]}
  
 const testlispgt0: LispRelation<'>',  [[`prim`, '00000011'], [`prim`, '0000001']]> = [`prim`, true]
 const testlispgt1: LispRelation<'>',  [[`prim`, '00001111'], [`prim`, '00000011'], [`prim`, '0000001']]> = [`prim`, true]
@@ -773,6 +788,8 @@ const testmultiargfn0: Eval<
 
 
 
+
+
 // ---------------------------------------
 // -- Eval
 // ---------------------------------------
@@ -923,7 +940,11 @@ type Eval<A, env = [[]], prev = 0> = A extends Sexpr
                     : LV extends Fn
                       ? Eval<LC, Let<LN, LV, env>, [prev]>
                       : { error: [EvalError7, prev, A] }
-            : { error: [EvalError8, "this is not proper let-form.", prev, A] } // : EvalError9 : EvalError10
+          : A extends ['let', [], infer Sexpr]
+             ? Eval<Sexpr, env, [prev]>
+             : { error: [EvalError8, "this is not proper let-form."]
+	      , prev : prev
+	      , sexpr : A} // : EvalError9 : EvalError10
         : { error: [EvalError11, prev, A] };
 
 // test get
