@@ -100,6 +100,10 @@ type PeanoToDecimal<N> =
   : N extends [[[null]]] ? 3
   : N extends [[[[null]]]] ? 4
   : N extends [[[[[null]]]]] ? 5
+  : N extends [[[[[[null]]]]]] ? 6
+  : N extends [[[[[[[null]]]]]]] ? 7
+  : N extends [[[[[[[[null]]]]]]]] ? 8
+  : N extends [[[[[[[[[null]]]]]]]]] ? 9
   : never
 
 type DecimalToPeano<N> = 
@@ -148,4 +152,46 @@ type DecimalToBit<
  
 const decimaltobit_test_0: DecimalToBit<'32111'> = `${0}111110101101111`
 const decimaltobit_test_1: DecimalToBit<'39000'> = {error: ['DecimalToBitError0', 'greater than the max of unsigned-16-bit-number.']}
+const decimaltobit_test_2: DecimalToBit<'666666'> = {error: ['DecimalToBitError0', 'greater than the max of unsigned-16-bit-number.']}
 
+type DigitTable = ['1', D10, D100, D1000, D10000]
+type _DigitKeys = [4,3,2,1,0]
+type DigitKidx = 0|1|2|3|4 
+
+type _BitToDecimal<
+  S extends string,
+  Ret extends string = '0',
+  Keys = _DigitKeys,
+  Cul = null
+> =
+  Keys extends [infer K, ...infer R]
+  ? Bit.BitSub<S, DigitTable[K extends DigitKidx ? K : never]> extends infer u
+    ? Bit.BitLTE<u extends string ? u : never,'0'> extends true
+        ? _BitToDecimal<S, `${Ret}${PeanoToDecimal<Cul>}`, R>
+        : _BitToDecimal<u extends string ? u : never, Ret, Keys, Peano.inc<Cul>>
+    : never
+  : Ret extends string ? Ret : never
+
+type TrimZero<
+  S extends string
+> =
+  // note
+  // this do trims all of 0
+  //   so if arg is '0', it returns ''.
+  S extends `${infer H}${infer T}`
+    ? H extends '0'
+        ? TrimZero<T>
+        : S
+    : S
+
+type BitToDecimal<S extends string> =
+  _BitToDecimal<S> extends string & infer s
+    ? TrimZero<s extends string ? s : never> extends infer trimed
+        ? trimed extends ''
+            ? '0' : trimed : never : never
+
+const bittodecimal_test_0: BitToDecimal<'1010'> = '10'
+const bittodecimal_test_1: BitToDecimal<'1'> = '1'
+const bittodecimal_test_2: BitToDecimal<'0'> = '0'
+const bittodecimal_test_3: BitToDecimal<`${0}111110101101111`> = '32111'
+const bittodecimal_test_4: BitToDecimal<'0111111111111111'> = '32767'
