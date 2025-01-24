@@ -336,8 +336,8 @@ type LispAdd<
         : {errop: [LispAddError0]}
       : {error: [LispAddError1]}
 
-const testlispadd0: LispAdd<[[`prim`, '00000011'], [`prim`, '0000001']]> = [`prim`, '00000100']
-const testlispadd1: LispAdd<[[`prim`, '00000011'], [`prim`, '0000001'], [`prim`, '00000011']]> = [`prim`, '00000111']
+const testlispadd0: LispAdd<[[`prim`, '00000011'], [`prim`, '0000001']]> = [`prim`, '0000000000000100']
+const testlispadd1: LispAdd<[[`prim`, '00000011'], [`prim`, '0000001'], [`prim`, '00000011']]> = [`prim`, '0000000000000111']
 
 type LispSubError0 = 'LispSubError0'
 type LispSub<
@@ -352,8 +352,8 @@ type LispSub<
         : LispSub<Rest, Bit.BitSub<R,Fst>, false>
       : {error: [LispSubError0]}
 
-const testlispsub0: LispSub<[[`prim`, '00000011'], [`prim`, '0000001']]> = [`prim`, '00000010']
-const testlispsub1: LispSub<[[`prim`, '00001111'], [`prim`, '0000001'], [`prim`, '00000011']]> = [`prim`, '00001011']
+const testlispsub0: LispSub<[[`prim`, '00000011'], [`prim`, '0000001']]> = [`prim`, '0000000000000010']
+const testlispsub1: LispSub<[[`prim`, '00001111'], [`prim`, '0000001'], [`prim`, '00000011']]> = [`prim`, '0000000000001011']
 
 type LispMulError0 = 'LispMulError0'
 type LispMul<
@@ -368,8 +368,8 @@ type LispMul<
         : LispMul<Rest, Bit.BitMul<R,Fst>, false>
       : {error: [LispMulError0]}
 
-const testlispmul0: LispMul<[[`prim`, '00000011'], [`prim`, '0000001']]> = [`prim`, '00000011']
-const testlispmul1: LispMul<[[`prim`, '00001111'], [`prim`, '0000001'], [`prim`, '00000011']]> = [`prim`, '00101101']
+const testlispmul0: LispMul<[[`prim`, '00000011'], [`prim`, '0000001']]> = [`prim`, '0000000000000011']
+const testlispmul1: LispMul<[[`prim`, '00001111'], [`prim`, '0000001'], [`prim`, '00000011']]> = [`prim`, '0000000000101101']
 
 type LispDivError0 = 'LispDivError0'
 type LispDivError1 = 'LispDivError1'
@@ -397,8 +397,8 @@ type LispDiv<
             : {error: [LispDivError0]}
           : {error: [LispDivError1]}
 
-const testlispdiv0: LispDiv<[[`prim`, '00000011'], [`prim`, '0000001']]> = [`prim`, '00000011']
-const testlispdiv1: LispDiv<[[`prim`, '00001111'], [`prim`, '0000001'], [`prim`, '00000011']]> = [`prim`, '00000101']
+const testlispdiv0: LispDiv<[[`prim`, '00000011'], [`prim`, '0000001']]> = [`prim`, '0000000000000011']
+const testlispdiv1: LispDiv<[[`prim`, '00001111'], [`prim`, '0000001'], [`prim`, '00000011']]> = [`prim`, '0000000000000101']
 const testlispdiv2: LispDiv<[[`prim`, '00000011'], [`prim`, '0000000']]> = [`prim`, 'nil']
 
 type LispModError0 = 'LispModError0'
@@ -419,11 +419,11 @@ type LispMod<
             : {error: [LispModError0]}
           : {error: [LispModError1]}
 
-const testlispmod0: LispMod<[[`prim`, '00000011'], [`prim`, '0000001']]> = [`prim`, '00000000']
-const testlispmod1: LispMod<[[`prim`, '00001111'], [`prim`, '0000001'], [`prim`, '00000011']]> = [`prim`, '00000000']
+const testlispmod0: LispMod<[[`prim`, '00000011'], [`prim`, '0000001']]> = [`prim`, '0000000000000000']
+const testlispmod1: LispMod<[[`prim`, '00001111'], [`prim`, '0000001'], [`prim`, '00000011']]> = [`prim`, '0000000000000000']
 const testlispmod2: LispMod<[[`prim`, '00000011'], [`prim`, '0000000']]> = [`prim`, 'nil']
-const testlispmod3: LispMod<[[`prim`, '00000101'], [`prim`, '0000010']]> = [`prim`, '00000001']
-const testlispmod4: LispMod<[[`prim`, '00010001'], [`prim`, '00000011']]> = [`prim`, '00000010']
+const testlispmod3: LispMod<[[`prim`, '00000101'], [`prim`, '0000010']]> = [`prim`, '0000000000000001']
+const testlispmod4: LispMod<[[`prim`, '00010001'], [`prim`, '00000011']]> = [`prim`, '0000000000000010']
 
 type LispRelationError0 = 'LispRelationError0'
 type LispRelationError1 = 'LispRelationError1'
@@ -805,10 +805,10 @@ const testreduce0: Reduce<
     ['fn', [['sym', 'a'], ['sym', 'b']], [['sym', '+'], ['sym', 'a'], ['sym', 'b']]],
     ['prim', '0'],
     ['vec', ['prim', '01'], ['prim', '10']]
-> = ['prim', '00000011']
+> = ['prim', '0000000000000011']
 const testttt0: Eval<[['fn', [['sym', 'a'], ['sym', 'b']], [['sym', '+'], ['sym', 'a'], ['sym', 'b']]]]> = {error: ['LispAddError1']}
 const testttt1: Eval<['let', [], ['prim', '1']]> = ['prim', '1']
-const testttt2: Eval<[['fn', [['sym', 'a'], ['sym', 'b']], [['sym', '+'], ['sym', 'a'], ['sym', 'b']]], ['prim', '10'], ['prim', '11']]> = ['prim', '00000101']
+const testttt2: Eval<[['fn', [['sym', 'a'], ['sym', 'b']], [['sym', '+'], ['sym', 'a'], ['sym', 'b']]], ['prim', '10'], ['prim', '11']]> = ['prim', '0000000000000101']
 
 
 type ReverseError0 = 'ReverseError0'
@@ -1622,11 +1622,11 @@ const maintest12_get_5: Lisp<"(get {:a 1 :b 2} :a)"> = ['prim', '1']
 const maintest_threadf_0: Lisp<"(-> 's' (str '01'))"> = ['prim', "'s01'"]
 const maintest_threadf_1: Lisp<"(-> 'a' (str '01') (str 's'))"> = ['prim', "'a01s'"]
 const maintest_threadf_2: Lisp<"(str 'a' (str '01' 's'))"> = ['prim', "'a01s'"]
-const maintest_threadf_3: Lisp<"(-> 01 (+ 01) (+ 10))"> = ['prim', '00000100']
-const maintest_threadf_4: Lisp<"(+ 10 (+ 01 01))"> = ['prim', '00000100']
+const maintest_threadf_3: Lisp<"(-> 01 (+ 01) (+ 10))"> = ['prim', '0000000000000100']
+const maintest_threadf_4: Lisp<"(+ 10 (+ 01 01))"> = ['prim', '0000000000000100']
 
 const maintest_threadl_0: Lisp<"(->> 's' (str '01'))"> = ['prim', "'01s'"]
 const maintest_threadl_1: Lisp<"(->> 'a' (str '01') (str 's'))"> = ['prim', "'s01a'"]
 const maintest_threadl_2: Lisp<"(str 'a' (str '01' 's'))"> = ['prim', "'a01s'"]
-const maintest_threadl_3: Lisp<"(->> 01 (+ 01) (+ 10))"> = ['prim', '00000100']
-const maintest_threadl_4: Lisp<"(+ 10 (+ 01 01))"> = ['prim', '00000100']
+const maintest_threadl_3: Lisp<"(->> 01 (+ 01) (+ 10))"> = ['prim', '0000000000000100']
+const maintest_threadl_4: Lisp<"(+ 10 (+ 01 01))"> = ['prim', '0000000000000100']

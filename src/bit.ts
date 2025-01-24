@@ -11,6 +11,8 @@ export const Pad8  = '00000000'
 export const Pad16 = `${Pad8}${Pad8}`
 export const CurPad = Pad8
 
+export type Min1 = '1111111111111111'
+
 // -------------------------
 // bit ops
 export type BitOr<B, C> = B extends `${infer BH}${infer BR}`
@@ -258,6 +260,9 @@ const bitadd0: BitAdd<"00111", "00101"> = `${CurPad}00001100`;
 const bitadd1: BitAdd<"00110", "00001"> = `${CurPad}00000111`;
 const bitadd2: BitAdd<"00000", "00000"> = `${CurPad}00000000`;
 const bitadd3: BitAdd<"11111", "11111"> = `${CurPad}00111110`; // shift.
+const bitadd4: BitAdd<'1111111111111111', '0000000000000011'> = '0000000000000010'
+const bitadd5: BitAdd<'0000000000000011','1111111111111111'> = '0000000000000010'
+const bitadd6: BitAdd<'1111111111111111', '1111111111111111'> = '1111111111111110'
 
 export type BitSub<B extends string, C extends string, M = MAX> = BitAdd<
   BitFill<B, M>,
@@ -268,9 +273,9 @@ const bitsub0: BitSub<"00111", "00101"> =  `${CurPad}00000010`;
 const bitsub1: BitSub<"00110", "00001"> =  `${CurPad}00000101`;
 const bitsub2: BitSub<"00000", "00000"> =  `${CurPad}00000000`;
 const bitsub3: BitSub<"11111", "11111"> =  `${CurPad}00000000`;
-//
-// const bitsub4: BitSub<"00111", "01000"> = "00000000"
-// const bitsub5: BitSub<"00000", "11111"> = "00000000"
+const bitsub4: BitSub<"00111", "01000"> = "1111111111111111"
+const bitsub5: BitSub<"00000", "11111"> = "1111111111100001"
+const bitsub6: BitSub<"1111111111111111","0000000000000001"> = '1111111111111110'
 
 export type BitGTE<
   B extends string
@@ -368,6 +373,11 @@ const bitmul3: BitMul<"11111", "00001"> =  `${CurPad}00011111`;
 const bitmul4: BitMul<"00001", "00001"> =  `${CurPad}00000001`;
 const bitmul5: BitMul<"00000", "00001"> =  `${CurPad}00000000`;
 const bitmul6: BitMul<"00001", "00000"> =  `${CurPad}00000000`;
+const bitmul7: BitMul<'1111111111111111', '1111111111111111'> = `${CurPad}00000001`
+const bitmul8: BitMul<'1111111111111111', '1111111111110000'> = `${CurPad}00010000`
+const bitmul9: BitMul<'1111111111110000', '1111111111111111'> = `${CurPad}00010000`
+const bitmul10: BitMul<'0111111111110000', '1111111111111111'> = '1000000000010000'
+const bitmul11: BitMul<'1111111111111111','0111111111110000'> = '1000000000010000'
 
 export type _BitShiftRight<
   B extends string,
@@ -410,13 +420,25 @@ export type BitDiv<
 , C extends string> =
   BitIsZero<C> extends true
   ? Nil
-  : BitFill<_BitDiv<B,C>, MAX>
+  : BitFill<B,MAX> extends `${infer bh}${infer br}`
+    ? BitFill<C,MAX> extends `${infer ch}${infer cr}`
+      ? _BitDiv<bh extends '1' ? BitMul<`${bh}${br}`, Min1> : `${bh}${br}`,
+                ch extends '1' ? BitMul<`${ch}${cr}`, Min1> : `${ch}${cr}`> extends infer dd
+        ? '0' | '1' extends bh | ch
+          ? BitFill<BitMul<dd extends string ? dd : never, Min1>, MAX>
+          : BitFill<dd extends string ? dd : never, MAX>
+        : never
+      : never
+    : never
 
 const testbitdiv0: BitDiv<"00001001", "00000001"> = `${CurPad}00001001`
 const testbitdiv1: BitDiv<"00001001", "00000011"> = `${CurPad}00000011`
 const testbitdiv2: BitDiv<"00001001", "00000010"> = `${CurPad}00000100`
 const testbitdiv3: BitDiv<"00001001", "00000000"> = nil
 const testbitdiv4: BitDiv<"00000010", "00001010"> = `${CurPad}00000000`
+const testbitdiv5: BitDiv<'0000000000000110', '1111111111111110'> = '1111111111111101'
+const testbitdiv6: BitDiv<'1111111111111010', '00000000000000010'> = '1111111111111101'
+const testbitdiv7: BitDiv<'1111111111111010', '1111111111111110'> = '0000000000000011'
 
 export type _BitMod<
   B extends string
