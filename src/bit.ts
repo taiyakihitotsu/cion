@@ -2,6 +2,15 @@ import type Peano from "./peano";
 
 namespace Bit {
 
+
+// CONSTANTS.
+export type MAX = Peano.T16;
+export type _Zero = BitPadding<"0", MAX>;
+
+export const Pad8  = '00000000'
+export const Pad16 = `${Pad8}${Pad8}`
+export const CurPad = Pad8
+
 // -------------------------
 // bit ops
 export type BitOr<B, C> = B extends `${infer BH}${infer BR}`
@@ -122,13 +131,19 @@ const biteq8: BitEq<"0", ""> = false;
 // todo : does init arg need?
 const biteq9: BitEq<"", ""> = true;
 
-export type BitLen<B, count = Peano.T0> = B extends `${infer HB}${infer TB}`
-  ? HB extends "0" | "1"
-    ? BitLen<TB, Peano.inc<count>>
-    : never
-  : count;
+export type BitLen<
+  B,
+  count = Peano.T0
+> =
+  B extends `${infer HB}${infer TB}`
+    ? HB extends "0" | "1"
+      ? BitLen<TB, Peano.inc<count>>
+      : never
+    : count;
 // test
 const bitlen0: BitLen<"00000000"> = [[[[[[[[null]]]]]]]];
+const bitlen1: BitLen<""> = null
+
 
 export type BitLenGthan<B, C> = Peano.gthan<BitLen<B>, BitLen<C>>;
 // test
@@ -138,7 +153,7 @@ const bitgthan2: BitLenGthan<"0001", "000"> = true;
 // todo : they should be an error.
 const bitgthan3: BitLenGthan<"", "000"> = false;
 const bitgthan4: BitLenGthan<"", ""> = false;
-const bitgthan5: BitLenGthan<"1", ""> = false;
+const bitgthan5: BitLenGthan<"1", ""> = true;
 
 export type _BitNeedFill<B, L> = Peano.min<BitLen<B>, L>;
 // test
@@ -179,14 +194,6 @@ const bitcut1: BitCut<"11111", [null]> = "1111";
 // const bitcut2: BitCut<"11111", [null]> = "111" // err
 // const bitcut3: BitCut<"", [null]> = null as never
 
-// CONSTANTS.
-export type T8 = [[[[[[[[Peano.T0]]]]]]]];
-export type T16 = Peano.mul<T8, [[null]]>;
-export type T32 = Peano.mul<T16, [[null]]>;
-export type T64 = Peano.mul<T32, [[null]]>;
-export type MAX = T8;
-export type _Zero = BitPadding<"0", MAX>;
-
 // todo
 export type BitIsZero<B extends string> = BitUniform<_Zero, B> extends [
   infer Z,
@@ -198,20 +205,20 @@ export type BitIsZero<B extends string> = BitUniform<_Zero, B> extends [
 const bitiszero0: BitIsZero<"111"> = false;
 const bitiszero1: BitIsZero<"000"> = true;
 
+type BitFillError0 = 'BitFillError0'
 export type BitFill<
   B extends string,
   M = MAX,
   tB extends string = BitPadding<B, M>,
-> = BitCut<tB, Peano.min<BitLen<tB>, M>>;
+> =
+  BitCut<tB, Peano.min<BitLen<tB>, M>>;
 
 // test
-const bitfill0: BitFill<"1111", MAX> = "00001111";
-const bitfill1: BitFill<"0000", MAX> = "00000000";
-const bitfill2: BitFill<"111", MAX> = "00000111";
-const bitfill3: BitFill<"11", MAX> = "00000011";
-const bitfill4: BitFill<"1", MAX> = "00000001";
-// fixme : want to spit an error
-const bitfill5: BitFill<"", MAX> = "00000000";
+const bitfill0: BitFill<"1111", Peano.T8> = "00001111";
+const bitfill1: BitFill<"0000", Peano.T8> = "00000000";
+const bitfill2: BitFill<"111", Peano.T8>  = "00000111";
+const bitfill3: BitFill<"11", Peano.T8>   = "00000011";
+const bitfill4: BitFill<"1", Peano.T8>    = "00000001";
 
 // note : unsinged
 export type _BitAdd<B, C> = BitXor<B, C> extends infer _Xor
@@ -247,20 +254,20 @@ export type BitAdd<B extends string, C extends string, M = MAX> = BitFill<
 // 6,1,7
 // 0,0,0
 // 31,31,62
-const bitadd0: BitAdd<"00111", "00101"> = "00001100";
-const bitadd1: BitAdd<"00110", "00001"> = "00000111";
-const bitadd2: BitAdd<"00000", "00000"> = "00000000";
-const bitadd3: BitAdd<"11111", "11111"> = "00111110"; // shift.
+const bitadd0: BitAdd<"00111", "00101"> = `${CurPad}00001100`;
+const bitadd1: BitAdd<"00110", "00001"> = `${CurPad}00000111`;
+const bitadd2: BitAdd<"00000", "00000"> = `${CurPad}00000000`;
+const bitadd3: BitAdd<"11111", "11111"> = `${CurPad}00111110`; // shift.
 
 export type BitSub<B extends string, C extends string, M = MAX> = BitAdd<
   BitFill<B, M>,
   BitAdd<BitNot<BitFill<C, M>>, BitFill<"1", M>>
 >;
 // test
-const bitsub0: BitSub<"00111", "00101"> = "00000010";
-const bitsub1: BitSub<"00110", "00001"> = "00000101";
-const bitsub2: BitSub<"00000", "00000"> = "00000000";
-const bitsub3: BitSub<"11111", "11111"> = "00000000";
+const bitsub0: BitSub<"00111", "00101"> =  `${CurPad}00000010`;
+const bitsub1: BitSub<"00110", "00001"> =  `${CurPad}00000101`;
+const bitsub2: BitSub<"00000", "00000"> =  `${CurPad}00000000`;
+const bitsub3: BitSub<"11111", "11111"> =  `${CurPad}00000000`;
 //
 // const bitsub4: BitSub<"00111", "01000"> = "00000000"
 // const bitsub5: BitSub<"00000", "11111"> = "00000000"
@@ -281,7 +288,7 @@ const bitsub3gte: BitGTE<"11111", "11111"> = true
 const bitsub4gte: BitGTE<"00111", "01000"> = false
 const bitsub5gte: BitGTE<"00000", "11111"> = false
 
-export type BitGT<
+export type BitGT <
   B extends string
 , C extends string> =
   BitGTE<B,C> extends true
@@ -354,13 +361,13 @@ export type BitMul<
 // 1,1,1
 // 0,1,0
 // 1,0,0
-const bitmul0: BitMul<"00111", "00101"> = "00100011";
-const bitmul1: BitMul<"00110", "00010"> = "00001100";
-const bitmul2: BitMul<"00000", "00000"> = "00000000";
-const bitmul3: BitMul<"11111", "00001"> = "00011111";
-const bitmul4: BitMul<"00001", "00001"> = "00000001";
-const bitmul5: BitMul<"00000", "00001"> = "00000000";
-const bitmul6: BitMul<"00001", "00000"> = "00000000";
+const bitmul0: BitMul<"00111", "00101"> =  `${CurPad}00100011`;
+const bitmul1: BitMul<"00110", "00010"> =  `${CurPad}00001100`;
+const bitmul2: BitMul<"00000", "00000"> =  `${CurPad}00000000`;
+const bitmul3: BitMul<"11111", "00001"> =  `${CurPad}00011111`;
+const bitmul4: BitMul<"00001", "00001"> =  `${CurPad}00000001`;
+const bitmul5: BitMul<"00000", "00001"> =  `${CurPad}00000000`;
+const bitmul6: BitMul<"00001", "00000"> =  `${CurPad}00000000`;
 
 export type _BitShiftRight<
   B extends string,
@@ -403,13 +410,13 @@ export type BitDiv<
 , C extends string> =
   BitIsZero<C> extends true
   ? Nil
-  : _BitDiv<B,C>
+  : BitFill<_BitDiv<B,C>, MAX>
 
-const testbitdiv0: BitDiv<"00001001", "00000001"> = "00001001"
-const testbitdiv1: BitDiv<"00001001", "00000011"> = "00000011"
-const testbitdiv2: BitDiv<"00001001", "00000010"> = "00000100"
+const testbitdiv0: BitDiv<"00001001", "00000001"> = `${CurPad}00001001`
+const testbitdiv1: BitDiv<"00001001", "00000011"> = `${CurPad}00000011`
+const testbitdiv2: BitDiv<"00001001", "00000010"> = `${CurPad}00000100`
 const testbitdiv3: BitDiv<"00001001", "00000000"> = nil
-const testbitdiv4: BitDiv<"00000010", "00001010"> = "00000000"
+const testbitdiv4: BitDiv<"00000010", "00001010"> = `${CurPad}00000000`
 
 export type _BitMod<
   B extends string
@@ -424,13 +431,14 @@ export type BitMod<
 , C extends string> =
   BitIsZero<C> extends true
   ? Nil
-  : _BitMod<B,C>
+  : BitFill<_BitMod<B,C>, MAX>
 
-const testbitmod0: BitMod<"00001001", "00000001"> = "00000000"
-const testbitmod1: BitMod<"00001001", "00000011"> = "00000000"
-const testbitmod2: BitMod<"00001001", "00000010"> = "00000001"
+const testbitmod0: BitMod<"00001001", "00000001"> =  `${CurPad}00000000`
+const testbitmod1: BitMod<"00001001", "00000011"> =  `${CurPad}00000000`
+const testbitmod2: BitMod<"00001001", "00000010"> =  `${CurPad}00000001`
 const testbitmod3: BitMod<"00001001", "00000000"> = nil
-const testbitmod4: BitMod<"00000010", "00001010"> = "00000010"
+const testbitmod4: BitMod<"00000010", "00001010"> =  `${CurPad}00000010`
 }
 
 export default Bit
+ 

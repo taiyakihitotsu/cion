@@ -5,10 +5,22 @@
 // but I think that should be rewritten with bit-number as well.
 // ... 2024.05.19
 
+import type Util from './util'
+
 namespace Peano {
   export type T0 = null;
-
   export type T1 = [T0];
+  export type T8 = [[[[[[[[Peano.T0]]]]]]]];
+  export type T16 = Peano.mul<T8, [[null]]>;
+  export type T32 = Peano.mul<T16, [[null]]>;
+  export type T64 = Peano.mul<T32, [[null]]>;
+
+  export const P0:T0 = null
+  export const P1:T1 = [P0]
+  export const P8:T8   = [[[[[[[[null]]]]]]]]
+  export const P16:T16 = [[[[[[[[P8]]]]]]]]
+  export const P32:T32 = [[[[[[[[[[[[[[[[P16]]]]]]]]]]]]]]]]
+  export const P64:T64 = [[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[P32]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]
 
   export type add<T, TT> = TT extends T0
     ? T
@@ -43,9 +55,12 @@ namespace Peano {
   export type TELesserUnion<T> = T extends [infer U]
     ? T | TELesserUnion<U>
     : never;
-  export type TLesserUnion<T> = T extends [infer U] ? TELesserUnion<U> : never;
+  export type TLesserUnion<T> = T extends [infer U] ? T0 | TELesserUnion<U> : never;
 
   export type gthan<T, U> = U extends TLesserUnion<T> ? true : false;
+  export type gethan<T,U>   = Util.Equal<T,U> extends true ? true : gethan<T,U>
+  export type lethan<T,U>  = gethan<U,T>
+  export type lthan<T,U>   = gthan<U,T>
 }
 
 export default Peano;
