@@ -2,6 +2,8 @@ import Bit from "./bit";
 import Peano from "./peano"
 import type Util from './util'
 
+namespace Decimal {
+
 type D10    = '0000000000001010'
 type D100   = '0000000001100100'
 type D1000  = '0000001111101000'
@@ -131,7 +133,8 @@ type DeciOvers = ['4' | '5' | '6' | '7' | '8' | '9',
 type Digit1 = '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'
 
 type DecimalToBitError0 = 'DecimalToBitError0'
-type DecimalToBit<
+
+export type DecimalToBit<
   S extends string,
   IsLimited extends boolean = false,
   Ret extends string = '0',
@@ -184,7 +187,7 @@ type TrimZero<
         : S
     : S
 
-type BitToDecimal<S extends string> =
+export type BitToDecimal<S extends string> =
   _BitToDecimal<S> extends string & infer s
     ? TrimZero<s extends string ? s : never> extends infer trimed
         ? trimed extends ''
@@ -195,3 +198,6 @@ const bittodecimal_test_1: BitToDecimal<'1'> = '1'
 const bittodecimal_test_2: BitToDecimal<'0'> = '0'
 const bittodecimal_test_3: BitToDecimal<`${0}111110101101111`> = '32111'
 const bittodecimal_test_4: BitToDecimal<'0111111111111111'> = '32767'
+}
+
+export default Decimal

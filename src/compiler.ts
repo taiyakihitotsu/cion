@@ -1,0 +1,165 @@
+import type Bit from './bit'
+import type Decimal from './decimal'
+
+// -------------------------------
+// -- Compiler
+// -------------------------------
+
+namespace Compiler {
+
+export type SPad<S extends string> = S extends ` ${infer SS}` ? SS  : ` ${S}`
+
+export type SParser<Sexpr> =
+  // -- ()
+  Sexpr extends ` (${infer U}`
+    ? ['(', ...SParser<` ${U}`>]
+  : Sexpr extends ` ${infer V} ${infer W}`
+    ? [...SParser<` ${V}`>, ...SParser<` ${W}`>]
+  : Sexpr extends ` ${infer C})`
+    ? [...SParser<` ${C}`>, ')']
+  // -- []
+  : Sexpr extends ` [${infer U}`
+    ? ['[', ...SParser<` ${U}`>]
+  : Sexpr extends ` ${infer V} ${infer W}`
+    ? [...SParser<` ${V}`>, ...SParser<` ${W}`>]
+  : Sexpr extends ` ${infer C}]`
+    ? [...SParser<` ${C}`>, ']']
+  // -- {}
+  : Sexpr extends ` {${infer U}`
+    ? ['{', ...SParser<` ${U}`>]
+  : Sexpr extends ` ${infer V} ${infer W}`
+    ? [...SParser<` ${V}`>, ...SParser<` ${W}`>]
+  : Sexpr extends ` ${infer C}}`
+    ? [...SParser<` ${C}`>, '}']
+  // -- ""
+  : Sexpr extends ` "${infer U}`
+    ? ['"', ...SParser<` ${U}`>]
+  : Sexpr extends ` ${infer V} ${infer W}`
+    ? [...SParser<` ${V}`>, ...SParser<` ${W}`>]
+  : Sexpr extends ` ${infer C}"`
+    ? [...SParser<` ${C}`>, '"']
+  // -- _, as default.
+  : Sexpr extends ` ${infer CC}`
+    ? [CC]
+    : []
+
+const parseaaaaa: SParser<' (x ((if a b c) y))'> =
+    ['(', 'x', '(', '(', 'if', 'a', 'b', 'c', ')', 'y', ')', ')']
+const parsebbbbb: SParser<' (x (if a b c) y)'> =
+    ['(', 'x', '(', 'if', 'a', 'b', 'c', ')', 'y', ')']
+const parseccccc: SParser<' ((f))'> =
+    ['(', '(', 'f', ')', ')']
+const parseddddd: SParser<' ((((((x))))))'> =
+    ['(', '(', '(', '(', '(', '(', 'x', ')', ')', ')', ')', ')', ')']
+const parseeeeee: SParser<' (let [a 1 b 2] (if true t f))'> = ['(','let', '[', 'a', '1', 'b', '2', ']', '(', 'if', 'true', 't', 'f', ')', ')']
+const parsestrtest0: SParser<' (let [a "test is this"] (str "a b" a))'> = ['(', 'let', '[', 'a', '"', 'test', 'is', 'this','"', ']', '(', 'str', '"', 'a', 'b', '"', 'a', ')', ')']
+// --- hash map ---
+const parsehashtest0: SParser<' (let [a {:a 1 :b 2}] (> (:a a) (:b a)))'> = ['(', 'let', '[', 'a', '{', ':a', '1', ':b', '2', '}', ']', '(', '>', '(', ':a', 'a', ')', '(', ':b', 'a', ')', ')', ')']
+
+type SIsNum<S, Top extends boolean = true> =
+  S extends `${infer H}${infer R}`
+    ? H extends '-'
+      ? Top extends true
+        ? SIsNum<R, false> extends true
+          ? true
+          : false
+        : false
+      : H extends '0'|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'
+          ? R extends ''
+            ? true
+            : SIsNum<R, false>
+          : false
+    : false
+
+const testsisnum0: SIsNum<'-1102'> = true
+const testsisnum1: SIsNum<'-1102-'> = false
+const testsisnum2: SIsNum<'--1102'> = false
+const testsisnum3: SIsNum<'1102'> = true
+const testsisnum4: SIsNum<'001102'> = true
+const testsisnum5: SIsNum<'0011-0-2'> = false
+
+export type SSymlator<MSym> = 
+  MSym extends `${infer H}${infer R}`
+  ? H extends "'" | '"'
+    ? [`prim`, MSym]
+    : SIsNum<H> extends true
+      ? H extends '-'
+        ? ['prim', Bit.BitRevSign<Decimal.DecimalToBit<R>>]
+        : ['prim', Decimal.DecimalToBit<MSym>]
+    : MSym extends 'if' | 'let' | 'fn' // | ''
+      ? MSym
+      : MSym extends 'true'
+        ? [`prim`, true]
+          : MSym extends 'false'
+            ? [`prim`, false]
+            : [`sym`, MSym]
+  : never
+
+export type SCompiler<
+    Parsed extends Array<unknown>,
+    Current extends Array<unknown> = [],
+    Stack extends Array<Array<unknown>> = [],
+    StrStack extends string = "",
+    > = 
+  Parsed extends []
+  ? Current
+  : Parsed extends [infer H, ...infer R]
+    // -- terminate
+    ? R extends []
+      ? H extends '"'
+        ? [`prim`, `${StrStack}"`]
+        // -- Hash Case
+        : H extends "}"
+          ? ['map', Current] : Current
+//        : Current
+    // -- Not String Case
+    : StrStack extends ""
+      ? H extends ')' | ']' // | '}'
+        ? SCompiler<R, Stack extends Array<unknown> ? [...Stack[0], Current] : never, Stack extends [infer _, ...infer R extends unknown[][]] ? R : never>
+        // -- Hash Case Done.
+        : H extends '}'
+          ? SCompiler<R, Stack extends Array<unknown> ? [...Stack[0], ['map', Current]] : never, Stack extends [infer _, ...infer R extends unknown[][]] ? R : never>
+        // -- Bracket Start
+        : H extends '(' | '['
+          ? SCompiler<R, [], [Current, ...Stack]>
+          // -- Hash Case
+        : H extends '{'
+          ? SCompiler<R, [], [Current, ...Stack]>
+          // -- Keyword Case
+        : H extends `:${infer _}`
+          ? SCompiler<R, [...Current, [`key`, H]], Stack>
+          // -- Jump To String Case
+          : H extends '"'
+            ? SCompiler<R, Current, Stack, `${StrStack}${H}`>
+            // -- Symbol or Primitive case -- Default
+            : SCompiler<R, [...Current, SSymlator<H>], Stack>
+      // -- String Case
+      : H extends '"'
+        ? SCompiler<R, [...Current, [`prim`, `${StrStack}"`]], Stack, "">
+        : H extends string
+          ? StrStack extends '"'
+            ? SCompiler<R, Current, Stack, `${StrStack}${H}`>
+            : SCompiler<R, Current, Stack, `${StrStack} ${H}`>
+          : never
+    : never
+}
+
+const compileraaaa: Compiler.SCompiler<['(', '+', '0', '(', 'inc', '1', ')', ')']> = [['sym', '+'], ['prim', '0000000000000000'], [['sym', 'inc'], ['prim', '0000000000000001']]]
+const compilerbbbb: Compiler.SCompiler<['(', 'let', '[', 'a', '1', ']', '(', 'if', 'true', 't', 'f', ')', ')']> = ['let', [['sym', 'a'], ['prim', '0000000000000001']], ['if', ['prim', true], ['sym', 't'], ['sym', 'f']]]
+// -- String Parser
+const compilerStrT0: Compiler.SCompiler<['"', 'aaa', 'bbb','"']> = ['prim', '"aaa bbb"']
+const compilerStrT1: Compiler.SCompiler<['(', 'let', '[', 'a', '"', 'aaa', 'bbb','"',']', ')']> = ['let', [['sym', 'a'], ['prim', '"aaa bbb"']]]
+// -- Hash map
+const compilerHashT0: Compiler.SCompiler<['{', ':a', '01', ':b', '2', '}']> =
+// 1
+// ['map', ['key', ':a'], ['prim', '01'], ['key', ':b'], ['prim', '10']]
+['map', [['key', ':a'], ['prim', '0000000000000001'], ['key', ':b'], ['prim', '0000000000000010']]]
+const compilerHashT1: Compiler.SCompiler<['{', ':a', '01', ':b', '2', ':c', '{', ':c1', '5', '}', '}']> =
+// 1
+// ['map', ['key', ':a'], ['prim', '01'], ['key', ':b'], ['prim', '10'], ['key', ':c'], ['map', ['key', ':c1'], ['prim', '101']]]
+['map', [['key', ':a'], ['prim', '0000000000000001'], ['key', ':b'], ['prim', '0000000000000010'], ['key', ':c'], ['map', [['key', ':c1'], ['prim', '0000000000000101']]]]]
+
+
+
+export default Compiler
+
