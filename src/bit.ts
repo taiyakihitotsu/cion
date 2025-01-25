@@ -403,6 +403,14 @@ const bitsr1: _BitShiftRight<"111111", [[[[[[null]]]]]], [[[null]]]> = "111";
 // If so, implementing div with comparing and add is good performance than minus or some hack.
 // Because we can use concat in this case.
 
+export type BitRevSign<
+  S extends string
+> =
+  BitMul<S, Min1>
+
+const testbitrevsign0: BitRevSign<'0000'> = '0000000000000000'
+const testbitrevsign1: BitRevSign<'1001'> = '1111111111110111'
+
 export type _BitDiv<
   B extends string
 , C extends string
@@ -422,10 +430,10 @@ export type BitDiv<
   ? Nil
   : BitFill<B,MAX> extends `${infer bh}${infer br}`
     ? BitFill<C,MAX> extends `${infer ch}${infer cr}`
-      ? _BitDiv<bh extends '1' ? BitMul<`${bh}${br}`, Min1> : `${bh}${br}`,
-                ch extends '1' ? BitMul<`${ch}${cr}`, Min1> : `${ch}${cr}`> extends infer dd
+      ? _BitDiv<bh extends '1' ? BitRevSign<`${bh}${br}`> : `${bh}${br}`,
+                ch extends '1' ? BitRevSign<`${ch}${cr}`> : `${ch}${cr}`> extends infer dd
         ? '0' | '1' extends bh | ch
-          ? BitFill<BitMul<dd extends string ? dd : never, Min1>, MAX>
+          ? BitFill<BitRevSign<dd extends string ? dd : never>, MAX>
           : BitFill<dd extends string ? dd : never, MAX>
         : never
       : never
@@ -463,4 +471,3 @@ const testbitmod4: BitMod<"00000010", "00001010"> =  `${CurPad}00000010`
 }
 
 export default Bit
- 
