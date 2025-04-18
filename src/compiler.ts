@@ -160,6 +160,39 @@ const compilerHashT1: Compiler.SCompiler<['{', ':a', '01', ':b', '2', ':c', '{',
 ['map', [['key', ':a'], ['prim', '0000000000000001'], ['key', ':b'], ['prim', '0000000000000010'], ['key', ':c'], ['map', [['key', ':c1'], ['prim', '0000000000000101']]]]]
 
 
+type SEncoder<
+  V extends unknown[]
+// , Stack extends string[] = []
+, Bracket extends 'map' | 'vec' | 'list' = 'list'> =
+  V extends ['prim' | 'sym', infer U extends string | number | boolean] // todo 
+  ? `${U}`
+  : V extends ['map', infer U extends unknown[]]
+    ? `{${SEncoder<U, 'map'>}}`
+    : V extends ['vec', ...infer U extends unknown[]]
+    ? `[${SEncoder<U, 'vec'>}]`
+    : V extends ['key', infer U extends string] // todo
+      ? `${U}`
+      : V extends [infer U extends unknown[], ...infer R extends unknown[][]]
+        ? R extends []
+          ? `${SEncoder<U>}`
+          : `${SEncoder<U>} ${SEncoder<R>}`
+        : ''
+
+const sencoderPrimT0: SEncoder<['prim', 1]> = '1'
+const sencoderPrimT1: SEncoder<['prim', true]> = 'true'
+const sencoderPrimT2: SEncoder<['prim', 'string']> = 'string'
+
+const sencoderMapT0:  SEncoder<['map', [['key', ':a'], ['prim', 1]]]> = '{:a 1}'
+const sencoderMapT1:  SEncoder<['map', [['key', ':a'], ['prim', 1], ['key', ':b'], ['prim', 2]]]> = '{:a 1 :b 2}'
+const sencoderMapT2:  SEncoder<['map', [['key', ':a'], ['prim', 1], ['key', ':b'], ['prim', 2], ['key', ':c'], ['map', [['key', ':ca'], ['prim', 3]]]]]> = '{:a 1 :b 2 :c {:ca 3}}'
+
+const sencoderVecT0: SEncoder<['vec', ['prim', 1], ['prim', 2], ['prim', 3]]> = '[1 2 3]'
+const sencoderVecT1: SEncoder<['vec', ['prim', 1], ['vec', ['prim', 2], ['prim', 3]]]> = '[1 [2 3]]'
+const sencoderVecT2: SEncoder<['vec']> = '[]'
+
+const sencoderVecMapT0: SEncoder<['vec', ['prim', 1], ['map', [['key', ':a'], ['prim', 2]]]]> = '[1 {:a 2}]'
+const sencoderVecMapT1: SEncoder<['map', [['key', ':a'], ['prim', 2], ['key', ':b'], ['vec', ['prim', 3], ['prim', 4]]]]> = '{:a 2 :b [3 4]}'
+
 
 export default Compiler
 
