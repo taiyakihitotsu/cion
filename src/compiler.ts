@@ -159,28 +159,55 @@ const compilerHashT1: Compiler.SCompiler<['{', ':a', '01', ':b', '2', ':c', '{',
 // ['map', ['key', ':a'], ['prim', '01'], ['key', ':b'], ['prim', '10'], ['key', ':c'], ['map', ['key', ':c1'], ['prim', '101']]]
 ['map', [['key', ':a'], ['prim', '0000000000000001'], ['key', ':b'], ['prim', '0000000000000010'], ['key', ':c'], ['map', [['key', ':c1'], ['prim', '0000000000000101']]]]]
 
+type CloseBracket<
+  S extends string
+, B extends string> =
+  B extends 'map'
+  ? `{${S}}`
+  : B extends 'vec'
+  ? `[${S}]`
+  : B extends 'list'
+  ? `(${S})`
+  : S
 
 type SEncoder<
   V extends unknown[]
 // , Stack extends string[] = []
-, Bracket extends 'map' | 'vec' | 'list' = 'list'> =
-  V extends ['prim' | 'sym', infer U extends string | number | boolean] // todo 
+, Bracket extends 'map' | 'vec' | 'list' | 'unroll' = 'unroll'> =
+  V extends ['sym', infer U extends string] // todo 
   ? `${U}`
+  : V extends ['prim', infer U extends string | number | boolean]
+  ? U extends string
+    ? `'${U}'`
+    : `${U}`
   : V extends ['map', infer U extends unknown[]]
-    ? `{${SEncoder<U, 'map'>}}`
+    ? `{${SEncoder<U>}}`
     : V extends ['vec', ...infer U extends unknown[]]
-    ? `[${SEncoder<U, 'vec'>}]`
+    ? `[${SEncoder<U>}]`
+    : V extends ['if'
+		 , infer  B extends unknown[]
+		 , infer TP extends unknown[]
+		 , infer FP extends unknown[]]
+    ? `(if ${SEncoder<B, 'list'>} ${SEncoder<TP, 'list'>} ${SEncoder<FP, 'list'>})`
+    : V extends ['if'
+		 , infer  B extends unknown[]
+		 , infer TP extends unknown[]]
+    ? `(if ${SEncoder<B, 'list'>} ${SEncoder<TP, 'list'>})`
+    : V extends ['let'
+		, infer U extends unknown[]
+		, infer S extends unknown[]]
+    ? `(let ${SEncoder<U, 'vec'>} ${SEncoder<S, 'list'>})`
     : V extends ['key', infer U extends string] // todo
       ? `${U}`
       : V extends [infer U extends unknown[], ...infer R extends unknown[][]]
         ? R extends []
-          ? `${SEncoder<U>}`
-          : `${SEncoder<U>} ${SEncoder<R>}`
+          ? CloseBracket<`${SEncoder<U>}`, Bracket>
+          : CloseBracket<`${SEncoder<U>} ${SEncoder<R>}`, Bracket>
         : ''
 
 const sencoderPrimT0: SEncoder<['prim', 1]> = '1'
 const sencoderPrimT1: SEncoder<['prim', true]> = 'true'
-const sencoderPrimT2: SEncoder<['prim', 'string']> = 'string'
+const sencoderPrimT2: SEncoder<['prim', 'string']> = "'string'"
 
 const sencoderMapT0:  SEncoder<['map', [['key', ':a'], ['prim', 1]]]> = '{:a 1}'
 const sencoderMapT1:  SEncoder<['map', [['key', ':a'], ['prim', 1], ['key', ':b'], ['prim', 2]]]> = '{:a 1 :b 2}'
@@ -193,6 +220,20 @@ const sencoderVecT2: SEncoder<['vec']> = '[]'
 const sencoderVecMapT0: SEncoder<['vec', ['prim', 1], ['map', [['key', ':a'], ['prim', 2]]]]> = '[1 {:a 2}]'
 const sencoderVecMapT1: SEncoder<['map', [['key', ':a'], ['prim', 2], ['key', ':b'], ['vec', ['prim', 3], ['prim', 4]]]]> = '{:a 2 :b [3 4]}'
 
+const sencoderIfT0: SEncoder<['if', ['prim', true], ['prim', 1], ['prim', 2]]> = '(if true 1 2)'
+const sencoderIfT1: SEncoder<['if', ['prim', true], ['prim', 1]]> = '(if true 1)'
+
+const sencoderLetT0: SEncoder<[
+  `let`,
+  [[`sym`, `a`], [`prim`, `text-a`], [`sym`, `b`], [`prim`, `/text-b`]],
+  [[`sym`, `str`], [`sym`, `a`], [`sym`, `b`]],
+]> = "(let [a 'text-a' b '/text-b'] (str a b))"
+
+const sencoderLetIfT0: SEncoder<[
+  `let`,
+  [[`sym`, `a`], [`prim`, `text-a`], [`sym`, `b`], [`prim`, `/text-b`]],
+  ['if', [['sym', '='], ['let', [['sym', 'aa'], ['prim', 1]], [['sym', '='], ['sym', 'aa'], ['prim', 1]]], ['prim', true]], [[`sym`, `str`], [`sym`, `a`], [`sym`, `b`]], ['prim', 1]],
+]> = "(let [a 'text-a' b '/text-b'] (if (= (let [aa 1] (= aa 1)) true) (str a b) 1))"
 
 export default Compiler
 
