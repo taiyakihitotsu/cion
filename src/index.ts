@@ -321,6 +321,14 @@ const lispeqtest4: LispEq<[[`prim`, "'a'"], [`prim`, "'a'"], [`prim`, "'a'"]]> =
   [`prim`, true];
 const lispeqtest5: LispEq<[[`prim`, "'a'"], [`prim`, "''"]]> = [`prim`, false];
 
+type _Not<B> = B extends false ? true : false
+type LispNot<S> = S extends [['prim', infer U]] ? ['prim', _Not<U>] : never
+
+// test
+const lispnottest0: LispNot<[['prim', false]]> = ['prim', true]
+const lispnottest1: LispNot<[['prim', true]]> = ['prim', false]
+const lispnottest2: LispNot<[['prim', 1]]> = ['prim', false]
+
 // -------------------------------
 // -- Bit Operators
 // -------------------------------
@@ -340,6 +348,9 @@ type LispAdd<
 
 const testlispadd0: LispAdd<[[`prim`, '00000011'], [`prim`, '0000001']]> = [`prim`, '0000000000000100']
 const testlispadd1: LispAdd<[[`prim`, '00000011'], [`prim`, '0000001'], [`prim`, '00000011']]> = [`prim`, '0000000000000111']
+const testlispadd2: LispAdd<[[`prim`, '00001001'], [`prim`, '00000110'], [`prim`, '00000001']]> = [`prim`, '0000000000010000']
+
+
 
 type LispSubError0 = 'LispSubError0'
 type LispSub<
@@ -1028,6 +1039,8 @@ type Eval<A, env = [[]], prev = 0> = A extends Sexpr
                   ? LispGet<Reading<OPR, env, [[prev]]>>
                 : U extends `eq` | `=`
                   ? LispEq<Reading<OPR, env, [[prev]]>>
+                : U extends `not`
+                  ? LispNot<Reading<OPR, env, [[prev]]>>
                 : U extends `and`
                   ? LispAnd<Reading<OPR, env, [[prev]]>>
                 : U extends `or`
