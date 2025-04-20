@@ -671,6 +671,9 @@ type LispGet<S> =
         : {error: [LispGetError0, S, "this is not map and key or vector and idx-num."]
            sexpr: S}
 
+type LispVectorError0 = "LispVectorError0"
+type LispVector<S> = S extends unknown[] ? ['vec', ...S] : {error: [LispGetError0, S, ""], sexpr: S}
+
 // fns of seq
 type FirstError = "FirstError";
 type RestError = "RestError";
@@ -1041,6 +1044,8 @@ type Eval<A, env = [[]], prev = 0> = A extends Sexpr
               // note : built-in functions
                 : U extends `str`
                   ? Str<Reading<OPR, env, [[prev]]>>
+                : U extends `vector`
+                  ? LispVector<Reading<OPR, env, [[prev]]>>
                 : U extends `get`
                   ? LispGet<Reading<OPR, env, [[prev]]>>
                 : U extends `eq` | `=`

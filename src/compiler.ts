@@ -101,6 +101,7 @@ export type SCompiler<
     Current extends Array<unknown> = [],
     Stack extends Array<Array<unknown>> = [],
     StrStack extends string = "",
+    IsLetVec extends boolean = false
     > = 
   Parsed extends []
   ? Current
@@ -121,8 +122,12 @@ export type SCompiler<
         : H extends '}'
           ? SCompiler<R, Stack extends Array<unknown> ? [...Stack[0], ['map', Current]] : never, Stack extends [infer _, ...infer R extends unknown[][]] ? R : never>
         // -- Bracket Start
-        : H extends '(' | '['
+	  // -- List
+        : H extends '('
           ? SCompiler<R, [], [Current, ...Stack]>
+          // -- Vector
+	: H extends '['
+          ? SCompiler<R, IsLetVec extends true ? [] : ['vec'], [Current, ...Stack], StrStack>
           // -- Hash Case
         : H extends '{'
           ? SCompiler<R, [], [Current, ...Stack]>
@@ -132,15 +137,13 @@ export type SCompiler<
           // -- Jump To String Case
           : H extends '"'
             ? SCompiler<R, Current, Stack, `${StrStack}${H}`>
-            // -- Symbol or Primitive case -- Default
-            : SCompiler<R, [...Current, SSymlator<H>], Stack>
+	      // -- Symbol or Primitive case -- Default
+	    : SCompiler<R, [...Current, SSymlator<H>], Stack, StrStack, H extends 'let' ? true : false>
       // -- String Case
       : H extends '"'
         ? SCompiler<R, [...Current, [`prim`, `${StrStack}"`]], Stack, "">
         : H extends string
-          ? StrStack extends '"'
-            ? SCompiler<R, Current, Stack, `${StrStack}${H}`>
-            : SCompiler<R, Current, Stack, `${StrStack} ${H}`>
+          ? SCompiler<R, Current, Stack, StrStack extends '"' ? `${StrStack}${H}` : `${StrStack} ${H}`>
           : never
     : never
 }
@@ -243,6 +246,11 @@ const sencoderLetIfT0: SEncoder<[
 
 const lisptest_str_0: Compiler.SCompiler<Compiler.SParser<Compiler.SPad<"(str 'a' (str 's1' 's2'))">>> = [['sym', 'str'], ['prim', "'a'"], [['sym', 'str'], ['prim', "'s1'"], ['prim', "'s2'"]]]
 const lisptest_plus_0: Compiler.SCompiler<Compiler.SParser<Compiler.SPad<"(+ 01 (+ 10 11))">>> = [['sym', '+'], ['prim', '0000000000000001'], [['sym', '+'], ['prim', '0000000000001010'], ['prim', '0000000000001011']]]
+
+// vector
+const lisptest_vec_0: Compiler.SCompiler<Compiler.SParser<Compiler.SPad<"[4 3]">>> = ['vec', ['prim', '0000000000000100'], ['prim', '0000000000000011']]
+const lisptest_vec_1: Compiler.SCompiler<Compiler.SParser<Compiler.SPad<"[4 3 [2 1]]">>> = ['vec', ['prim', '0000000000000100'], ['prim', '0000000000000011'], ['vec', ['prim', '0000000000000010'], ['prim', '0000000000000001']]]
+const lisptest_vec_2: Compiler.SCompiler<Compiler.SParser<Compiler.SPad<"(let [a [4 3 [2 1]]] a)">>> = ['let', [['sym', 'a'], ['vec', ['prim', '0000000000000100'], ['prim', '0000000000000011'], ['vec', ['prim', '0000000000000010'], ['prim', '0000000000000001']]]], ['sym', 'a']]
 
 export default Compiler
 
