@@ -418,13 +418,17 @@ type LispModError0 = 'LispModError0'
 type LispModError1 = 'LispModError1'
 type LispMod<
   S
-  , R extends string = "00000001"
+  , R extends string = "0000000000000000"
   , Init extends boolean = true> = 
   S extends []
     ? [`prim`, R]
     : S extends [[`prim`, infer Fst extends string], ...infer Rest extends string[][]]
       ? Init extends true
-        ? LispMod<Rest, Fst, false>
+        ? Bit.BitGTE<Fst, '0000000000000000'> extends true
+          ? LispMod<Rest, Fst, false>
+          : Rest extends [['prim', infer Snd extends string]]
+            ? LispMod<[['prim', Bit.BitSub<Snd, Bit.BitRevSign<Fst>>], ['prim', Snd]]>
+            : never // 
         : Bit.BitMod<R,Fst> extends Bit.Nil | string & infer Mod
             ? Mod extends string
               ? LispMod<Rest, Mod, false>
@@ -437,6 +441,8 @@ const testlispmod1: LispMod<[[`prim`, '00001111'], [`prim`, '0000001'], [`prim`,
 const testlispmod2: LispMod<[[`prim`, '00000011'], [`prim`, '0000000']]> = [`prim`, 'nil']
 const testlispmod3: LispMod<[[`prim`, '00000101'], [`prim`, '0000010']]> = [`prim`, '0000000000000001']
 const testlispmod4: LispMod<[[`prim`, '00010001'], [`prim`, '00000011']]> = [`prim`, '0000000000000010']
+const testlispmod5: LispMod<[['prim', '1111111111111110'], ['prim', '0000000000000101']]> = ['prim', '0000000000000011']
+const testlispmod6: LispMod<[['prim', '1111111111101111'], ['prim', '0000000000000101']]> = ['prim', '0000000000000011']
 
 type LispRelationError0 = 'LispRelationError0'
 type LispRelationError1 = 'LispRelationError1'
@@ -1140,6 +1146,7 @@ type Eval<A, env = [[]], prev = 0> = A extends Sexpr
 const evallisp_get_0: IsKeyMapSexpr<[['key', ':a'], ['map', [['key', ':a'], ['prim', '0']]]]> = true
 const evallisp_get_1: Eval<[['key', ':a'], ['map', [['key', ':a'], ['prim', '0']]]]> = ['prim', '0']
 const test_get_0: LispGet<[['map', [['key', ':a'], ['prim', '0']]], ['key', ':a']]> = ['prim', '0']
+const test_get_1: LispGet<[['map', [['key', ':'], ['prim', '0']]], ['key', ':a']]> = []
 const evallisp_get_2: IsKeyMapSexpr<[['map', [['key', ':a'], ['prim', '0']]],['key', ':a']]> = true
 const evallisp_get_3: Eval<[['map', [['key', ':a'], ['prim', '0']]], ['key', ':a']]> = ['prim', '0']
 
