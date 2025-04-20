@@ -139,7 +139,8 @@ export type DecimalToBit<
   IsLimited extends boolean = false,
   Ret extends string = '0',
 > = 
-   true extends Util.Equal<Bit.BitLen<S>, PeanoLimited> | IsLimited
+//   true extends Util.Equal<Bit.BitLen<S>, PeanoLimited> | IsLimited
+   true extends Util.Equal<StrLen<S>, PeanoLimited> | IsLimited
      ? S extends `${infer F}${infer R}`
          ? F extends DeciOvers[PeanoToDecimal<Peano.min<PeanoLimited, StrLen<S>>>]
              ? {error: [DecimalToBitError0, 'greater than the max of unsigned-16-bit-number.']}
@@ -149,13 +150,17 @@ export type DecimalToBit<
          : Ret
      : S extends `${infer F}${infer R}`
          ? F extends Digit1
-             ? PeanoToDecimal<Peano.dec<StrLen<S>>> extends infer D ? DecimalToBit<R, false, Bit.BitAdd<Ret, D extends keyof DecimalTables ? F extends keyof DecimalTables[D] ? DecimalTables[D][F] : '' : ''>> : never
-            : never
-         : Ret
- 
+             ? PeanoToDecimal<Peano.dec<StrLen<S>>> extends infer D ? DecimalToBit<R, false, Bit.BitAdd<Ret, D extends keyof DecimalTables ? F extends keyof DecimalTables[D] ? DecimalTables[D][F] : 'never' : 'never'>> : never
+             : never
+        : Ret
+
 const decimaltobit_test_0: DecimalToBit<'32111'> = `${0}111110101101111`
 const decimaltobit_test_1: DecimalToBit<'39000'> = {error: ['DecimalToBitError0', 'greater than the max of unsigned-16-bit-number.']}
 const decimaltobit_test_2: DecimalToBit<'666666'> = {error: ['DecimalToBitError0', 'greater than the max of unsigned-16-bit-number.']}
+const decimaltobit_test_3: DecimalToBit<'8'> = `0000000000001000`
+const decimaltobit_test_4: DecimalToBit<'9'> = `0000000000001001`
+
+
 
 type DigitTable = ['1', D10, D100, D1000, D10000]
 type _DigitKeys = [4,3,2,1,0]
