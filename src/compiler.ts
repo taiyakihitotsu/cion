@@ -55,6 +55,7 @@ const parseeeeee: SParser<' (let [a 1 b 2] (if true t f))'> = ['(','let', '[', '
 const parsestrtest0: SParser<' (let [a "test is this"] (str "a b" a))'> = ['(', 'let', '[', 'a', '"', 'test', 'is', 'this','"', ']', '(', 'str', '"', 'a', 'b', '"', 'a', ')', ')']
 // --- hash map ---
 const parsehashtest0: SParser<' (let [a {:a 1 :b 2}] (> (:a a) (:b a)))'> = ['(', 'let', '[', 'a', '{', ':a', '1', ':b', '2', '}', ']', '(', '>', '(', ':a', 'a', ')', '(', ':b', 'a', ')', ')', ')']
+const parsehashtest1: SParser<' (let [a {:a -1 :b 2}] (> (:a a) (:b a)))'> = ['(', 'let', '[', 'a', '{', ':a', '-1', ':b', '2', '}', ']', '(', '>', '(', ':a', 'a', ')', '(', ':b', 'a', ')', ')', ')']
 
 type SIsNum<S, Top extends boolean = true> =
   S extends `${infer H}${infer R}`
@@ -82,7 +83,7 @@ export type SSymlator<MSym> =
   MSym extends `${infer H}${infer R}`
   ? H extends "'" | '"'
     ? [`prim`, MSym]
-    : SIsNum<H> extends true
+    : SIsNum<MSym> extends true
       ? H extends '-'
         ? ['prim', Bit.BitRevSign<Decimal.DecimalToBit<R>>]
         : ['prim', Decimal.DecimalToBit<MSym>]
@@ -146,6 +147,8 @@ export type SCompiler<
 
 const compileraaaa: Compiler.SCompiler<['(', '+', '0', '(', 'inc', '1', ')', ')']> = [['sym', '+'], ['prim', '0000000000000000'], [['sym', 'inc'], ['prim', '0000000000000001']]]
 const compilerbbbb: Compiler.SCompiler<['(', 'let', '[', 'a', '1', ']', '(', 'if', 'true', 't', 'f', ')', ')']> = ['let', [['sym', 'a'], ['prim', '0000000000000001']], ['if', ['prim', true], ['sym', 't'], ['sym', 'f']]]
+const compilercccc: Compiler.SCompiler<['(', '+', '-1', '2', ')']> = [['sym', '+'], ['prim', '1111111111111111'], ['prim', '0000000000000010']]
+
 // -- String Parser
 const compilerStrT0: Compiler.SCompiler<['"', 'aaa', 'bbb','"']> = ['prim', '"aaa bbb"']
 const compilerStrT1: Compiler.SCompiler<['(', 'let', '[', 'a', '"', 'aaa', 'bbb','"',']', ')']> = ['let', [['sym', 'a'], ['prim', '"aaa bbb"']]]
@@ -158,6 +161,8 @@ const compilerHashT1: Compiler.SCompiler<['{', ':a', '01', ':b', '2', ':c', '{',
 // 1
 // ['map', ['key', ':a'], ['prim', '01'], ['key', ':b'], ['prim', '10'], ['key', ':c'], ['map', ['key', ':c1'], ['prim', '101']]]
 ['map', [['key', ':a'], ['prim', '0000000000000001'], ['key', ':b'], ['prim', '0000000000000010'], ['key', ':c'], ['map', [['key', ':c1'], ['prim', '0000000000000101']]]]]
+
+
 
 type CloseBracket<
   S extends string
