@@ -118,6 +118,20 @@ const readLetTest5: ReadLet<"cc", Let<"sss", "str", LetEnvLifo>> = [
   `p/cc`,
 ];
 
+type ReadLetRecur<
+  Sexpr
+  , env
+  , R extends unknown[] = []> =
+  Sexpr extends [infer F, ...infer rest]
+  ? F extends Sym
+    ? ReadAtom<F, env> extends infer P
+      ? ReadLetRecur<rest, env, [...R, P extends NotMatch ? F : P]>
+      : never
+    : ReadLetRecur<rest, env, [...R, F extends unknown[] ? ReadLetRecur<F, env, []> : F]>
+  : R
+
+const readletrecur_test0: ReadLetRecur<['fn', [['sym', 'x']], [['sym', '+'], ['sym', 'a'], ['sym', 'b']]], Let<'b', ['prim', '0010'], Let<'a', ['prim', '0001'], LetEnvLifo>>> = ['fn', [['sym', 'x']], [['sym', '+'], ['prim', '0001'], ['prim', '0010']]]
+
 type ReadAtom<A, EnvLifo = [[]], prev = 0> = A extends [`sym`, infer S]
   ? ReadLet<S, EnvLifo>
   : // this returns prim / fn.
@@ -141,7 +155,8 @@ type Reading<
     AS,
     EnvLifo = [[]],
     prev = 0,
-    R = []> =
+    R = [],
+    IsFn extends boolean = false> =
   R extends Atom[]
     ? AS extends [infer H, ...infer T]
       ? H extends Atom
@@ -151,6 +166,8 @@ type Reading<
           : { error: [ReadingError1]}
       : R
     : { error: [ReadingError0]; env: EnvLifo };
+
+
 // test reading
 const readingtest0: Reading<
   [[`sym`, `a`], [`sym`, `b`], [`prim`, `c-str`]],
@@ -169,7 +186,6 @@ const readingtest2: Reading<
 [[],
  [MakeVar<"a", ['sym', 'str']>, 
   MakeVar<'b', ['prim', "'bs'"]>]]> = [['sym', 'str'], ['prim', "'bs'"], ['prim', "'s1s2'"]]
-
 
 
 //-----------------------------------------
@@ -343,7 +359,7 @@ type LispAdd<
     : S extends [infer Fst, ...infer Rest]
       ? Fst extends [`prim`, infer FstP extends string]
         ? LispAdd<Rest, Bit.BitAdd<R, FstP>>
-        : {errop: [LispAddError0]}
+        : {error: [LispAddError0]}
       : {error: [LispAddError1]}
 
 const testlispadd0: LispAdd<[[`prim`, '00000011'], [`prim`, '0000001']]> = [`prim`, '0000000000000100']
@@ -351,7 +367,7 @@ const testlispadd1: LispAdd<[[`prim`, '00000011'], [`prim`, '0000001'], [`prim`,
 const testlispadd2: LispAdd<[[`prim`, '00001001'], [`prim`, '00000110'], [`prim`, '00000001']]> = [`prim`, '0000000000010000']
 
 
-
+34
 type LispSubError0 = 'LispSubError0'
 type LispSub<
   S
@@ -991,6 +1007,7 @@ type Eval<A, env = [[]], prev = 0> = A extends Sexpr
     ? env extends EnvLifo
       ? OPC extends Fn & [`fn`, infer syms, infer D]
         ? Eval<[`let`, Interleave<syms, OPR>, D], env, [prev]>
+        // ? Eval<[`let`, Interleave<syms, OPR>, D], env, [prev]>
         : /*
       ? OPC extends Fn & [`fn`, [[`sym`, infer S]], infer D]
         ? OPR[0] extends Sym & [`sym`, infer VV]
@@ -1023,7 +1040,7 @@ type Eval<A, env = [[]], prev = 0> = A extends Sexpr
             : EvalError5
 */
           OPC extends IfForm & [`if`, infer IFCond, infer IFT, infer IFF]
-          ? Eval<
+          ? Eval< // point (A)
               [If<Eval<IFCond, env, [[prev]]>, IFT, IFF>, OPR[0]],
               env,
               [prev]
@@ -1070,10 +1087,10 @@ type Eval<A, env = [[]], prev = 0> = A extends Sexpr
                   ? LispRelation<U, Reading<OPR, env, [[prev]]>>
                 : Eval<[ReadLet<U, env>, OPR[0]], env, [prev]>
               : ReadLet<U, env> extends Fn & infer UU
-                ? Eval<[UU, OPR[0]], env, [prev]>
+                ? Eval<[UU, ...OPR], env, [prev]>
+                // ? Eval<[UU, OPR[0]], env, [prev]>
                 : {error: [EvalError3, 'the 1st is not a function but it should be.']
                    env: env}
-
           // note : (:key map) and (map :key)
           : IsKeyMapSexpr<A> extends true
             ? IsKeyword<OPC> extends true
@@ -1098,7 +1115,10 @@ type Eval<A, env = [[]], prev = 0> = A extends Sexpr
         ? ReadLet<SS, env> extends Atom & infer U
           ? U
           : [`prim`, ReadLet<SS, env>]
-        : A
+        : A extends ['fn', infer Args, infer Sexpr]
+          // note : preventing 2589 error at (A)
+          ? ReadLetRecur<A, env> extends infer a ? a : never
+          : A
       : A extends LetForm
         ? A extends [`let`, [Sym[], LetVal[]], Sexpr]
           ? A extends [`let`, [infer letsyms, infer letvals], infer LC]
@@ -1109,12 +1129,12 @@ type Eval<A, env = [[]], prev = 0> = A extends Sexpr
                 [[`sym`, infer LN], infer LV, ...infer LRest],
                 infer LC,
               ]
-            ? LRest extends [[`sym`, infer LRLN], infer LRLV]
+            ? LRest extends [[`sym`, infer LRLN], infer LRLV, ...infer RRest]
               ? Eval<
                   [
                     `let`,
                     [[`sym`, LN], LV],
-                    [`let`, [[`sym`, LRLN], LRLV], LC],
+                    [`let`, [[`sym`, LRLN], LRLV, ...RRest], LC],
                   ],
                   env,
                   [prev]
@@ -1139,6 +1159,8 @@ type Eval<A, env = [[]], prev = 0> = A extends Sexpr
                       >
                     : LV extends Fn
                       ? Eval<LC, Let<LN, LV, env>, [prev]>
+                    : LV extends Sexpr
+                      ? Eval<LC, Let<LN, Eval<LV, env, [[prev]]>, env>, [prev]>
                       : { error: [EvalError7, prev, A] }
           : A extends ['let', [], infer Sexpr]
              ? Eval<Sexpr, env, [prev]>
@@ -1146,6 +1168,19 @@ type Eval<A, env = [[]], prev = 0> = A extends Sexpr
 	      , prev : prev
 	      , sexpr : A} // : EvalError9 : EvalError10
         : { error: [EvalError11, prev, A] };
+
+const testletfn0: Eval<['let', [['sym', 'x'], [['fn', [['sym', 'a']], [['sym', '+'], ['prim', '0000000000000001'], ['sym', 'a']]], ['prim', '0000000000000001']]], [['sym', '*'], ['prim', '0000000000000010'], ['sym', 'x']]]> = ['prim', '0000000000000100']
+const testletfn1: Eval<['let', [['sym', 'x'], [['fn', [['sym', 'a']], [['sym', '+'], ['prim', '0000000000000001'], ['sym', 'a']]], ['prim', '0000000000000001']]], [['sym', '*'], ['prim', '0000000000000010'], ['sym', 'x']]]> = ['prim', '0000000000000100']
+const testletfn2: Eval<['let', [['sym', 'x'], ['fn', [['sym', 'a']], [['sym', '+'], ['prim', '0000000000000001'], ['sym', 'a']]]], [['sym', 'x'], ['prim', '0000000000000010'], ['prim', '0000000000000001']]]> = ['prim', '0000000000000011']
+const testletfn3: Eval<['let', [['sym', 'x'], ['fn', [['sym', 'a'], ['sym', 'b']], [['sym', '+'], ['prim', '0000000000000001'], ['sym', 'a']]]], [['sym', 'x'], ['prim', '0000000000000010'], ['prim', '0000000000000001']]]> = ['prim', '0000000000000011']
+const testletfn4: Eval<['let', [['sym', 'x'], ['fn', [['sym', 'a'], ['sym', 'b']], [['sym', '+'], ['sym', 'b'], ['sym', 'a']]]], [['sym', 'x'], ['prim', '0000000000000010'], ['prim', '0000000000000001']]]> = ['prim', '0000000000000011']
+// const testletfn5: Compiler.SCompiler<Compiler.SParser<Compiler.SPad<'(let [x (let [a 2 b 6] (fn [c] (+ a b c))) y ((fn [a b] (+ a (x 10) b)) 1 8)] (* 2 y))'>>> = ''
+const testletfn5: Eval<['let', [['sym', 'x'], ['let', [['sym', 'y'], ['prim', true]], ['sym', 'y']]], ['sym', 'x']]> = ['prim', true]
+const testletfn6: Eval<['let', [['sym', 'x'], ['fn', [['sym', 'a']], [['sym', '+'], ['prim', '0000000000000001'], ['sym', 'a']]]], ['sym', 'x']]> = ['fn', [['sym', 'a']], [['sym', '+'], ['prim', '0000000000000001'], ['sym', 'a']]]
+const testletfn7: Eval<['let', [['sym', 'x'], ['let', [['sym', 'a'], ['prim', '0000000000000010'], ['sym', 'b'], ['prim', '0000000000000010']], [['sym', '+'], ['sym', 'a'], ['sym', 'b']]]], ['sym', 'x']]> = ['prim', '0000000000000100']
+const testletfn8: Eval<['let', [['sym', 'x'], ['let', [['sym', 'a'], ['prim', '0000000000000011'], ['sym', 'b'], ['prim', '0000000000000010']], ['fn', [['sym', 'c']], [['sym', '+'], ['sym', 'a'], ['sym', 'b']]]]], ['sym', 'x']]> = ['fn', [['sym', 'c']], [['sym', '+'], ['prim', '0000000000000011'], ['prim', '0000000000000010']]]
+
+
 
 // test get
 const evallisp_get_0: IsKeyMapSexpr<[['key', ':a'], ['map', [['key', ':a'], ['prim', '0']]]]> = true

@@ -138,7 +138,7 @@ export type SCompiler<
           : H extends '"'
             ? SCompiler<R, Current, Stack, `${StrStack}${H}`>
 	      // -- Symbol or Primitive case -- Default
-	    : SCompiler<R, [...Current, SSymlator<H>], Stack, StrStack, H extends 'let' ? true : false>
+	    : SCompiler<R, [...Current, SSymlator<H>], Stack, StrStack, H extends 'let' | 'fn' ? true : false>
       // -- String Case
       : H extends '"'
         ? SCompiler<R, [...Current, [`prim`, `${StrStack}"`]], Stack, "">

@@ -152,7 +152,32 @@ const maintest0_mapst_0: Lisp<"{:a 1}"> = ['map', [['key', ':a'], ['prim', '0000
 const maintest0_vecst_0: Lisp<"[0 1 2 3]"> = ['vec', ['prim', '0000000000000000'], ['prim', '0000000000000001'], ['prim', '0000000000000010'], ['prim', '0000000000000011']]
 const maintest1_vecst_0: Lisp<"(vector 0 1 2 3)"> = ['vec', ['prim', '0000000000000000'], ['prim', '0000000000000001'], ['prim', '0000000000000010'], ['prim', '0000000000000011']]
 
-// arrow macro: ->, ->>
+// form macro: if, let.
+
+const maintest0_letif_0: Lisp<'(let [x (fn [a b] (+ a b)) y 8] (+ 2 1))'> = ['prim', '0000000000000011']
+const maintest0_letif_01: Lisp<'(let [x (fn [a b] (+ a b)) y 8] (+ y 2 1))'> = ['prim', '0000000000001011']
+const maintest0_letif_02: Lisp<'(let [x (fn [a] (+ 1 a))] (x 1 1))'> = ['prim', '0000000000000010']
+// const testletfn2: Eval<['let', [['sym', 'x'], ['fn', [['sym', 'a']], [['sym', '+'], ['prim', '0000000000000001'], ['sym', 'a']]]], [['sym', 'x'], ['prim', '0000000000000010'], ['prim', '0000000000000001']]]> = ['prim', '0000000000000011']
+const maintest0_letif_03: Lisp<'(let [x (fn [a] (+ 1 a)) y 9] (x 1 1))'> = ['prim', '0000000000000010']
+const maintest0_letif_04: Lisp<'(let [x (fn [a] (+ 1 a)) y 9] (x y 1))'> = ['prim', '0000000000001010']
+const maintest0_letif_05: Lisp<'(let [x (fn [a b] (+ 1 a)) y 9] (x 1 1))'> = ['prim', '0000000000000010']
+const maintest0_letif_06: Lisp<'(let [x (fn [a b] (+ b a)) y 9] (x 1 2))'> = ['prim', '0000000000000011']
+const maintest0_letif_07: Lisp<'((fn [a b] (+ b a)) 1 2)'> = ['prim', '0000000000000011']
+const maintest0_letif_1: Lisp<'(let [x ((fn [a] (+ a 1)) 1)] (* 2 x))'> = ['prim', '0000000000000100'] 
+const maintest0_letif_2: Lisp<'(let [x ((fn [a b] (+ a 1 b)) 1 8)] (* 2 x))'> = ['prim', '0000000000010100']
+const maintest0_letif_3: Lisp<'(let [x 8 y ((fn [a b] (+ a x b)) 1 8)] (* 2 y))'> = ['prim', '0000000000100010']
+const maintest0_letif_4: Lisp<'(let [x (let [a 2 b 6] (+ a b)) y ((fn [a b] (+ a x b)) 1 8)] (* 2 y))'> = ['prim', '0000000000100010']
+const maintest0_letif_5: Lisp<'(let [x (let [a 2 b 6] (fn [c] (+ a b c))) y 8] x)'> = ['fn', [['sym', 'c']], [['sym', '+'], ['prim', '0000000000000010'], ['prim', '0000000000000110'], ['sym', 'c']]]
+const maintest0_letif_6: Lisp<'(let [x (let [a 2 b 6] (fn [c] (+ a b c)))] (x 10))'> = ['prim', '0000000000010010']
+const maintest0_letif_7: Lisp<'(let [x (let [a 2 b 6] (fn [c] (+ a b c))) y ((fn [d] (x 2 d)) 10)] y)'> = ['prim', '0000000000001010']
+const maintest0_letif_8: Lisp<'(let [z 2 y ((fn [d] (+ z d)) 10)] y)'> = ['prim', '0000000000001100']
+const maintest0_letif_9: Lisp<'(let [z 2 y ((fn [d] (+ z d)) 10) x 10] y)'> = ['prim', '0000000000001100']
+const maintest0_letif_10: Lisp<'(let [z 2 y 3 x 10] y)'> = ['prim', '0000000000000011']
+const maintest0_letif_11: Lisp<'(let [x (let [a 2 b 6] (fn [c] (+ a b c))) z 2 y ((fn [d] (x z d)) 10)] (x z))'> = ['prim', '0000000000001010']
+const maintest0_letif_12: Lisp<'(let [x (let [a 2 b 6] (fn [c] (+ a b c))) z 20 y ((fn [d] (x d)) z)] y)'> = ['prim', '0000000000011100']
+const maintest0_letif_13: Lisp<'(let [x (let [a 2 b 6] (fn [c] (+ a b c))) z 20 y ((fn [d] (x d)) z 999)] y)'> = ['prim', '0000000000011100'] // a case of a number of args being over. rest parts are ignored.
+
+// arrow macro: ->, ->>.
 
 const maintest_threadf_0: Lisp<"(-> 's' (str '01'))"> = ['prim', "'s01'"]
 const maintest_threadf_1: Lisp<"(-> 'a' (str '01') (str 's'))"> = ['prim', "'a01s'"]
