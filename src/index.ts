@@ -618,6 +618,9 @@ const testgetvec: GetVec<
 // map
 
 
+type ConcatError0 = "ConcatError0"
+type ConcatError1 = "ConcatError1"
+type ConcatError2 = "ConcatError2"
 type TConcat<
     V extends Array<Array<unknown>>
     , Stack extends Array<unknown> = []> = 
@@ -626,6 +629,13 @@ type TConcat<
   : V extends [infer Head extends Array<unknown>, ...infer Rest extends Array<Array<unknown>>]
     ? TConcat<Rest, [...Stack, ...Head]>
     : never
+
+type LispConcat<S, R extends unknown[][] = []> =
+  S extends Vector[] & [['vec', ...infer H], ...infer T]
+    ? T extends []
+      ? TConcat<R>
+      : LispConcat<T, [...R, H]>
+    : ConcatError0
 
 const tconcattest0: TConcat<[[0,1], [2,3], [4,5]]> = [0,1,2,3,4,5]
 
@@ -698,7 +708,7 @@ type FirstError0 = "FirstError0";
 type FirstError1 = "FirstError1";
 type RestError0 = "RestError0";
 type RestError1 = "RestError1"
-type ConjError = "ConjError";
+
 type ConcatError = "ConcatError";
 
 type First<V> = V extends Vector & [`vec`, infer H, ...infer T]
@@ -744,11 +754,20 @@ const testbutlast1: Butlast<Butlast<testbutlastvec>> = [`vec`, [`prim`, 0], [`pr
 const testbutlast2: Butlast<Butlast<Butlast<testbutlastvec>>> = [`vec`, [`prim`, 0]];
 const testbutlast3: Butlast<Butlast<Butlast<Butlast<testbutlastvec>>>> = [`vec`];
 
+type ConjError0 = "ConjError0"
+type ConjError1 = "ConjError1"
+type ConjError2 = "ConjError2"
+type ConjError3 = "ConjError3"
 type Conj<V, E> = E extends Atom
   ? V extends Vector
     ? [...V, E]
-    : ConjError
-  : ConjError;
+    : ConjError0
+  : ConjError0;
+type LispConj<S> =
+  S extends [infer H extends Vector, ...infer T extends Atom[]]
+    ? [...H, ...T]
+    : ConjError2
+
 type Concat<V, W> = V extends Vector
   ? W extends Vector & [`vec`, ...infer WW]
     ? [...V, ...WW]
@@ -1198,9 +1217,9 @@ type Eval<A, env = [[]], prev = 0> = A extends Sexpr
                   ? LispReduce<Reading<OPR, env, [[prev]]>>
 
                 : U extends `concat`
-                  ? LispReduce<Reading<OPR, env, [[prev]]>>
+                  ? LispConcat<Reading<OPR, env, [[prev]]>>
                 : U extends `conj`
-                  ? LispReduce<Reading<OPR, env, [[prev]]>>
+                  ? LispConj<Reading<OPR, env, [[prev]]>>
                 : U extends `first`
                   ? LispFirst<Reading<OPR, env, [[prev]]>>
                 : U extends `last`

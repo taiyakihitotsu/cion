@@ -219,9 +219,12 @@ const maintest0_drop_2: Lisp<'(drop 0 [0 1 2 3 4 5])'> = ['vec', ['prim', '00000
 const maintest0_first_0: Lisp<'(first [0 1 2])'> = ['prim', '0000000000000000']
 const maintest0_first_1: Lisp<'(first [])'> = []
 
-const maintest0_last_0: Lisp<'(last [0 1 2])'> = ['prim', '0000000000000000']
+const maintest0_last_0: Lisp<'(last [0 1 2])'> = ['prim', '0000000000000010']
 const maintest0_last_1: Lisp<'(last [])'> = []
 
+// conj, concat.
+const maintest0_conj_0: Lisp<'(conj [0 1] 2 3)'> = ['vec', ['prim', '0000000000000000'], ['prim', '0000000000000001'], ['prim', '0000000000000010'], ['prim', '0000000000000011']]
+const maintest0_conj_1: Lisp<'(conj [0 1] [2])'> = ['vec', ['prim', '0000000000000000'], ['prim', '0000000000000001'], ['vec', ['prim', '0000000000000010']]]
 
 // arrow macro: ->, ->>.
 
