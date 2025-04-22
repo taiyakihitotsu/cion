@@ -116,8 +116,13 @@ export type SCompiler<
 //        : Current
     // -- Not String Case
     : StrStack extends ""
-      ? H extends ')' | ']' // | '}'
-        ? SCompiler<R, Stack extends Array<unknown> ? [...Stack[0], Current] : never, Stack extends [infer _, ...infer R extends unknown[][]] ? R : never>
+      ? H extends ')' | ']'
+        ? SCompiler<
+          R
+          , Stack extends unknown[] // the case of empty vector.
+            ? [...Stack[0], Current extends ['vec', never] ? ['vec'] : Current]
+            : never
+          , Stack extends [infer _, ...infer R extends unknown[][]] ? R : never>
         // -- Hash Case Done.
         : H extends '}'
           ? SCompiler<R, Stack extends Array<unknown> ? [...Stack[0], ['map', Current]] : never, Stack extends [infer _, ...infer R extends unknown[][]] ? R : never>
@@ -251,6 +256,8 @@ const lisptest_plus_0: Compiler.SCompiler<Compiler.SParser<Compiler.SPad<"(+ 01 
 const lisptest_vec_0: Compiler.SCompiler<Compiler.SParser<Compiler.SPad<"[4 3]">>> = ['vec', ['prim', '0000000000000100'], ['prim', '0000000000000011']]
 const lisptest_vec_1: Compiler.SCompiler<Compiler.SParser<Compiler.SPad<"[4 3 [2 1]]">>> = ['vec', ['prim', '0000000000000100'], ['prim', '0000000000000011'], ['vec', ['prim', '0000000000000010'], ['prim', '0000000000000001']]]
 const lisptest_vec_2: Compiler.SCompiler<Compiler.SParser<Compiler.SPad<"(let [a [4 3 [2 1]]] a)">>> = ['let', [['sym', 'a'], ['vec', ['prim', '0000000000000100'], ['prim', '0000000000000011'], ['vec', ['prim', '0000000000000010'], ['prim', '0000000000000001']]]], ['sym', 'a']]
+
+const lisptest_vec_3: Compiler.SCompiler<Compiler.SParser<Compiler.SPad<"(first [])">>> = [['sym', 'first'], ['vec']]
 
 export default Compiler
 

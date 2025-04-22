@@ -215,6 +215,13 @@ const maintest0_drop_0: Lisp<'(drop 9 [0 1 2 3 4 5])'> = ['vec']
 const maintest0_drop_1: Lisp<'(drop 2 [0 1 2 3 4 5])'> = ['vec', ['prim', '0000000000000010'], ['prim', '0000000000000011'], ['prim', '0000000000000100'], ['prim', '0000000000000101']]
 const maintest0_drop_2: Lisp<'(drop 0 [0 1 2 3 4 5])'> = ['vec', ['prim', '0000000000000000'], ['prim', '0000000000000001'], ['prim', '0000000000000010'], ['prim', '0000000000000011'], ['prim', '0000000000000100'], ['prim', '0000000000000101']]
 
+// getter: first, last.
+const maintest0_first_0: Lisp<'(first [0 1 2])'> = ['prim', '0000000000000000']
+const maintest0_first_1: Lisp<'(first [])'> = []
+
+const maintest0_last_0: Lisp<'(last [0 1 2])'> = ['prim', '0000000000000000']
+const maintest0_last_1: Lisp<'(last [])'> = []
+
 
 // arrow macro: ->, ->>.
 

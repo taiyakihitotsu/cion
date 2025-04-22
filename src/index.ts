@@ -694,14 +694,30 @@ type LispVectorError0 = "LispVectorError0"
 type LispVector<S> = S extends unknown[] ? ['vec', ...S] : {error: [LispGetError0, S, ""], sexpr: S}
 
 // fns of seq
-type FirstError = "FirstError";
+type FirstError0 = "FirstError0";
+type FirstError1 = "FirstError1";
 type RestError0 = "RestError0";
 type RestError1 = "RestError1"
 type ConjError = "ConjError";
 type ConcatError = "ConcatError";
+
 type First<V> = V extends Vector & [`vec`, infer H, ...infer T]
   ? H
-  : FirstError;
+  : V extends ['vec']
+    ? Nil
+    : FirstError0;
+type LispFirst<S> = S extends [infer V extends Vector] ? First<V> : FirstError1
+
+type LastError0 = 'LastError0'
+type LastError1 = 'LastError1'
+type Last<V> =
+  V extends [infer H, ...infer T]
+    ? T extends []
+      ? H
+      : Last<T>
+    : LastError0
+type LispLast<S> = S extends [['vec']] ? Nil : S extends [['vec', ...infer V]] ? Last<V> : LastError1
+
 type Rest<V> = V extends Vector & [`vec`, infer H, ...infer T]
   ? T[0] extends Atom
     ? [`vec`, ...T]
@@ -1186,9 +1202,9 @@ type Eval<A, env = [[]], prev = 0> = A extends Sexpr
                 : U extends `conj`
                   ? LispReduce<Reading<OPR, env, [[prev]]>>
                 : U extends `first`
-                  ? LispReduce<Reading<OPR, env, [[prev]]>>
+                  ? LispFirst<Reading<OPR, env, [[prev]]>>
                 : U extends `last`
-                  ? LispReduce<Reading<OPR, env, [[prev]]>>
+                  ? LispLast<Reading<OPR, env, [[prev]]>>
                 : U extends `rest`
                   ? LispRest<Reading<OPR, env, [[prev]]>>
                 : U extends `butlast`
@@ -1201,16 +1217,15 @@ type Eval<A, env = [[]], prev = 0> = A extends Sexpr
                   ? LispTake<Reading<OPR, env, [[prev]]>>
                 : U extends `drop`
                   ? LispDrop<Reading<OPR, env, [[prev]]>>
-                : U extends `assoc-in`
-                  ? LispReduce<Reading<OPR, env, [[prev]]>>
-                : U extends `update-in`
-                  ? LispReduce<Reading<OPR, env, [[prev]]>>
-                : U extends `assoc`
-                  ? LispReduce<Reading<OPR, env, [[prev]]>>
-                : U extends `update`
-                  ? LispReduce<Reading<OPR, env, [[prev]]>>
 
-
+                // : U extends `assoc-in`
+                //   ? LispReduce<Reading<OPR, env, [[prev]]>>
+                // : U extends `update-in`
+                //   ? LispReduce<Reading<OPR, env, [[prev]]>>
+                // : U extends `assoc`
+                //   ? LispReduce<Reading<OPR, env, [[prev]]>>
+                // : U extends `update`
+                //   ? LispReduce<Reading<OPR, env, [[prev]]>>
 
                 : U extends `get`
                   ? LispGet<Reading<OPR, env, [[prev]]>>
