@@ -858,7 +858,8 @@ const testfnlispeq1: Eval<
 // > = [`prim`, "'+test'"];
 
 // todo : error handle properly
-type InterleaveError = "InterleaveError";
+type InterleaveError0 = "InterleaveError0";
+type InterleaveError1 = "InterleaveError1";
 type Interleave<V, W> = V extends [infer HeadV, ...infer TailV]
   ? W extends [infer HeadW, ...infer TailW]
     ? TailW extends never
@@ -868,6 +869,7 @@ type Interleave<V, W> = V extends [infer HeadV, ...infer TailV]
         : [HeadV, HeadW, ...Interleave<TailV, TailW>]
     : []
   : [];
+type LispInterleave<S> = S extends [['vec', ...infer V], ['vec', ...infer W]] ? ['vec', ...Interleave<V, W>] : InterleaveError1
 
 // interleave test
 const testinterleave0: Interleave<[1, 2, 3], [4, 5, 6]> = [1, 4, 2, 5, 3, 6];
@@ -904,6 +906,8 @@ const testttt2: Eval<[['fn', [['sym', 'a'], ['sym', 'b']], [['sym', '+'], ['sym'
 
 type ReverseError0 = 'ReverseError0'
 type ReverseError1 = 'ReverseError1'
+type ReverseError2 = 'ReverseError2'
+type ReverseError3 = 'ReverseError3'
 type Reverse<V, R extends Array<unknown> = []> = 
   V extends [infer H, ...infer T]
   ? T['length'] extends 0
@@ -912,7 +916,7 @@ type Reverse<V, R extends Array<unknown> = []> =
   : V extends []
     ? []
     : {error: [ReverseError0]}
-type LispReverse<S> = S extends [Vector] & [['vec', ...infer V]] ? ['vec', ...Reverse<V>] : ReverseError1
+type LispReverse<S> = S extends [Vector] & [['vec', ...infer V]] ? Reverse<V> extends infer RV ? RV extends unknown[] ? ['vec', ...RV] : ReverseError1 : ReverseError2 : ReverseError3
 const reversetest0: Reverse<[0,1,2,3,4]> = [4,3,2,1,0]
 const reversetest1: Reverse<[]> = []
 const reversetest2: Reverse<[1]> = [1]
@@ -1142,7 +1146,7 @@ type Eval<A, env = [[]], prev = 0> = A extends Sexpr
                 : U extends `reverse`
                   ? LispReverse<Reading<OPR, env, [[prev]]>>
                 : U extends `interleave`
-                  ? LispReduce<Reading<OPR, env, [[prev]]>>
+                  ? LispInterleave<Reading<OPR, env, [[prev]]>>
                 : U extends `take`
                   ? LispReduce<Reading<OPR, env, [[prev]]>>
                 : U extends `drop`
