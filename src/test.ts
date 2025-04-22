@@ -201,6 +201,11 @@ const maintest0_rest_1: Lisp<'(rest [0])'> = ['vec']
 const maintest0_butlast_0: Lisp<'(butlast [0 1 2 3])'> = ['vec', ['prim', '0000000000000000'], ['prim', '0000000000000001'], ['prim', '0000000000000010']]
 const maintest0_butlast_1: Lisp<'(butlast [0])'> = ['vec']
 
+const maintest0_reverse_0: Lisp<'(reverse [0 1 2 3])'> = ['vec', ['prim', '0000000000000011'], ['prim', '0000000000000010'], ['prim', '0000000000000001'],  ['prim', '0000000000000000']]
+const maintest0_reverse_1: Lisp<'(reverse [0])'> = ['vec',  ['prim', '0000000000000000']]
+
+
+
 // arrow macro: ->, ->>.
 
 const maintest_threadf_0: Lisp<"(-> 's' (str '01'))"> = ['prim', "'s01'"]

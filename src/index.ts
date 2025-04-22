@@ -903,6 +903,7 @@ const testttt2: Eval<[['fn', [['sym', 'a'], ['sym', 'b']], [['sym', '+'], ['sym'
 
 
 type ReverseError0 = 'ReverseError0'
+type ReverseError1 = 'ReverseError1'
 type Reverse<V, R extends Array<unknown> = []> = 
   V extends [infer H, ...infer T]
   ? T['length'] extends 0
@@ -911,6 +912,7 @@ type Reverse<V, R extends Array<unknown> = []> =
   : V extends []
     ? []
     : {error: [ReverseError0]}
+type LispReverse<S> = S extends [Vector] & [['vec', ...infer V]] ? ['vec', ...Reverse<V>] : ReverseError1
 const reversetest0: Reverse<[0,1,2,3,4]> = [4,3,2,1,0]
 const reversetest1: Reverse<[]> = []
 const reversetest2: Reverse<[1]> = [1]
@@ -1138,7 +1140,7 @@ type Eval<A, env = [[]], prev = 0> = A extends Sexpr
                 : U extends `butlast`
                   ? LispButlast<Reading<OPR, env, [[prev]]>>
                 : U extends `reverse`
-                  ? LispReduce<Reading<OPR, env, [[prev]]>>
+                  ? LispReverse<Reading<OPR, env, [[prev]]>>
                 : U extends `interleave`
                   ? LispReduce<Reading<OPR, env, [[prev]]>>
                 : U extends `take`
