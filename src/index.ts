@@ -716,12 +716,12 @@ type ButlastError2 = "ButlastError2"
 type ButlastError3 = "ButlastError3"
 type _Butlast<V, R extends unknown[] = []> = 
   V extends [infer H, ...infer T]
-    ? T extends [] 
+    ? T extends []
       ? R
       : _Butlast<T,[...R,H]>
     : ButlastError0
 type Butlast<V> = V extends Vector & ['vec', ...infer v] ? _Butlast<v> extends Atom[] & infer a ? ['vec', ..._Butlast<v>] : ButlastError1 : ButlastError3
-type LispButlast<S> = S extends [infer V extends Vector] ? V : ButlastError2
+type LispButlast<S> = S extends [infer V extends Vector] ? Butlast<V> : ButlastError2
 type testbutlastvec = [`vec`, [`prim`, 0], [`prim`, 1], ['prim', 2], ['prim', 3]]
 const testbutlast0: Butlast<testbutlastvec> = [`vec`, [`prim`, 0], [`prim`, 1], ['prim', 2]];
 const testbutlast1: Butlast<Butlast<testbutlastvec>> = [`vec`, [`prim`, 0], [`prim`, 1]];

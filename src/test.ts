@@ -194,9 +194,12 @@ const maintest0_reduce_1: Lisp<'(let [f (fn [r i] (+ r i))] (reduce f 0 [0 1 2 3
 // loop
 const maintest0_loop_1: Lisp<'(let [f (fn [i] (if (> i 0) (f (- i 2)) true))] (f 10))'> = ['prim', true] 
 
-// rest
+// rest,butlast
 const maintest0_rest_0: Lisp<'(rest [0 1 2 3])'> = ['vec', ['prim', '0000000000000001'], ['prim', '0000000000000010'],['prim', '0000000000000011']]
 const maintest0_rest_1: Lisp<'(rest [0])'> = ['vec']
+
+const maintest0_butlast_0: Lisp<'(butlast [0 1 2 3])'> = ['vec', ['prim', '0000000000000000'], ['prim', '0000000000000001'], ['prim', '0000000000000010']]
+const maintest0_butlast_1: Lisp<'(butlast [0])'> = ['vec']
 
 // arrow macro: ->, ->>.
 
