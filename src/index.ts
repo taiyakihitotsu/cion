@@ -22,20 +22,18 @@ type Each = LetForm | IfForm | Atom
 type Atom = ['map', Atom[]] | Sym | Prim | Fn | Vector | Keyword | Nil
 type TMap = Exclude<Atom, Sym | Prim | Fn | Vector | Keyword | Nil>
 
-// This isn't usually way to define a sexpr, not including atomic something.
-// That role leaves to EACH.
 type Sexpr = Array<Each | Each[] | Sexpr>;
 type Nil = [];
 const Nil: Nil = [];
-// type Nil = [`prim`, 'nil']
-// const Nil = [`prim`, 'nil']
 
 type Keyword = [`key`, string]
 type Sym = [`sym`, string];
-type Prim = [`prim`, string | boolean | number]; // todo : This boolean is appended IFForm, using boolean directly in current.
+type PrimString  = ['prim', string]
+type PrimBoolean = ['prim', boolean]
+type PrimTestNumber  = ['prim', number] // note : this is only used in test.
+type PrimNumber = ['prim', string]
+type Prim = PrimString | PrimBoolean | PrimNumber | PrimTestNumber
 type Args = Sym[];
-// type Fn = [`fn`, Args, Each | Array<Each>];
-// type Fn = [`fn`, Args, Sexpr | Sexpr[]];
 type Fn = [`fn`, Args, Each | Each[] | Sexpr | Sexpr[]]
 
 type Var = {
@@ -600,24 +598,6 @@ const vectortest5: Vector &
   [`vec`, [`vec`, [`prim`, true], [`prim`, `1`]], [`prim`, `1`]],
 ];
 
-type GetVecError0 = "GetVecError0";
-type GetVecError1 = "GetVecError1";
-type GetVecError2 = "GetVecError2";
-type GetVec<N, V> = N extends number
-  ? V extends Vector & [`vec`, ...infer W]
-    ? W extends Atom[]
-      ? W[N]
-      : GetVecError0
-    : GetVecError1
-  : GetVecError2;
-const testgetvec: GetVec<
-  3,
-  [`vec`, [`prim`, 0], [`prim`, 1], [`prim`, 2], [`prim`, 3], [`prim`, 4]]
-> = [`prim`, 3];
-
-// map
-
-
 type ConcatError0 = "ConcatError0"
 type ConcatError1 = "ConcatError1"
 type ConcatError2 = "ConcatError2"
@@ -682,14 +662,47 @@ const testgetmap0: GetMap<['key', ':a'], ['map', [['key', ':a'], ['prim', '0']]]
 const testgetmap1: GetMap<['key', ':a'], ['map', [['key', ':b'], ['prim', '10'], ['key', ':a'], ['prim', '0']]]> = ['prim', '0']
 const testgetmap2: GetMap<['key', ':c'], ['map', [['key', ':b'], ['prim', '10'], ['key', ':a'], ['prim', '0']]]> = Nil
 
-type Get<K, V> = V extends Vector ? GetVec<K, V> : GetMap<K, V>;
+type GetVecError0 = 'GetVecError0'
+type GetVecError1 = 'GetVecError1'
+type GetVecError2 = 'GetVecError2'
+type GetVec<
+  Idx extends PrimNumber
+, Vec extends Vector> =
+  Vec extends ['vec', infer H, ...infer T extends Atom[]]
+    ? Idx extends PrimNumber & ['prim', infer idx extends string]
+      ? Bit.BitIsZero<idx> extends true
+        ? H
+        : Bit.BitGT<idx, "0"> extends true
+          ? T extends []
+            ? Nil
+            : GetVec<['prim', Bit.BitSub<idx, "1">], ['vec', ...T]>
+          : GetVecError0
+      : GetVecError1
+    : Nil
+
+type GetError0 = 'GetError0'
+type GetError1 = 'GetError1'
+type GetError2 = 'GetError2'
+type Get<
+  K extends PrimNumber | Keyword
+, V extends Vector | TMap> =
+   V extends Vector
+     ? K extends PrimNumber
+       ? GetVec<K, V>
+       : GetError0
+     : GetMap<K, V>;
+
 const testget0: Get<
-  3,
+  ['prim', '11'],
   [`vec`, [`prim`, 0], [`prim`, 1], [`prim`, 2], [`prim`, 3], [`prim`, 4]]
 > = [`prim`, 3];
 const testget1: Get<['key', ':a'], ['map', [['key', ':a'], ['prim', '0']]]> = ['prim', '0']
 const testget2: Get<['key', ':a'], ['map', [['key', ':b'], ['prim', '10'], ['key', ':a'], ['prim', '0']]]> = ['prim', '0']
 const testget3: Get<['key', ':c'], ['map', [['key', ':b'], ['prim', '10'], ['key', ':a'], ['prim', '0']]]> = Nil
+const testget4: Get<['prim', '0'], ['vec', ['key', ':a'], ['prim', '0']]> = ['key', ':a']
+const testget5: Get<['prim', '1'], ['vec', ['key', ':b'], ['prim', '10'], ['key', ':a'], ['prim', '0']]> = ['prim', '10']
+const testget6: Get<['prim', '111'], ['map', [['key', ':b'], ['prim', '10'], ['key', ':a'], ['prim', '0']]]> = Nil
+
 
 type LispGetError0 = "LispGetError0"
 type LispGet<S> =
@@ -699,6 +712,150 @@ type LispGet<S> =
         ? Get<Idx, Vec>
         : {error: [LispGetError0, S, "this is not map and key or vector and idx-num."]
            sexpr: S}
+
+type AssocError0 = 'Args: 1st Map & 2nd not keyword.'
+type AssocError1 = 'Args: 1st Vector & 2nd not number.'
+type AssocError2 = 'AssocError2'
+type AssocError3 = 'AssocError3'
+const AssocError0 = 'Args: 1st Map & 2nd not keyword.'
+const AssocError1 = 'Args: 1st Vector & 2nd not number.'
+const AssocError2 = 'AssocError2'
+const AssocError3 = 'AssocError3'
+type _Assoc<
+  M
+, K extends Keyword | PrimNumber
+, V extends Atom
+, Type extends 'assoc' | 'update' = 'assoc'
+, S extends unknown[] = []> =
+  M extends Vector & ['vec', infer mV extends Atom, ...infer mR extends Atom[]]
+    ? K extends PrimNumber & ['prim', infer kB extends string]
+      ? Bit.BitIsZero<kB> extends true
+        ? ['vec', ...S, Type extends 'update' ? Eval<[V, mV]> : V, ...mR]
+        : Bit.BitGT<kB, '0'> extends true
+          ? mR extends []
+            ? ['vec', ...S, mV]
+            : _Assoc<['vec', ...mR], ['prim', Bit.BitSub<kB, '1'>], V, Type, [...S, mV]>
+          : ['vec', ...S, V, ...mR]
+      : AssocError1
+    : M extends TMap & ['map', [infer mK extends Keyword, infer mV extends Atom, ...infer mR]]
+      ? mK extends K
+        ? ['map', [...S, mK, Type extends 'update' ? Eval<[V, mV]> : V, ...mR]]
+        : mR extends []
+          ? ['map', [...S, mK, mV, K, V]]
+          : _Assoc<['map', mR], K, V, Type, [...S, mK, mV]>
+      : AssocError0
+
+const testassoc0: _Assoc<['vec', ['key', ':a'], ['prim', 0], ['key', ':b'], ['prim', 1], ['key', ':c'], ['prim', 2]], ['prim', '1'], ['prim', 10]> = ['vec', ['key', ':a'], ['prim', 10], ['key', ':b'], ['prim', 1], ['key', ':c'], ['prim', 2]]
+const testassoc1: _Assoc<['vec', ['key', ':a'], ['prim', 0], ['key', ':b'], ['prim', 1], ['key', ':c'], ['prim', 2]], ['prim', '0'], ['prim', 10]> = ['vec', ['prim', 10], ['prim', 0], ['key', ':b'], ['prim', 1], ['key', ':c'], ['prim', 2]]
+const testassoc2: _Assoc<['vec', ['key', ':a'], ['prim', 0], ['key', ':b'], ['prim', 1], ['key', ':c'], ['prim', 2]], ['prim', '1111'], ['prim', 10]> = ['vec', ['key', ':a'], ['prim', 0], ['key', ':b'], ['prim', 1], ['key', ':c'], ['prim', 2]]
+const testassoc3: _Assoc<['map', [['key', ':a'], ['prim', 0], ['key', ':b'], ['prim', 1], ['key', ':c'], ['prim', 2]]], ['key', ':a'], ['prim', 10]> = ['map', [['key', ':a'], ['prim', 10], ['key', ':b'], ['prim', 1], ['key', ':c'], ['prim', 2]]]
+const testassoc4: _Assoc<['map', [['key', ':a'], ['prim', 0], ['key', ':b'], ['prim', 1], ['key', ':c'], ['prim', 2]]], ['key', ':b'], ['prim', 10]> = ['map', [['key', ':a'], ['prim', 0], ['key', ':b'], ['prim', 10], ['key', ':c'], ['prim', 2]]]
+const testassoc5: _Assoc<['map', [['key', ':a'], ['prim', 0], ['key', ':b'], ['prim', 1], ['key', ':c'], ['prim', 2]]], ['key', ':d'], ['prim', 10]> = ['map', [['key', ':a'], ['prim', 0], ['key', ':b'], ['prim', 1], ['key', ':c'], ['prim', 2], ['key', ':d'], ['prim', 10]]]
+
+type AssocInError0 = 'AssocInError0'
+type AssocInError1 = 'AssocInError1'
+type AssocInError2 = 'AssocInError2'
+type AssocInError3 = 'AssocInError3'
+type AssocInError4 = 'AssocInError4'
+type AssocInError5 = 'AssocInError5'
+type AssocInError6 = 'AssocInError6'
+type AssocInError7 = 'AssocInError7'
+type AssocInError8 = 'AssocInError8'
+
+type _rAssocIn<
+  M  extends Vector | TMap
+, Kh extends (Keyword | PrimNumber)
+, Kt extends (Keyword | PrimNumber)[]
+, V  extends Atom
+, Type extends 'update' | 'assoc' = 'assoc'> =
+  Kt extends []
+    ? _Assoc<M, Kh, V, Type>
+    : Get<Kh, M> extends infer Next
+      ? Next extends Vector | TMap
+        ? _AssocIn<Next, ['vec', ...Kt], V, Type> extends infer Recur
+          ? Recur extends Atom 
+            ? _Assoc<M, Kh, Recur>
+            : {error: AssocInError7, message: `The value of key (${Kt[0][1]}) is not vector nor map.`}
+          : AssocInError3
+        : {error: AssocInError8, message: "Keys rests but its value is not vector nor map."}
+      : AssocInError4
+ 
+type _AssocIn<
+  M extends Vector | TMap
+, Ks extends ['vec', ...unknown[]]
+, V extends Atom
+, Type extends 'update' | 'assoc' = 'assoc'> =
+  M extends Vector
+    ? M extends ['vec']
+      ? M
+      : Ks extends ['vec', infer Kh extends PrimNumber, ...infer Kt extends (Keyword | PrimNumber)[]]
+        ? _rAssocIn<M, Kh, Kt, V, Type>
+        : AssocInError0
+    : M extends TMap
+      ? Ks extends ['vec', infer Kh extends Keyword, ...infer Kt extends (Keyword | PrimNumber)[]]
+        ? _rAssocIn<M, Kh, Kt, V, Type>
+        : AssocInError5
+      : AssocInError6
+
+const testassocin0: _AssocIn<['vec', ['key', ':a'], ['prim', 0], ['key', ':b'], ['prim', 1], ['key', ':c'], ['prim', 2]], ['vec', ['prim', '1']], ['prim', 10]> = ['vec', ['key', ':a'], ['prim', 10], ['key', ':b'], ['prim', 1], ['key', ':c'], ['prim', 2]]
+const testassocin1: _AssocIn<['map', [['key', ':a'], ['prim', 0], ['key', ':b'], ['prim', 1], ['key', ':c'], ['prim', 2]]], ['vec', ['key', ':a']], ['prim', 10]> = ['map', [['key', ':a'], ['prim', 10], ['key', ':b'], ['prim', 1], ['key', ':c'], ['prim', 2]]]
+const testassocin2: _AssocIn<['vec', ['key', ':a'], ['prim', 0], ['key', ':b'], ['vec', ['key', ':ba'], ['prim', 33]], ['key', ':c'], ['prim', 2]], ['vec', ['prim', '1'], ['prim', '0']], ['prim', 10]> = {error: 'AssocInError8', message: "Keys rests but its value is not vector nor map."}
+const testassocin3a: _AssocIn<['vec', ['key', ':a'], ['prim', 0], ['key', ':b'], ['vec', ['key', ':ba'], ['prim', 33]], ['key', ':c'], ['prim', 2]], ['vec', ['prim', '11'], ['prim', '1']], ['prim', 10]> = ['vec', ['key', ':a'], ['prim', 0], ['key', ':b'], ['vec', ['key', ':ba'], ['prim', 10]], ['key', ':c'], ['prim', 2]]
+const testassocin3b: _AssocIn<['vec', ['key', ':a'], ['prim', 0], ['key', ':b'], ['vec', ['key', ':ba'], ['prim', 33]], ['key', ':c'], ['prim', 2]], ['vec', ['prim', '11'], ['prim', '10']], ['prim', 10]> = ['vec', ['key', ':a'], ['prim', 0], ['key', ':b'], ['vec', ['key', ':ba'], ['prim', 33]], ['key', ':c'], ['prim', 2]]
+const testassocin4: _AssocIn<['vec', ['prim', 3], ['prim', '"d"'], ['map', [['key', ':a'], ['prim', 0], ['key', ':b'], ['prim', 1], ['key', ':c'], ['map', [['key', ':ca'], ['prim', 2]]]]]], ['vec', ['prim', '10'], ['key', ':c'], ['key', ':ca']], ['prim', 10]> = ['vec', ['prim', 3], ['prim', '"d"'], ['map', [['key', ':a'], ['prim', 0], ['key', ':b'], ['prim', 1], ['key', ':c'], ['map', [['key', ':ca'], ['prim', 10]]]]]]
+
+type _Update<
+  M
+, K extends Keyword | PrimNumber
+, F extends Fn> =
+  _Assoc<M, K, F, 'update'>
+
+const testUpdate0: _Update<['map', [['key', ':a'], ['prim', '01'], ['key', ':b'], ['prim', '0001'], ['key', ':c'], ['prim', '0010']]], ['key', ':a'], ['fn', [['sym', 'x']], [['sym', '+'], ['sym', 'x'], ['prim', '1000']]]> = ['map', [['key', ':a'], ['prim', '0000000000001001'], ['key', ':b'], ['prim', '0001'], ['key', ':c'], ['prim', '0010']]]
+const testUpdate1: _Update<['vec', ['key', ':a'], ['prim', '01'], ['key', ':b'], ['prim', '0001'], ['key', ':c'], ['prim', '0010']], ['prim', '11'], ['fn', [['sym', 'x']], [['sym', '+'], ['sym', 'x'], ['prim', '1000']]]> = ['vec', ['key', ':a'], ['prim', '01'], ['key', ':b'], ['prim', '0000000000001001'], ['key', ':c'], ['prim', '0010']]
+const testUpdate2: _Update<['vec', ['key', ':a'], ['prim', '01'], ['key', ':b'], ['prim', '0001'], ['key', ':c'], ['prim', '0010']], ['key', ':d'], ['fn', [['sym', 'x']], [['sym', '+'], ['sym', 'x'], ['prim', '1000']]]> = AssocError1
+
+type _UpdateIn<
+  M extends Vector | TMap
+, K extends ['vec', ...unknown[]]
+, F extends Fn
+> = _AssocIn<M, K, F, 'update'>
+
+const testupdatein0: _UpdateIn<['vec', ['prim', '0'], ['prim', '1'], ['prim', '10'], ['prim', '11'], ['prim', '100'], ['prim', '101']], ['vec', ['prim', '1']], ['fn', [['sym', 'x']], [['sym', '+'], ['sym', 'x'], ['prim', '1000']]]> = ['vec', ['prim', '0'], ['prim', '0000000000001001'], ['prim', '10'], ['prim', '11'], ['prim', '100'], ['prim', '101']]
+const testupdatein1: _UpdateIn<['map', [['key', ':a'], ['prim', '1'], ['key', ':b'], ['prim', '10'], ['key', ':c'], ['prim', '11']]], ['vec', ['key', ':a']], ['fn', [['sym', 'x']], [['sym', '+'], ['sym', 'x'], ['prim', '1000']]]> = ['map', [['key', ':a'], ['prim', '0000000000001001'], ['key', ':b'], ['prim', '10'], ['key', ':c'], ['prim', '11']]]
+const testupdatein2: _UpdateIn<['vec', ['key', ':a'], ['prim', 0], ['key', ':b'], ['vec', ['key', ':ba'], ['prim', 33]], ['key', ':c'], ['prim', 2]], ['vec', ['key', ':notfound']], ['fn', [['sym', 'x']], [['sym', '+'], ['sym', 'x'], ['prim', '1000']]]> = 'AssocInError0'
+const testupdatein3a: _UpdateIn<['vec', ['key', ':a'], ['prim', 0], ['key', ':b'], ['vec', ['key', ':ba'], ['prim', '0001']], ['key', ':c'], ['prim', 2]], ['vec', ['prim', '11'], ['prim', '01']], ['fn', [['sym', 'x']], [['sym', '+'], ['sym', 'x'], ['prim', '1000']]]> = ['vec', ['key', ':a'], ['prim', 0], ['key', ':b'], ['vec', ['key', ':ba'], ['prim', '0000000000001001']], ['key', ':c'], ['prim', 2]]
+const testupdatein3b: _UpdateIn<['vec', ['key', ':a'], ['prim', 0], ['key', ':b'], ['vec', ['key', ':ba'], ['prim', 33]], ['key', ':c'], ['prim', 2]], ['vec', ['prim', '11'], ['prim', '10']], ['fn', [['sym', 'x']], [['sym', '+'], ['sym', 'x'], ['prim', '1000']]]> = ['vec', ['key', ':a'], ['prim', 0], ['key', ':b'], ['vec', ['key', ':ba'], ['prim', 33]], ['key', ':c'], ['prim', 2]] // note : no effect because of a value of the key doesn't exist (in current).
+const testupdatein4: _UpdateIn<['vec', ['prim', '11'], ['prim', '"d"'], ['map', [['key', ':a'], ['prim', '0'], ['key', ':b'], ['prim', '1'], ['key', ':c'], ['map', [['key', ':ca'], ['prim', '10']]]]]], ['vec', ['prim', '10'], ['key', ':c'], ['key', ':ca']], ['fn', [['sym', 'x']], [['sym', '+'], ['sym', 'x'], ['prim', '1000']]]> = ['vec', ['prim', '11'], ['prim', '"d"'], ['map', [['key', ':a'], ['prim', '0'], ['key', ':b'], ['prim', '1'], ['key', ':c'], ['map', [['key', ':ca'], ['prim', '0000000000001010']]]]]]
+
+type LispAssocError0 = 'LispAssocError0'
+type LispAssoc<S> = S extends 
+  [ infer M extends Vector | TMap
+  , infer K extends Keyword | PrimNumber
+  , infer V extends Atom]
+    ? _Assoc<M,K,V>
+    : LispAssocError0
+type LispAssocInError0 = 'LispAssocInError0'
+type LispAssocIn<S> = S extends 
+  [ infer M extends Vector | TMap
+  , infer Ks extends ['vec', ...(Keyword | PrimNumber)[]]
+  , infer V extends Atom]
+    ? _AssocIn<M,Ks,V>
+    : LispAssocInError0
+type LispUpdateError0 = 'LispUpdateError0'
+type LispUpdate<S> = S extends 
+  [ infer M extends Vector | TMap
+  , infer K extends Keyword | PrimNumber
+  , infer V extends Fn]
+    ? _Update<M,K,V>
+    : LispUpdateError0
+type LispUpdateInError0 = 'LispUpdateInError0'
+type LispUpdateIn<S> = S extends 
+  [ infer M extends Vector | TMap
+  , infer Ks extends ['vec', ...(Keyword | PrimNumber)[]]
+  , infer V extends Fn]
+    ? _UpdateIn<M,Ks,V>
+    : LispUpdateInError0
+
 
 type LispVectorError0 = "LispVectorError0"
 type LispVector<S> = S extends unknown[] ? ['vec', ...S] : {error: [LispGetError0, S, ""], sexpr: S}
@@ -1237,14 +1394,14 @@ type Eval<A, env = [[]], prev = 0> = A extends Sexpr
                 : U extends `drop`
                   ? LispDrop<Reading<OPR, env, [[prev]]>>
 
-                // : U extends `assoc-in`
-                //   ? LispReduce<Reading<OPR, env, [[prev]]>>
-                // : U extends `update-in`
-                //   ? LispReduce<Reading<OPR, env, [[prev]]>>
-                // : U extends `assoc`
-                //   ? LispReduce<Reading<OPR, env, [[prev]]>>
-                // : U extends `update`
-                //   ? LispReduce<Reading<OPR, env, [[prev]]>>
+                : U extends `assoc-in`
+                  ? LispAssocIn<Reading<OPR, env, [[prev]]>>
+                : U extends `update-in`
+                  ? LispUpdateIn<Reading<OPR, env, [[prev]]>>
+                : U extends `assoc`
+                  ? LispAssoc<Reading<OPR, env, [[prev]]>>
+                : U extends `update`
+                  ? LispUpdate<Reading<OPR, env, [[prev]]>>
 
                 : U extends `get`
                   ? LispGet<Reading<OPR, env, [[prev]]>>

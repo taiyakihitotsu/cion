@@ -226,6 +226,25 @@ const maintest0_last_1: Lisp<'(last [])'> = []
 const maintest0_conj_0: Lisp<'(conj [0 1] 2 3)'> = ['vec', ['prim', '0000000000000000'], ['prim', '0000000000000001'], ['prim', '0000000000000010'], ['prim', '0000000000000011']]
 const maintest0_conj_1: Lisp<'(conj [0 1] [2])'> = ['vec', ['prim', '0000000000000000'], ['prim', '0000000000000001'], ['vec', ['prim', '0000000000000010']]]
 
+// assoc, update, assoc-in, update-in
+const maintest0_assoc_0: Lisp<'(assoc [0 1 2] 0 99)'> = ['vec', ['prim', '0000000001100011'], ['prim', '0000000000000001'], ['prim', '0000000000000010']]
+const maintest0_assoc_1: Lisp<'(assoc [0 1 2] 3 99)'> = ['vec', ['prim', '0000000000000000'], ['prim', '0000000000000001'], ['prim', '0000000000000010']] // no effect
+
+const maintest0_update_0: Lisp<'(update [0 1 2] 1 (fn [x] (+ x 99)))'> = ['vec', ['prim', '0000000000000000'], ['prim', '0000000001100100'], ['prim', '0000000000000010']]
+const maintest0_update_1: Lisp<'(update [0 1 2] 99 (fn [x] (+ x 99)))'> = ['vec', ['prim', '0000000000000000'], ['prim', '0000000000000001'], ['prim', '0000000000000010']] // no effect
+
+const maintest0_assocIn_0: Lisp<'(assoc-in [0 1 2] [0] 99)'> = ['vec', ['prim', '0000000001100011'], ['prim', '0000000000000001'], ['prim', '0000000000000010']]
+const maintest0_assocIn_1: Lisp<'(assoc-in [0 1 2] [99] 99)'> = ['vec', ['prim', '0000000000000000'], ['prim', '0000000000000001'], ['prim', '0000000000000010']] // no effect
+const maintest0_assocIn_2: Lisp<'(assoc-in [0 1 2] [0 0] 99)'> = {error: "AssocInError8", message: "Keys rests but its value is not vector nor map."}
+const maintest0_assocIn_3: Lisp<'(assoc-in [0 1 [2 3 4]] [2 0] 99)'> = ['vec', ['prim', '0000000000000000'], ['prim', '0000000000000001'], ['vec', ['prim', '0000000001100011'], ['prim', '0000000000000011'], ['prim', '0000000000000100']]]
+const maintest0_assocIn_4: Lisp<'(assoc-in [0 1 [2 3 {:a 4 :b 5}]] [2 0 :a] 99)'> = {error: 'AssocInError7', message: `The value of key (0000000000000000) is not vector nor map.`}
+const maintest0_assocIn_5: Lisp<'(assoc-in [0 1 [2 3 {:a 4 :b 5}]] [2 2 :a] 99)'> = ['vec', ['prim', '0000000000000000'], ['prim', '0000000000000001'], ['vec', ['prim', '0000000000000010'], ['prim', '0000000000000011'], ['map', [['key', ':a'], ['prim', '0000000001100011'], ['key', ':b'], ['prim', '0000000000000101']]]]]
+const maintest0_assocIn_6: Lisp<'(assoc-in {:x [0 1 [2 3 {:a 4 :b 5}]] :y 0} [:x 2 2 :a] 99)'> = ['map', [['key', ':x'], ['vec', ['prim', '0000000000000000'], ['prim', '0000000000000001'], ['vec', ['prim', '0000000000000010'], ['prim', '0000000000000011'], ['map', [['key', ':a'], ['prim', '0000000001100011'], ['key', ':b'], ['prim', '0000000000000101']]]]], ['key', ':y'], ['prim', '0000000000000000']]]
+
+const maintest0_updateIn_0: Lisp<'(update-in [0 1 2] [1] (fn [x] (+ x 99)))'> = ['vec', ['prim', '0000000000000000'], ['prim', '0000000001100100'], ['prim', '0000000000000010']]
+const maintest0_updateIn_1: Lisp<'(update-in [0 1 2] [99] (fn [x] (+ x 99)))'> = ['vec', ['prim', '0000000000000000'], ['prim', '0000000000000001'], ['prim', '0000000000000010']] // no effect
+const maintest0_updateIn_2: Lisp<'(update-in [0 1 2] [99 99] (fn [x] (+ x 99)))'> = {error: "AssocInError8", message: "Keys rests but its value is not vector nor map."}
+
 // arrow macro: ->, ->>.
 
 const maintest_threadf_0: Lisp<"(-> 's' (str '01'))"> = ['prim', "'s01'"]
