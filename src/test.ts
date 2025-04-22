@@ -191,6 +191,9 @@ const maintest0_remove_1: Lisp<'(let [f (fn [n] (> 3 n))] (remove f [0 1 2 3 4 5
 const maintest0_reduce_0: Lisp<'(reduce (fn [r i] (+ r i)) 0 [0 1 2 3 4 5])'> = ['prim', '0000000000001111']
 const maintest0_reduce_1: Lisp<'(let [f (fn [r i] (+ r i))] (reduce f 0 [0 1 2 3 4 5]))'> = ['prim', '0000000000001111']
 
+// loop
+const maintest0_loop_1: Lisp<'(let [f (fn [i] (if (> i 0) (f (- i 2)) true))] (f 10))'> = ['prim', true] 
+
 // arrow macro: ->, ->>.
 
 const maintest_threadf_0: Lisp<"(-> 's' (str '01'))"> = ['prim', "'s01'"]
