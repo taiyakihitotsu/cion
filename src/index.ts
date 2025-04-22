@@ -853,6 +853,7 @@ const testinterleave2: Interleave<[1], [2]> = [1, 2];
 
 type ReduceError0 = 'ReduceError0'
 type ReduceError1 = 'ReduceError1'
+type ReduceError2 = 'ReduceError2'
 type _Reduce<F, Init, V> =
   V extends [infer H, ...infer T]
   ? T['length'] extends 0
@@ -863,6 +864,10 @@ type Reduce<F,Init,V> =
   V extends ['vec', ...infer v]
     ? _Reduce<F,Init,v>
     : {error: [ReduceError1]}
+type LispReduce<S> = 
+  S extends [infer f, infer init, infer v]
+    ? Reduce<f,init,v>
+    : ReduceError2
 
 const testreduce0: Reduce<
     ['fn', [['sym', 'a'], ['sym', 'b']], [['sym', '+'], ['sym', 'a'], ['sym', 'b']]],
@@ -1094,6 +1099,8 @@ type Eval<A, env = [[]], prev = 0> = A extends Sexpr
                   ? LispFilter<Reading<OPR, env, [[prev]]>>
                 : U extends `remove`
                   ? LispRemove<Reading<OPR, env, [[prev]]>>
+                : U extends `reduce`
+                  ? LispReduce<Reading<OPR, env, [[prev]]>>
                 : U extends `get`
                   ? LispGet<Reading<OPR, env, [[prev]]>>
                 : U extends `eq` | `=`

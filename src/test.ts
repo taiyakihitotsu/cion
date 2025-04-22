@@ -177,7 +177,7 @@ const maintest0_letif_11: Lisp<'(let [x (let [a 2 b 6] (fn [c] (+ a b c))) z 2 y
 const maintest0_letif_12: Lisp<'(let [x (let [a 2 b 6] (fn [c] (+ a b c))) z 20 y ((fn [d] (x d)) z)] y)'> = ['prim', '0000000000011100']
 const maintest0_letif_13: Lisp<'(let [x (let [a 2 b 6] (fn [c] (+ a b c))) z 20 y ((fn [d] (x d)) z 999)] y)'> = ['prim', '0000000000011100'] // a case of a number of args being over. rest parts are ignored.
 
-// lift: map, filter, remove.
+// lift: map, filter, remove, reduce.
 
 const maintest0_map_0: Lisp<'(map (fn [n] (* 2 n)) [0 1 2])'> = ['vec', ['prim', '0000000000000000'], ['prim', '0000000000000010'], ['prim', '0000000000000100']]
 const maintest0_map_1: Lisp<'(let [f (fn [n] (* 2 n))] (map f [0 1 2]))'> = ['vec', ['prim', '0000000000000000'], ['prim', '0000000000000010'], ['prim', '0000000000000100']]
@@ -187,6 +187,9 @@ const maintest0_filter_1: Lisp<'(let [f (fn [n] (> 3 n))] (filter f [0 1 2 3 4 5
  
 const maintest0_remove_0: Lisp<'(remove (fn [n] (> 3 n)) [0 1 2 3 4 5])'> = ['vec', ['prim', '0000000000000011'], ['prim', '0000000000000100'], ['prim', '0000000000000101']]
 const maintest0_remove_1: Lisp<'(let [f (fn [n] (> 3 n))] (remove f [0 1 2 3 4 5]))'> = ['vec', ['prim', '0000000000000011'], ['prim', '0000000000000100'], ['prim', '0000000000000101']]
+
+const maintest0_reduce_0: Lisp<'(reduce (fn [r i] (+ r i)) 0 [0 1 2 3 4 5])'> = ['prim', '0000000000001111']
+const maintest0_reduce_1: Lisp<'(let [f (fn [r i] (+ r i))] (reduce f 0 [0 1 2 3 4 5]))'> = ['prim', '0000000000001111']
 
 // arrow macro: ->, ->>.
 
