@@ -617,6 +617,7 @@ const testgetvec: GetVec<
 
 // map
 
+
 type TConcat<
     V extends Array<Array<unknown>>
     , Stack extends Array<unknown> = []> = 
@@ -694,7 +695,8 @@ type LispVector<S> = S extends unknown[] ? ['vec', ...S] : {error: [LispGetError
 
 // fns of seq
 type FirstError = "FirstError";
-type RestError = "RestError";
+type RestError0 = "RestError0";
+type RestError1 = "RestError1"
 type ConjError = "ConjError";
 type ConcatError = "ConcatError";
 type First<V> = V extends Vector & [`vec`, infer H, ...infer T]
@@ -704,7 +706,28 @@ type Rest<V> = V extends Vector & [`vec`, infer H, ...infer T]
   ? T[0] extends Atom
     ? [`vec`, ...T]
     : [`vec`]
-  : RestError;
+  : RestError0;
+type LispRest<S> = 
+  S extends [infer V extends Vector] ? Rest<V> : RestError1
+
+type ButlastError0 = "ButlastError0"
+type ButlastError1 = "ButlastError1"
+type ButlastError2 = "ButlastError2"
+type ButlastError3 = "ButlastError3"
+type _Butlast<V, R extends unknown[] = []> = 
+  V extends [infer H, ...infer T]
+    ? T extends [] 
+      ? R
+      : _Butlast<T,[...R,H]>
+    : ButlastError0
+type Butlast<V> = V extends Vector & ['vec', ...infer v] ? _Butlast<v> extends Atom[] & infer a ? ['vec', ..._Butlast<v>] : ButlastError1 : ButlastError3
+type LispButlast<S> = S extends [infer V extends Vector] ? V : ButlastError2
+type testbutlastvec = [`vec`, [`prim`, 0], [`prim`, 1], ['prim', 2], ['prim', 3]]
+const testbutlast0: Butlast<testbutlastvec> = [`vec`, [`prim`, 0], [`prim`, 1], ['prim', 2]];
+const testbutlast1: Butlast<Butlast<testbutlastvec>> = [`vec`, [`prim`, 0], [`prim`, 1]];
+const testbutlast2: Butlast<Butlast<Butlast<testbutlastvec>>> = [`vec`, [`prim`, 0]];
+const testbutlast3: Butlast<Butlast<Butlast<Butlast<testbutlastvec>>>> = [`vec`];
+
 type Conj<V, E> = E extends Atom
   ? V extends Vector
     ? [...V, E]
@@ -1101,6 +1124,38 @@ type Eval<A, env = [[]], prev = 0> = A extends Sexpr
                   ? LispRemove<Reading<OPR, env, [[prev]]>>
                 : U extends `reduce`
                   ? LispReduce<Reading<OPR, env, [[prev]]>>
+
+                : U extends `concat`
+                  ? LispReduce<Reading<OPR, env, [[prev]]>>
+                : U extends `conj`
+                  ? LispReduce<Reading<OPR, env, [[prev]]>>
+                : U extends `first`
+                  ? LispReduce<Reading<OPR, env, [[prev]]>>
+                : U extends `last`
+                  ? LispReduce<Reading<OPR, env, [[prev]]>>
+                : U extends `rest`
+                  ? LispRest<Reading<OPR, env, [[prev]]>>
+                : U extends `butlast`
+                  ? LispButlast<Reading<OPR, env, [[prev]]>>
+                : U extends `reverse`
+                  ? LispReduce<Reading<OPR, env, [[prev]]>>
+                : U extends `interleave`
+                  ? LispReduce<Reading<OPR, env, [[prev]]>>
+                : U extends `take`
+                  ? LispReduce<Reading<OPR, env, [[prev]]>>
+                : U extends `drop`
+                  ? LispReduce<Reading<OPR, env, [[prev]]>>
+                : U extends `assoc-in`
+                  ? LispReduce<Reading<OPR, env, [[prev]]>>
+                : U extends `update-in`
+                  ? LispReduce<Reading<OPR, env, [[prev]]>>
+                : U extends `assoc`
+                  ? LispReduce<Reading<OPR, env, [[prev]]>>
+                : U extends `update`
+                  ? LispReduce<Reading<OPR, env, [[prev]]>>
+
+
+
                 : U extends `get`
                   ? LispGet<Reading<OPR, env, [[prev]]>>
                 : U extends `eq` | `=`
