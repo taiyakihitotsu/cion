@@ -764,6 +764,56 @@ const testconcat: Concat<testvec, testvec> = [
   [`prim`, 1],
 ];
 
+type TakeError0 = "TakeError0"
+type TakeError1 = "TakeError1"
+type TakeError2 = "TakeError2"
+type TakeError3 = "TakeError3"
+type Take<N extends string, V extends unknown[], R extends unknown[] = []> =
+  V extends []
+    ? R
+    : Bit.BitGTE<"0", N> extends true
+      ? R
+      : V extends [infer F, ...infer T]
+        ? Take<Bit.BitSub<N, "1">, T, [...R, F]>
+        : TakeError0
+type LispTake<S> =
+    S extends [['prim', infer N extends string], ['vec', ...infer V]]
+      ? Take<N,V> extends infer RV
+        ? RV extends unknown[]
+          ? ['vec', ...RV]
+          : TakeError2
+        : TakeError3
+      : TakeError1
+
+const testtakem0: Bit.BitSub<"11", "1"> = "0000000000000010"
+const testtakem1: Bit.BitIsZero<"0"> = true
+const testtake0: Take<"11", [0,1,2,3,4,5,6]> = [0,1,2]
+
+
+type DropError0 = "DropError0"
+type DropError1 = "DropError1"
+type DropError2 = "DropError2"
+type DropError3 = "DropError3"
+type Drop<N extends string, V extends unknown[], R extends unknown[] = []> =
+  V extends []
+    ? R
+    : V extends [infer _, ...infer T]
+      ? Bit.BitGTE<"0", N> extends true
+        ? V
+        : Drop<Bit.BitSub<N, "1">, T>
+      : DropError0
+type LispDrop<S> =
+    S extends [['prim', infer N extends string], ['vec', ...infer V]]
+      ? Drop<N,V> extends infer RV
+        ? RV extends unknown[]
+          ? ['vec', ...RV]
+          : DropError2
+        : DropError3
+      : DropError1
+const testDropm0: Bit.BitSub<"11", "1"> = "0000000000000010"
+const testDropm1: Bit.BitIsZero<"0"> = true
+const testDrop0: Drop<"11", [0,1,2,3,4,5,6]> = [3,4,5,6]
+
 // map, filter, remove, every, some
 type FMapError = "MapError";
 type FilterError = "FilterError";
@@ -1148,9 +1198,9 @@ type Eval<A, env = [[]], prev = 0> = A extends Sexpr
                 : U extends `interleave`
                   ? LispInterleave<Reading<OPR, env, [[prev]]>>
                 : U extends `take`
-                  ? LispReduce<Reading<OPR, env, [[prev]]>>
+                  ? LispTake<Reading<OPR, env, [[prev]]>>
                 : U extends `drop`
-                  ? LispReduce<Reading<OPR, env, [[prev]]>>
+                  ? LispDrop<Reading<OPR, env, [[prev]]>>
                 : U extends `assoc-in`
                   ? LispReduce<Reading<OPR, env, [[prev]]>>
                 : U extends `update-in`
