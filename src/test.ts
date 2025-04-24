@@ -259,4 +259,17 @@ const maintest_threadl_2: Lisp<"(str 'a' (str '01' 's'))"> = ['prim', "'a01s'"]
 const maintest_threadl_3: Lisp<"(->> 1 (+ 1) (+ 2))"> = ['prim', '0000000000000100']
 const maintest_threadl_4: Lisp<"(+ 2 (+ 1 1))"> = ['prim', '0000000000000100']
 
+// let test
+const maintest_let_0: Lisp<'(let [a {:a "a"}] (+ 1 2))'> = ['prim', '0000000000000011']
+
+// 
+const maintest_letmap_0: Lisp<`(let [c {:status 'in' :message 'message1'} cc {:status 'out' :message 'message2'} cv [c cc cc] f (fn [a b] (= "in" (b a)))] (->> cv (map :status)))`> = ['vec', ['prim', "'in'"], ['prim', "'out'"], ['prim', "'out'"]]
+const maintest_letmap_1a: Lisp<`(= 'in' (:status {:status 'in'}))`> = ['prim', true]
+const maintest_letmap_1b: Lisp<`(let [c {:status 'in' :message 'message1'} cc {:status 'out' :message 'message2'} cv [c cc cc] f (fn [a b] (= 'in' (b a)))] (->> cv first))`> = ['map', [['key', ':status'], ['prim', "'in'"], ['key', ':message'], ['prim', "'message1'"]]]
+const maintest_letmap_1c: Lisp<`(let [c {:status 'in' :message 'message1'} cc {:status 'out' :message 'message2'} cv [c cc cc] msg 'in' f (fn [a b c] (= c (b a)))] (f :status {:status 'in' :message 'message1'} msg))`> = ['prim', true]
+const maintest_letmap_1d: Lisp<`(let [c {:status 'in' :message 'message1'} cc {:status 'out' :message 'message2'} cv [c cc cc] msg 'in' f (fn [a b c] (= c (b a)))] [msg])`> = ['vec', ['prim', "'in'"]]
+const maintest_letmap_1e: Lisp<`(let [c {:status 'in'}] (:status c))`> = ['vec', ['prim', "'in'"]]
+
+
+
 

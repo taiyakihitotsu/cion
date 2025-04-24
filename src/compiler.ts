@@ -259,5 +259,6 @@ const lisptest_vec_2: Compiler.SCompiler<Compiler.SParser<Compiler.SPad<"(let [a
 
 const lisptest_vec_3: Compiler.SCompiler<Compiler.SParser<Compiler.SPad<"(first [])">>> = [['sym', 'first'], ['vec']]
 
-export default Compiler
+const lisptest_let_0: Compiler.SCompiler<Compiler.SParser<Compiler.SPad<"(let [x {:a 'a'} y 'a' z ['a']])">>> = ['let', [['sym', 'x'], ['map', [['key', ':a'], ['prim', "'a'"]]], ['sym', 'y'], ['prim', "'a'"], ['sym', 'z'], ['vec', ['prim', "'a'"]]]]
 
+export default Compiler

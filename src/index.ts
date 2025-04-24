@@ -1308,7 +1308,6 @@ type Eval<A, env = [[]], prev = 0> = A extends Sexpr
     ? env extends EnvLifo
       ? OPC extends Fn & [`fn`, infer syms, infer D]
         ? Eval<[`let`, Interleave<syms, OPR>, D], env, [prev]>
-        // ? Eval<[`let`, Interleave<syms, OPR>, D], env, [prev]>
         : /*
       ? OPC extends Fn & [`fn`, [[`sym`, infer S]], infer D]
         ? OPR[0] extends Sym & [`sym`, infer VV]
@@ -1331,14 +1330,6 @@ type Eval<A, env = [[]], prev = 0> = A extends Sexpr
             //   (let [a 1] ((fn [b] (eq a b)) 2))
             //   from:
             //   ((fn [a b] (eq a b)) 1 2)
-
-
-            VV extends "AppendP" | "eq" | "str"
-            ? Eval<[OPC, Eval<D, env, [prev]>]>
-            : Eval<D, Let<S, ReadLet<VV, env>, env>, [prev]>
-          : OPR[0] extends Prim & [`prim`, infer VVV]
-            ? Eval<D, Let<S, [`prim`, VVV], env>, [prev]>
-            : EvalError5
 */
           OPC extends IfForm & [`if`, infer IFCond, infer IFT, infer IFF]
           ? Eval< // point (A)
@@ -1428,7 +1419,6 @@ type Eval<A, env = [[]], prev = 0> = A extends Sexpr
                 : Eval<[ReadLet<U, env>, OPR[0]], env, [prev]>
               : ReadLet<U, env> extends Fn & infer UU
                 ? Eval<[UU, ...OPR], env, [prev]>
-                // ? Eval<[UU, OPR[0]], env, [prev]>
                 : {error: [EvalError3, 'the 1st is not a function but it should be.']
                    env: env}
           // note : (:key map) and (map :key)
@@ -1455,10 +1445,11 @@ type Eval<A, env = [[]], prev = 0> = A extends Sexpr
         ? ReadLet<SS, env> extends Atom & infer U
           ? U
           : [`prim`, ReadLet<SS, env>]
-        : A extends ['fn', infer Args, infer Sexpr]
-          // note : preventing 2589 error at (A)
-          ? ReadLetRecur<A, env> extends infer a ? a : never
-          : A
+        : ReadLetRecur<A, env> extends infer a ? a : never
+        // : A extends ['fn', infer Args, infer Sexpr]
+        //   // note : preventing 2589 error at (A)
+        //   ? ReadLetRecur<A, env> extends infer a ? a : never
+        //   : A
       : A extends LetForm
         ? A extends [`let`, [Sym[], LetVal[]], Sexpr]
           ? A extends [`let`, [infer letsyms, infer letvals], infer LC]
@@ -1480,15 +1471,7 @@ type Eval<A, env = [[]], prev = 0> = A extends Sexpr
                   [prev]
                 >
               : LV extends Prim & [`prim`, infer LP]
-                ? // -----------------------
-                  // todo : these lvs ugly.
-                  // todo : this is picked lp directly,
-                  //  unwrapped from [`prim`, ].
-                  //  its inconsistency .
-                  // -----------------------
-                  // ? Eval<LC, Let<LN, LP, env>, [prev]>
-                  // -----------------------
-                  Eval<LC, Let<LN, LV, env>, [prev]>
+                ? Eval<LC, Let<LN, LV, env>, [prev]>
                 : LV extends Sym & [`sym`, infer LP]
                   ? Eval<LC, Let<LN, ReadLet<LP, env>, env>, [prev]>
                   : LV extends LetForm
@@ -1499,7 +1482,7 @@ type Eval<A, env = [[]], prev = 0> = A extends Sexpr
                       >
                     : LV extends Fn
                       ? Eval<LC, Let<LN, LV, env>, [prev]>
-                    : LV extends Sexpr
+                    : LV extends Sexpr | Atom
                       ? Eval<LC, Let<LN, Eval<LV, env, [[prev]]>, env>, [prev]>
                       : { error: [EvalError7, prev, A] }
           : A extends ['let', [], infer Sexpr]
