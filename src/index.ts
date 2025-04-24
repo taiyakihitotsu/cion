@@ -7,13 +7,24 @@ import type Compiler from './compiler'
 
 // type Each = LetForm | IfForm | Atom
 // type Atom = Sym | Prim | Fn | Vector | Keyword | Nil
+// todo : naming
+// let itself isn't value and returning value, unlike fn, so maybe ok as it is.
+// todo
+// integrated let form to [[`sym`, string], EACH | Array<EACH>] in future.
+type LetVal = string | Each | Each[];
+type LetArg = [Sym, LetVal];
+// todo : too ugly.
+type LetForm = [`let`, (Sym | LetVal)[] | [Sym[], LetVal[]], Each | Each[] | Sexpr];
+// test let
+const larttest: LetArg = [[`sym`, `t`], `test`];
+
 type Each = LetForm | IfForm | Atom
 type Atom = ['map', Atom[]] | Sym | Prim | Fn | Vector | Keyword | Nil
 type TMap = Exclude<Atom, Sym | Prim | Fn | Vector | Keyword | Nil>
 
 // This isn't usually way to define a sexpr, not including atomic something.
 // That role leaves to EACH.
-type Sexpr = Array<Each | Sexpr>;
+type Sexpr = Array<Each | Each[] | Sexpr>;
 type Nil = [];
 const Nil: Nil = [];
 // type Nil = [`prim`, 'nil']
@@ -23,7 +34,9 @@ type Keyword = [`key`, string]
 type Sym = [`sym`, string];
 type Prim = [`prim`, string | boolean | number]; // todo : This boolean is appended IFForm, using boolean directly in current.
 type Args = Sym[];
-type Fn = [`fn`, Args, Each | Array<Each>];
+// type Fn = [`fn`, Args, Each | Array<Each>];
+// type Fn = [`fn`, Args, Sexpr | Sexpr[]];
+type Fn = [`fn`, Args, Each | Each[] | Sexpr | Sexpr[]]
 
 type Var = {
   name: string;
@@ -530,17 +543,6 @@ type EvalError18 = "EvalError18"
 type EvalError19 = "EvalError19"
 type EvalError20 = "EvalError20"
 
-// todo : naming
-// let itself isn't value and returning value, unlike fn, so maybe ok as it is.
-// todo
-// integrated let form to [[`sym`, string], EACH | Array<EACH>] in future.
-type LetVal = string | Each | Each[];
-type LetArg = [Sym, LetVal];
-// todo : too ugly.
-type LetForm = [`let`, (Sym | LetVal)[] | [Sym[], LetVal[]], Each | Each[]];
-// test let
-const larttest: LetArg = [[`sym`, `t`], `test`];
-
 // -----------------
 // memo
 // type arrr = [number, ...number[]]
@@ -753,8 +755,13 @@ type _FMap<F, V, Env = [[]], prev = [0]> = V extends Vector
     : [0]
   : [1];
 type FMap<F, V, Env = [[]], prev = [0]> = [`vec`, ..._FMap<F, V>];
+type LispMap<S> =
+  S extends [infer f, infer vs]
+    ? FMap<f, vs> 
+    : FMapError 
 // test fmaps
 type testf = Sym & [`sym`, `AppendP`];
+
 // if not directly input those sexpr, through args, this fmap eval returns any, because of ...infer T (in FMap) would be expanded unknown.
 const testargv = [`vec`, [`prim`, `'1'`], [`prim`, `'2'`]];
 const testfmap: FMap<
@@ -775,11 +782,29 @@ type _Filter<F, V, Env = [[]], prev = [0]> = V extends Vector
   : ["notvec"];
 
 type Filter<F, V, Env = [[]], prev = [0]> = [`vec`, ..._Filter<F, V>];
+type LispFilter<S> =
+  S extends [infer f, infer vs]
+    ? Filter<f, vs> 
+    : FilterError 
+type LispRemove<S> =
+  S extends [infer f, infer vs]
+    ? Filter<['fn', [['sym', 'aaa']], [['sym', 'not'], [f, ['sym', 'aaa']]]], vs>
+    : FilterError  
 
-const testfilter: Filter<
+const jkkjkt: Eval<[['sym', 'not'], [['sym', '>'], ['prim', '0000000000000010'], ['prim', '00000000000000001']]]> = ['prim', false]
+const testakj: Sexpr = [['fn', [['sym', 'aaa']], [['sym', 'not'], [['sym', '>'], ['prim', '0000000000000010'], ['sym', 'aaa']]]], ['prim', '0000000000000010']]
+const jktejkst: Sexpr | LetForm = ['let', [['sym', 'aaa'], ['prim', '0000000000000010']], [['sym', 'not'], [['sym', '>'], ['prim', '0000000000000010'], ['sym', 'aaa']]]]
+const jltesta: Eval<[['fn', [['sym', 'aaa']], [['sym', 'not'], [['sym', '>'], ['prim', '0000000000000010'], ['sym', 'aaa']]]], ['prim', '0000000000000010']]> = ['prim', true]
+
+const testfilter0: Filter<
   [`fn`, [[`sym`, `a`]], [[`sym`, `eq`], [`sym`, `a`], [`prim`, 1]]],
   [`vec`, [`prim`, 0], [`prim`, 1], [`prim`, 1], [`prim`, 2]]
 > = [`vec`, [`prim`, 1], [`prim`, 1]];
+
+// const testfilter1: Filter<
+//   [`fn`, [[`sym`, `a`]], [['sym', 'not'], [[`sym`, `eq`], [`sym`, `a`], [`prim`, 1]]]],
+//   [`vec`, [`prim`, 0], [`prim`, 1], [`prim`, 1], [`prim`, 2]]
+// > = [`vec`, [`prim`, 1], [`prim`, 1]];
 
 const testfnlispeqa: Eval<[[`sym`, `eq`], [`prim`, 0], [`prim`, 1]]> = [
   `prim`,
@@ -1063,6 +1088,12 @@ type Eval<A, env = [[]], prev = 0> = A extends Sexpr
                   ? Str<Reading<OPR, env, [[prev]]>>
                 : U extends `vector`
                   ? LispVector<Reading<OPR, env, [[prev]]>>
+                : U extends `map`
+                  ? LispMap<Reading<OPR, env, [[prev]]>>
+                : U extends `filter`
+                  ? LispFilter<Reading<OPR, env, [[prev]]>>
+                : U extends `remove`
+                  ? LispRemove<Reading<OPR, env, [[prev]]>>
                 : U extends `get`
                   ? LispGet<Reading<OPR, env, [[prev]]>>
                 : U extends `eq` | `=`
@@ -1305,31 +1336,32 @@ type FlInnerTest = [
 ];
 const evalfltest0: Eval<FlInnerTest> = [`prim`, `'+test'`];
 
-// recursive test[let in fn]
-type LfInnerTest = [
-  `fn`,
-  [[`sym`, `fnarg`]],
-  [
-    `let`,
-    [
-      [`sym`, `str`],
-      [`fn`, [[`sym`, `a`]], [[`sym`, `AppendP`], [`sym`, `a`]]],
-    ],
-    [[`sym`, `str`], [`sym`, `fnarg`]],
-  ],
-];
-// ----------------------------
-// todo : gross error msg.
-// src/index.ts:218:7 - error TS2322: Type 'string[]' is not assignable to type '"AppendError"'.
-//
-// 218 const evallftest0: Eval<[lfInnerTest, [`prim`, `test''`]]> = [`prim`, `'+test'`]
-//
-// const evallftesterr: Eval<[lfInnerTest, [`prim`, `test''`]]> = [`prim`, `'+test'`]
-// ----------------------------
-const evallftest0: Eval<[LfInnerTest, [`prim`, `'test'`]]> = [
-  `prim`,
-  `'+test'`,
-];
+// // recursive test[let in fn]
+// type LfInnerTest = [
+//   `fn`,
+//   [[`sym`, `fnarg`]],
+//   [
+//     `let`,
+//     [
+//       [`sym`, `str`],
+//       [`fn`, [[`sym`, `a`]], [[`sym`, `AppendP`], [`sym`, `a`]]],
+//     ],
+//     [[`sym`, `str`], [`sym`, `fnarg`]],
+//   ],
+// ];
+// // ----------------------------
+// // todo : gross error msg.
+// // src/index.ts:218:7 - error TS2322: Type 'string[]' is not assignable to type '"AppendError"'.
+// //
+// // 218 const evallftest0: Eval<[lfInnerTest, [`prim`, `test''`]]> = [`prim`, `'+test'`]
+// //
+// // const evallftesterr: Eval<[lfInnerTest, [`prim`, `test''`]]> = [`prim`, `'+test'`]
+// // ----------------------------
+// const evallftest0: Eval<[LfInnerTest, [`prim`, `'test'`]]> = [
+//   `prim`,
+//   `'+test'`,
+// ];
+
 
 // test interleaved let form
 const testiletform: Eval<
