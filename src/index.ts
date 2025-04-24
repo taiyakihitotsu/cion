@@ -35,7 +35,8 @@ type PrimNumber = ['prim', string]
 type Prim = PrimString | PrimBoolean | PrimNumber | PrimTestNumber
 type Args = Sym[];
 type Fn = [`fn`, Args, Each | Each[] | Sexpr | Sexpr[]]
-
+// type Vector = [`vec`, ...Atom[]] | [`vec`];
+type Vector = [`vec`, ...(Sexpr | Atom)[]] | [`vec`];
 type Var = {
   name: string;
   value: string | Atom;
@@ -578,7 +579,7 @@ const eqtest11: Eq<[""], [""]> = true;
 
 // ----------------------------------
 // vector/list/array
-type Vector = [`vec`, ...Atom[]] | [`vec`];
+
 const vectortest: Vector & [`vec`, [`prim`, `1`]] = [`vec`, [`prim`, `1`]];
 const vectortest2: Vector & [`vec`, [`prim`, `1`], [`prim`, `2`]] = [
   `vec`,
@@ -609,6 +610,24 @@ type TConcat<
   : V extends [infer Head extends Array<unknown>, ...infer Rest extends Array<Array<unknown>>]
     ? TConcat<Rest, [...Stack, ...Head]>
     : never
+
+type VConcatError0 = 'VConcatError0'
+type VConcatError1 = 'VConcatError1'
+type VConcatError2 = 'VConcatError2'
+type VConcat<
+  V extends unknown[]
+, W extends unknown[]> =
+  W extends ['vec', ...infer WR]
+    ? WR extends []
+      ? V
+      : V extends ['vec', ...infer VR]
+        ? VR extends []
+          ? W
+          : [...V, ...WR]
+        : VConcatError1
+    : VConcatError0
+
+const vconcattest0: VConcat<['vec', ['prim', '0'], ['prim', '1']], ['vec', ['prim', '10'], ['prim', '11']]> = ['vec', ['prim', '0'], ['prim', '1'], ['prim', '10'], ['prim', '11']]
 
 type LispConcat<S, R extends unknown[][] = []> =
   S extends Vector[] & [['vec', ...infer H], ...infer T]
@@ -1306,7 +1325,15 @@ const testmultiargfn0: Eval<
 type Eval<A, env = [[]], prev = 0> = A extends Sexpr
   ? A extends [infer OPC, ...infer OPR]
     ? env extends EnvLifo
-      ? OPC extends Fn & [`fn`, infer syms, infer D]
+      ? A extends Vector & ['vec']
+        ? ['vec']
+        : A extends Vector & ['vec', infer vH, ...infer vT]
+        ? vT extends []
+          ? ['vec', Eval<vH, env, prev>]
+          : ['vec', Eval<vH, env, prev>] extends infer EvaledV
+            ? VConcat<EvaledV extends Vector ? EvaledV : never, ['vec', Eval<['vec', ...vT], env, prev>]>
+            : never
+        : OPC extends Fn & [`fn`, infer syms, infer D]
         ? Eval<[`let`, Interleave<syms, OPR>, D], env, [prev]>
         : /*
       ? OPC extends Fn & [`fn`, [[`sym`, infer S]], infer D]
@@ -1431,9 +1458,9 @@ type Eval<A, env = [[]], prev = 0> = A extends Sexpr
 			   , 'the 1st and 2nd is not keyword.']
 		    , env: env
 		    , sexpr: A}
-          : { error: [EvalError4, 'the 1st is not a symbol but it should be.']
-	      , sexpr: A
-	      , env: env}
+            : { error: [EvalError4, 'the 1st is not a symbol but it should be.']
+	        , sexpr: A
+	        , env: env}
         : { error: [EvalError6, "env 1st shouldn't be [].", prev, A]
 	    , env: env
 	    , sexpr: A}
@@ -1445,6 +1472,7 @@ type Eval<A, env = [[]], prev = 0> = A extends Sexpr
         ? ReadLet<SS, env> extends Atom & infer U
           ? U
           : [`prim`, ReadLet<SS, env>]
+        // note : preventing 2589 error at (A)
         : ReadLetRecur<A, env> extends infer a ? a : never
         // : A extends ['fn', infer Args, infer Sexpr]
         //   // note : preventing 2589 error at (A)
@@ -1491,6 +1519,25 @@ type Eval<A, env = [[]], prev = 0> = A extends Sexpr
 	      , prev : prev
 	      , sexpr : A} // : EvalError9 : EvalError10
         : { error: [EvalError11, prev, A] };
+        // : IsKeyMapSexpr<A> extends true
+        //     ? A extends [infer OPC, ...infer OPR]
+        //     ? IsKeyword<OPC> extends true
+        //       ? LispGet<Reading<[...OPR, OPC], env, [[prev]]>>
+        //       : IsKeyword<OPR[0]> extends true
+        //         ? LispGet<Reading<[OPC, ...OPR], env, [[prev]]>>
+        //         : { error: [EvalError12
+	// 		   , 'the 1st and 2nd is not keyword.']
+	// 	    , env: env
+	// 	    , sexpr: A}
+        //     : { error: [EvalError4, 'the 1st is not a symbol but it should be.']
+	//         , sexpr: A
+	//         , env: env}
+        //     : EvalError11
+
+const testvecvec0: Sexpr = [[['key', ':a'], ['map', [['key', ':a'], ['prim', `'-'`]]]], ['vec', ['prim', `'-'`]]]
+const testvecvec1: ['vec', ...(Sexpr | Each)[]] = ['vec', [['key', ':a'], ['map', [['key', ':a'], ['prim', `'-'`]]]], ['prim', '0']]
+const testvecvec2: Vector = ['vec', [['key', ':a'], ['map', [['key', ':a'], ['prim', `'-'`]]]], ['prim', '0']]
+const testvecvec3: Eval<['vec', [['key', ':a'], ['map', [['key', ':a'], ['prim', `'-'`]]]], ['prim', '0']]> = ['vec', [['key', ':a'], ['map', [['key', ':a'], ['prim', `'-'`]]]], ['prim', '0']]
 
 const testletfn0: Eval<['let', [['sym', 'x'], [['fn', [['sym', 'a']], [['sym', '+'], ['prim', '0000000000000001'], ['sym', 'a']]], ['prim', '0000000000000001']]], [['sym', '*'], ['prim', '0000000000000010'], ['sym', 'x']]]> = ['prim', '0000000000000100']
 const testletfn1: Eval<['let', [['sym', 'x'], [['fn', [['sym', 'a']], [['sym', '+'], ['prim', '0000000000000001'], ['sym', 'a']]], ['prim', '0000000000000001']]], [['sym', '*'], ['prim', '0000000000000010'], ['sym', 'x']]]> = ['prim', '0000000000000100']
