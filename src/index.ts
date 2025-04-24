@@ -1432,8 +1432,8 @@ type Eval<A, env = [[]], prev = 0> = A extends Sexpr
 		    , env: env
 		    , sexpr: A}
           : { error: [EvalError4, 'the 1st is not a symbol but it should be.']
-	      , env: env
-	      , sexpr: A}
+	      , sexpr: A
+	      , env: env}
         : { error: [EvalError6, "env 1st shouldn't be [].", prev, A]
 	    , env: env
 	    , sexpr: A}
