@@ -24,45 +24,37 @@ const message: Return<Eval<Compile<Sexpr>>> = "message"
 
 ## Done & Todo
 - [x] let
-- [x] let >1 args
 - [x] fn
-- [x] fn >1 args
-- [x] vector (= list / array here)
+- [x] vector
 - [x] hashmap
 - [x] if
-- [x] eq
-- [x] map
-- [x] filter
-- [x] get
-- [x] get with a key
-- [x] first
+- [x] map, filter, remove, reduce.
+- [x] getter: first, with keyword, etc.
 - [x] logical operation: and, or, not, >, <, =, >=, <=.
 - [x] number (bit operators)
-only for 2bit and lack of div in current.
-- [x] arrow macro
-- [x] string parser, only supporting texts which has no two or more connected-spaces such like "a  b".
+- [x] threading macro: ->, ->>.
+- [x] string parser: currently, only supporting texts which has no two or more connected-spaces such like "a  b".
 - [x] Compiler
 
 # Builtin
 ## Definition
 They are listed in implemented of usable in Sexpr level.
-Some of them are usable only in AST though, not should it be called as implemented.
 ## Implemented Already
-if, fn, let, eq, str.
+if, fn, let, str, eq, and, or, not, >, <, =, >=, <=, +, -, *, /, mod, map, filter, remove, reduce, conj, concat, interleave, reverse, first, last, rest, butlast, assoc, assoc-in, update, update-in, get, vec, nil.
 ## Not Implemented Currently
-and, or, not, >, <, =, >=, <=, inc, dec, +, -, *, /, mod, map, filter, remove, vec, nil.
+inc, dec,
 ## Thinking about whether to implement or not
 - about vector:
-keep, set, conj, concat, first, second, get, rest, butlast, partition, range, repeat, reduce.
+keep, second, partition, range, repeat.
 - about hashmap:
-assoc, dissoc, update, hash-map, zipmap, keys, vals, zipmap, into.
+dissoc, zipmap, keys, vals, zipmap, into.
 ## No plan to implement
 - transducers such like (map f)
 - lazy-seq
 - R\Q
 - list (because of the same role of vec in typelevel)
-- loop, recur (I think it's enough of map or something)
-- macro
+- loop & recur syntax (I think it's enough of map, reduce, recursive call or something)
+- defmacro
 - things I've forgot to list
 
 
