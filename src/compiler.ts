@@ -33,11 +33,11 @@ export type SParser<Sexpr> =
     ? [...SParser<` ${C}`>, '}']
   // -- ""
   : Sexpr extends ` "${infer U}`
-    ? ['"', ...SParser<` ${U}`>]
+    ? [`"`, ...SParser<` ${U}`>]
   : Sexpr extends ` ${infer V} ${infer W}`
     ? [...SParser<` ${V}`>, ...SParser<` ${W}`>]
   : Sexpr extends ` ${infer C}"`
-    ? [...SParser<` ${C}`>, '"']
+    ? [...SParser<` ${C}`>, `"`]
   // -- _, as default.
   : Sexpr extends ` ${infer CC}`
     ? [CC]
@@ -56,6 +56,8 @@ const parsestrtest0: SParser<' (let [a "test is this"] (str "a b" a))'> = ['(', 
 // --- hash map ---
 const parsehashtest0: SParser<' (let [a {:a 1 :b 2}] (> (:a a) (:b a)))'> = ['(', 'let', '[', 'a', '{', ':a', '1', ':b', '2', '}', ']', '(', '>', '(', ':a', 'a', ')', '(', ':b', 'a', ')', ')', ')']
 const parsehashtest1: SParser<' (let [a {:a -1 :b 2}] (> (:a a) (:b a)))'> = ['(', 'let', '[', 'a', '{', ':a', '-1', ':b', '2', '}', ']', '(', '>', '(', ':a', 'a', ')', '(', ':b', 'a', ')', ')', ')']
+// --- string ---
+
 
 type SIsNum<S, Top extends boolean = true> =
   S extends `${infer H}${infer R}`
@@ -250,6 +252,7 @@ const sencoderLetIfT0: SEncoder<[
 
 
 const lisptest_str_0: Compiler.SCompiler<Compiler.SParser<Compiler.SPad<"(str 'a' (str 's1' 's2'))">>> = [['sym', 'str'], ['prim', "'a'"], [['sym', 'str'], ['prim', "'s1'"], ['prim', "'s2'"]]]
+const lisptest_str_1: Compiler.SCompiler<Compiler.SParser<Compiler.SPad<"['a']">>> = ['vec', ['prim', "'a'"]]
 const lisptest_plus_0: Compiler.SCompiler<Compiler.SParser<Compiler.SPad<"(+ 01 (+ 10 11))">>> = [['sym', '+'], ['prim', '0000000000000001'], [['sym', '+'], ['prim', '0000000000001010'], ['prim', '0000000000001011']]]
 
 // vector

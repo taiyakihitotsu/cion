@@ -182,6 +182,7 @@ const maintest0_letif_13: Lisp<'(let [x (let [a 2 b 6] (fn [c] (+ a b c))) z 20 
 const maintest0_map_0: Lisp<'(map (fn [n] (* 2 n)) [0 1 2])'> = ['vec', ['prim', '0000000000000000'], ['prim', '0000000000000010'], ['prim', '0000000000000100']]
 const maintest0_map_1: Lisp<'(let [f (fn [n] (* 2 n))] (map f [0 1 2]))'> = ['vec', ['prim', '0000000000000000'], ['prim', '0000000000000010'], ['prim', '0000000000000100']]
 
+// doing
 const maintest0_filter_0: Lisp<'(filter (fn [n] (> 3 n)) [0 1 2 3 4 5])'> = ['vec', ['prim', '0000000000000000'], ['prim', '0000000000000001'], ['prim', '0000000000000010']]
 const maintest0_filter_1: Lisp<'(let [f (fn [n] (> 3 n))] (filter f [0 1 2 3 4 5]))'> = ['vec', ['prim', '0000000000000000'], ['prim', '0000000000000001'], ['prim', '0000000000000010']]
  
@@ -263,13 +264,21 @@ const maintest_threadl_4: Lisp<"(+ 2 (+ 1 1))"> = ['prim', '0000000000000100']
 const maintest_let_0: Lisp<'(let [a {:a "a"}] (+ 1 2))'> = ['prim', '0000000000000011']
 
 // 
+
+
 const maintest_letmap_0: Lisp<`(let [c {:status 'in' :message 'message1'} cc {:status 'out' :message 'message2'} cv [c cc cc] f (fn [a b] (= "in" (b a)))] (->> cv (map :status)))`> = ['vec', ['prim', "'in'"], ['prim', "'out'"], ['prim', "'out'"]]
 const maintest_letmap_1a: Lisp<`(= 'in' (:status {:status 'in'}))`> = ['prim', true]
-const maintest_letmap_1b: Lisp<`(let [c {:status 'in' :message 'message1'} cc {:status 'out' :message 'message2'} cv [c cc cc] f (fn [a b] (= 'in' (b a)))] (->> cv first))`> = ['map', [['key', ':status'], ['prim', "'in'"], ['key', ':message'], ['prim', "'message1'"]]]
-const maintest_letmap_1c: Lisp<`(let [c {:status 'in' :message 'message1'} cc {:status 'out' :message 'message2'} cv [c cc cc] msg 'in' f (fn [a b c] (= c (b a)))] (f :status {:status 'in' :message 'message1'} msg))`> = ['prim', true]
+// const maintest_letmap_1b: Lisp<`(let [c {:status 'in' :message 'message1'} cc {:status 'out' :message 'message2'} cv [c cc cc] f (fn [a b] (= 'in' (b a)))] (->> cv first))`> = ['map', [['key', ':status'], ['prim', "'in'"], ['key', ':message'], ['prim', "'message1'"]]]
+const maintest_letmap_1c: Lisp<`(let [c {:status 'in' :message 'message1'} cc {:status 'out' :message 'message2'} cv [c cc cc] msg 'in' f (fn [a b c] (= c (a b)))] (f :status {:status 'in' :message 'message1'} msg))`> = ['prim', true]
+const maintest_letmap_1caaa: Lisp<`(let [c {:status 'in' :message 'message1'} cc {:status 'out' :message 'message2'} cv [c cc cc] msg 'in' f (fn [a b c] (= c (b a)))] (f :status {:status 'in' :message 'message1'} msg))`> = ['prim', true]
+const maintest_letmap_1caa: Lisp<`(let [c {:status 'in' :message 'message1'} cc {:status 'out' :message 'message2'} cv [c cc cc] msg 'in' f (fn [a b c] [c (a b)])] (f :status {:status 'in' :message 'message1'} msg))`> = ['vec', ['prim', "'in'"], ['prim', "'in'"]]
+const maintest_letmap_1cab: Lisp<`(let [c {:status 'in' :message 'message1'} cc {:status 'out' :message 'message2'} cv [c cc cc] msg 'in' f (fn [a b c] [= (a b)])] (f :status {:status 'in' :message 'message1'} msg))`> = ['vec', ['sym', '='], ['prim', "'in'"]]
+const maintest_letmap_1ca: Lisp<`[(:status {:status 'in' :message 'message1'}) 'in']`> = ['vec', ['prim', "'in'"], ['prim', "'in'"]]
+const maintest_letmap_1cb: Lisp<`[(:status {:status 'in' :message 'message1'}) ((fn [] 'in'))]`> = ['vec', ['prim', "'in'"], ['prim', "'in'"]]
+const maintest_letmap_1cc: Lisp<`(let [v 'in'] [(:status {:status 'in' :message 'message1'}) ((fn [] v))])`> = ['vec', ['prim', "'in'"], ['prim', "'in'"]]
+const maintest_letmap_1cd: Lisp<`(let [v 'in'] [(:status {:status 'in' :message 'message1'}) ((fn [] (first [v v])))])`> = ['vec', ['prim', "'in'"], ['prim', "'in'"]]
 const maintest_letmap_1d: Lisp<`(let [c {:status 'in' :message 'message1'} cc {:status 'out' :message 'message2'} cv [c cc cc] msg 'in' f (fn [a b c] (= c (b a)))] [msg])`> = ['vec', ['prim', "'in'"]]
-const maintest_letmap_1e: Lisp<`(let [c {:status 'in'}] (:status c))`> = ['vec', ['prim', "'in'"]]
+const maintest_letmap_1ce: Lisp<`(let [v 'in'] [(:status {:status 'in' :message 'message1'}) ((fn [] (:a {:a 'in'})))])`> = ['vec', ['prim', "'in'"], ['prim', "'in'"]]
+// const maintest_letmap_1e: Lisp<`(let [c {:status 'in'}] (:status c))`> = ['vec', ['prim', "'in'"]]
 
-
-
-
+// todo : sym doesn't evaluate properly in current. especially, in vector and/or a return of function?

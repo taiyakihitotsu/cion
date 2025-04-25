@@ -92,13 +92,15 @@ type Let<N, V, EnvLifo = Env[]> = EnvLifo extends Env[]
   ? [...EnvLifo, [MakeVar<N, V>]]
   : LetError0;
 
-type ReadLet<N, EnvLifo = [[]]> = EnvLifo extends [...infer HS, infer L]
+type ReadLetError0 = "ReadLetError0"
+type ReadLet<N, EnvLifo = [[]]> = 
+  EnvLifo extends [...infer HS, infer L]
   ? L extends Env
     ? GetVar<N, L> extends NotMatch
       ? ReadLet<N, HS>
       : GetVar<N, L>
     : NotMatch
-  : NotMatch;
+  : NotMatch
 
 // test
 type LetEnvLifo = [
@@ -177,7 +179,9 @@ type Reading<
           ? Reading<T, EnvLifo, prev, [...R, Eval<H, EnvLifo, prev>]>
           : { error: [ReadingError1]}
       : R
-    : { error: [ReadingError0]; env: EnvLifo };
+    : { sexpr: R
+        ; error: ReadingError0
+        ; message: `sexpr is not atom list.`}
 
 
 // test reading
@@ -192,7 +196,10 @@ const readingtest0: Reading<
 const readingtest1: Reading<
   [['sym', 'a']],
   [[]]
-> = {error: ['ReadingError0'], env: [[]]}
+> =
+  { sexpr: ["NotMatch"]
+    , error: 'ReadingError0'
+    , message: 'sexpr is not atom list.'}
 const readingtest2: Reading<
 [['sym', 'a'], ['sym', 'b'], [['sym', 'str'], ['prim', "'s1'"], ['prim', "'s2'"]]],
 [[],
@@ -335,9 +342,11 @@ type _LispEq<S> = S extends [infer Fst, ...infer Rest]
     : _Eq<Fst, _LispEq<Rest>>
   : never;
 
-type LispEq<S> = S extends [infer Fst, ...infer Rest]
-  ? [`prim`, Eq<Fst, _LispEq<S>>]
-  : [`prim`, false];
+type LispEqError0 = "LispEqError0"
+type LispEq<S> =
+  S extends [infer Fst, ...infer Rest]
+    ? [`prim`, Eq<Fst, _LispEq<S>>]
+    : {error: LispEqError0, sexpr: S}
 
 // test
 const lispeqtest: _Eq<[`prim`, "'a'"], [`prim`, "'a'"]> = [`prim`, "'a'"];
@@ -611,23 +620,21 @@ type TConcat<
     ? TConcat<Rest, [...Stack, ...Head]>
     : never
 
-type VConcatError0 = 'VConcatError0'
-type VConcatError1 = 'VConcatError1'
-type VConcatError2 = 'VConcatError2'
-type VConcat<
-  V extends unknown[]
-, W extends unknown[]> =
-  W extends ['vec', ...infer WR]
-    ? WR extends []
-      ? V
-      : V extends ['vec', ...infer VR]
-        ? VR extends []
-          ? W
-          : [...V, ...WR]
-        : VConcatError1
-    : VConcatError0
+type VConsError0 = 'VConsError0'
+type VConsError1 = 'VConsError1'
+type VConsError2 = 'VConsError2'
+type VCons<V, R extends unknown[] = []> = 
+  V extends ['vec', infer v, infer vv]
+    ? VCons<vv, [...R, v]>
+    : V extends ['vec', infer v]
+      ? VCons<['vec'], [...R, v]>
+      : V extends ['vec']
+        ? ['vec', ...R] : ['vec', ...R, V]
+        
+const testvcons0: VCons<['vec', 1, ['vec', 2, ['vec', 3]]]> = ['vec', 1, 2, 3]        
+const testvcons1: VCons<['vec', 1, ['vec', 2, ['vec', 3, ['vec']]]]> = ['vec', 1, 2, 3]
+const testvcons2: VCons<['vec', 1, ['vec', 2, ['vec', 3, 3]]]> = ['vec', 1, 2, 3, 3]
 
-const vconcattest0: VConcat<['vec', ['prim', '0'], ['prim', '1']], ['vec', ['prim', '10'], ['prim', '11']]> = ['vec', ['prim', '0'], ['prim', '1'], ['prim', '10'], ['prim', '11']]
 
 type LispConcat<S, R extends unknown[][] = []> =
   S extends Vector[] & [['vec', ...infer H], ...infer T]
@@ -648,14 +655,27 @@ type IsKeyword<T> =
 
 type IsMap<T> = T extends TMap ? true : false
 
-type IsKeyMapSexpr<S> = 
+// type IsKeyMapSexpr<S> = 
+//   S extends [infer Fst, infer Snd]
+//     ? IsKeyword<Fst> extends true
+//       ? IsMap<Snd> extends true
+//         ? true
+//         : false
+//       : IsKeyword<Snd> extends true
+//         ? IsMap<Fst> extends true
+//           ? true
+//           : false
+//         : false
+//     : false
+
+type IsKeyMapSexpr<S, env = [[]]> = 
   S extends [infer Fst, infer Snd]
-    ? IsKeyword<Fst> extends true
-      ? IsMap<Snd> extends true
+    ? IsKeyword<Eval<Fst, env>> extends true
+      ? IsMap<Eval<Snd, env>> extends true
         ? true
         : false
-      : IsKeyword<Snd> extends true
-        ? IsMap<Fst> extends true
+      : IsKeyword<Eval<Snd, env>> extends true
+        ? IsMap<Eval<Fst,env>> extends true
           ? true
           : false
         : false
@@ -796,7 +816,8 @@ type _rAssocIn<
             ? _Assoc<M, Kh, Recur>
             : {error: AssocInError7, message: `The value of key (${Kt[0][1]}) is not vector nor map.`}
           : AssocInError3
-        : {error: AssocInError8, message: "Keys rests but its value is not vector nor map."}
+//        : [M,Kh,Kt]
+          : {error: AssocInError8, message: "Keys rests but its value is not vector nor map."} // doing
       : AssocInError4
  
 type _AssocIn<
@@ -892,7 +913,7 @@ type First<V> = V extends Vector & [`vec`, infer H, ...infer T]
   : V extends ['vec']
     ? Nil
     : FirstError0;
-type LispFirst<S> = S extends [infer V extends Vector] ? First<V> : FirstError1
+type LispFirst<S> = S extends [infer V extends Vector] ? First<V> : {error: FirstError1, message: S}
 
 type LastError0 = 'LastError0'
 type LastError1 = 'LastError1'
@@ -950,7 +971,6 @@ type Concat<V, W> = V extends Vector
     : ConcatError
   : ConcatError;
 // get, assoc, update
-// type Get<S, K> = S extends Vector & [`vec`, infer V] ? K extends number ? V[K] : never : S extends HashMap & [`HashMap`, infer V] ? K extends string ? V[K] : never : never
 
 type testvec = [`vec`, [`prim`, true], [`prim`, 0], [`prim`, 1]];
 const testfirst: First<testvec> = [`prim`, true];
@@ -1053,23 +1073,29 @@ const testfmap: FMap<
   [`vec`, [`prim`, `'1'`], [`prim`, `'2'`]]
 > = [`vec`, [`prim`, `'+1'`], [`prim`, `'+2'`]];
 
-type _Filter<F, V, Env = [[]], prev = [0]> = V extends Vector
+type FilterError0 = "FilterError0"
+type FilterError1 = "FilterError1"
+type _Filter<F, V, Env = [[]], prev = [0]> =
+V extends Vector
   ? V extends [`vec`, infer H, ...infer T]
-    ? T[0] extends Atom
+    ? T extends []
       ? Eval<[F, H]> extends [`prim`, true]
-        ? [H, ..._Filter<F, [`vec`, ...T]>]
-        : [..._Filter<F, [`vec`, ...T]>]
-      : Eval<[F, H]> extends [`prim`, true]
         ? [H]
         : []
-    : ["notvecatom"]
-  : ["notvec"];
+      : Eval<[F, H]> extends [`prim`, true]
+        ? [H, ..._Filter<F, [`vec`, ...T]>]
+        : [..._Filter<F, [`vec`, ...T]>]
+
+    : [{error: FilterError0}]
+  : [{error: FilterError1}];
 
 type Filter<F, V, Env = [[]], prev = [0]> = [`vec`, ..._Filter<F, V>];
+
 type LispFilter<S> =
   S extends [infer f, infer vs]
     ? Filter<f, vs> 
     : FilterError 
+
 type LispRemove<S> =
   S extends [infer f, infer vs]
     ? Filter<['fn', [['sym', 'aaa']], [['sym', 'not'], [f, ['sym', 'aaa']]]], vs>
@@ -1085,11 +1111,6 @@ const testfilter0: Filter<
   [`vec`, [`prim`, 0], [`prim`, 1], [`prim`, 1], [`prim`, 2]]
 > = [`vec`, [`prim`, 1], [`prim`, 1]];
 
-// const testfilter1: Filter<
-//   [`fn`, [[`sym`, `a`]], [['sym', 'not'], [[`sym`, `eq`], [`sym`, `a`], [`prim`, 1]]]],
-//   [`vec`, [`prim`, 0], [`prim`, 1], [`prim`, 1], [`prim`, 2]]
-// > = [`vec`, [`prim`, 1], [`prim`, 1]];
-
 const testfnlispeqa: Eval<[[`sym`, `eq`], [`prim`, 0], [`prim`, 1]]> = [
   `prim`,
   false,
@@ -1104,19 +1125,14 @@ const testfnlispeq0: Eval<
     [`fn`, [[`sym`, `a`]], [[`sym`, `eq`], [`sym`, `a`], [`prim`, `'1'`]]],
     [`prim`, `'0'`],
   ]
-> = [`prim`, false]; // todo : fix
+> = [`prim`, false];
 
 const testfnlispeq1: Eval<
   [
     [`fn`, [[`sym`, `a`]], [[`sym`, `eq`], [`sym`, `a`], [`prim`, `'1'`]]],
     [`prim`, `'1'`],
   ]
-> = [`prim`, true]; // todo : fix
-
-// const evalfntest2: Eval<
-//   [[`fn`, [[`sym`, `str`]], Tdddd], [`prim`, `'test'`]],
-//   [[MakeVar<"aaa", "'aaa'">], [MakeVar<"str", "'strval'">]]
-// > = [`prim`, "'+test'"];
+> = [`prim`, true];
 
 // todo : error handle properly
 type InterleaveError0 = "InterleaveError0";
@@ -1319,46 +1335,14 @@ const testmultiargfn0: Eval<
 // -- Eval
 // ---------------------------------------
 
-
-
 // todo : ugly
-type Eval<A, env = [[]], prev = 0> = A extends Sexpr
+type Eval<A, env = [[]], prev = 0, Vscope extends boolean = false > =
+  A extends Sexpr
   ? A extends [infer OPC, ...infer OPR]
     ? env extends EnvLifo
-      ? A extends Vector & ['vec']
-        ? ['vec']
-        : A extends Vector & ['vec', infer vH, ...infer vT]
-        ? vT extends []
-          ? ['vec', Eval<vH, env, prev>]
-          : ['vec', Eval<vH, env, prev>] extends infer EvaledV
-            ? VConcat<EvaledV extends Vector ? EvaledV : never, ['vec', Eval<['vec', ...vT], env, prev>]>
-            : never
-        : OPC extends Fn & [`fn`, infer syms, infer D]
+      ? OPC extends Fn & [`fn`, infer syms, infer D]
         ? Eval<[`let`, Interleave<syms, OPR>, D], env, [prev]>
-        : /*
-      ? OPC extends Fn & [`fn`, [[`sym`, infer S]], infer D]
-        ? OPR[0] extends Sym & [`sym`, infer VV]
-          ? // here is a buggy
-            // because S of [`sym`, infer S]
-            // would be a built-in, then spit an error.
-            //
-            // should it be expanded to let form
-            // if fn has following contents?
-            //
-            // ? Eval<D, Let<S, ReadLet<VV, env>, env>, [prev]>
-
-            // todo : refactoring
-            //   I want to expand fn to let form and omit Let
-            //   by hand.
-            // to do so, let form should be able to catch
-            //   this pattern:
-            //   (let [[a b c] [1 2 3]] ...)
-            // or reform fn form to:
-            //   (let [a 1] ((fn [b] (eq a b)) 2))
-            //   from:
-            //   ((fn [a b] (eq a b)) 1 2)
-*/
-          OPC extends IfForm & [`if`, infer IFCond, infer IFT, infer IFF]
+        : OPC extends IfForm & [`if`, infer IFCond, infer IFT, infer IFF]
           ? Eval< // point (A)
               [If<Eval<IFCond, env, [[prev]]>, IFT, IFF>, OPR[0]],
               env,
@@ -1366,8 +1350,8 @@ type Eval<A, env = [[]], prev = 0> = A extends Sexpr
             >
           : OPC extends Sym & [`sym`, infer U]
             ? // care of double-booking.
-              ReadLet<U, env> extends NotMatch // `AppendP` | `str`
-              // todo : remove and replate this.
+              ReadLet<U, env> extends NotMatch
+              // todo : regacy. remove and replate this.
               ? U extends `AppendP`
                 ? AppendP<ReadAtom<Eval<OPR[0], env, [[prev]]>, env, [prev]>>
               // threading macro: ->, ->>
@@ -1411,7 +1395,6 @@ type Eval<A, env = [[]], prev = 0> = A extends Sexpr
                   ? LispTake<Reading<OPR, env, [[prev]]>>
                 : U extends `drop`
                   ? LispDrop<Reading<OPR, env, [[prev]]>>
-
                 : U extends `assoc-in`
                   ? LispAssocIn<Reading<OPR, env, [[prev]]>>
                 : U extends `update-in`
@@ -1444,41 +1427,51 @@ type Eval<A, env = [[]], prev = 0> = A extends Sexpr
                 : U extends `>` | `<` | `>=` | `<=`
                   ? LispRelation<U, Reading<OPR, env, [[prev]]>>
                 : Eval<[ReadLet<U, env>, OPR[0]], env, [prev]>
-              : ReadLet<U, env> extends Fn & infer UU
+              : ReadLet<U, env> extends Fn | Keyword | TMap & infer UU
                 ? Eval<[UU, ...OPR], env, [prev]>
-                : {error: [EvalError3, 'the 1st is not a function but it should be.']
-                   env: env}
-          // note : (:key map) and (map :key)
-          : IsKeyMapSexpr<A> extends true
+                : { sexpr: A
+                  , error: EvalError3
+                  , msg: '1st arg should be fn/keyword/map.'
+                  , env: env}
+            // note : (:key map) and (map :key)
+            : IsKeyMapSexpr<ReadLetRecur<A, env>, env> extends true
             ? IsKeyword<OPC> extends true
               ? LispGet<Reading<[...OPR, OPC], env, [[prev]]>>
-              : IsKeyword<OPR[0]> extends true
-                ? LispGet<Reading<[OPC, ...OPR], env, [[prev]]>>
-                : { error: [EvalError12
-			   , 'the 1st and 2nd is not keyword.']
-		    , env: env
-		    , sexpr: A}
-            : { error: [EvalError4, 'the 1st is not a symbol but it should be.']
-	        , sexpr: A
-	        , env: env}
+              : LispGet<Reading<[OPC, ...OPR], env, [[prev]]>>
+                // : { sexpr: LispGet<Reading<[OPC, ...OPR], env, [[prev]]>>
+                //     , error: EvalError12
+                //     , message: 'neither 1st or 2nd arg is keyword.'
+		//     , env: env}
+          : { error: EvalError4
+            , message: 'the 1st is not a symbol but it should be.'
+            , sexpr: A}
         : { error: [EvalError6, "env 1st shouldn't be [].", prev, A]
-	    , env: env
-	    , sexpr: A}
+	  , env: env
+	  , sexpr: A}
     : EvalError2
   : A extends IfForm & [`if`, infer IFCond, infer IFT, infer IFF]
     ? Eval<If<Eval<IFCond, env, [[prev]]>, IFT, IFF>, env, [prev]>
-    : A extends Atom
-      ? A extends [`sym`, infer SS]
-        ? ReadLet<SS, env> extends Atom & infer U
-          ? U
-          : [`prim`, ReadLet<SS, env>]
-        // note : preventing 2589 error at (A)
-        : ReadLetRecur<A, env> extends infer a ? a : never
-        // : A extends ['fn', infer Args, infer Sexpr]
-        //   // note : preventing 2589 error at (A)
-        //   ? ReadLetRecur<A, env> extends infer a ? a : never
-        //   : A
-      : A extends LetForm
+  : A extends Atom
+    ? A extends Prim
+    ? A
+    : A extends Vector & ['vec', ...infer vr]
+      ? vr extends []
+        ? Vscope extends true ? [] : ['vec']
+        : vr extends [infer va, ...infer vb]
+          ? [...(Vscope extends true ? [] : ['vec'])
+	     , (Eval<va,env,prev,va extends Vector ? false : true>)
+	     , ...(Eval<['vec',...vb],env,prev,true> extends infer u ? u extends unknown[] ? u : [] : [])] : []  
+   : A extends Sym & [`sym`, infer SS]
+     ? ReadLet<SS, env> extends infer U
+       ? U extends Atom
+         ? U
+         : U extends NotMatch // built-in fns are not matched so pick them up here.
+           ? A // doing
+           : [`prim`, U]
+       : never // ? 
+     // this is for fn to read only symbol in let context but not evaluate them completely.
+     : ReadLetRecur<A, env> extends infer a ? a : never // note : preventing 2589 error at (A)
+   : A extends LetForm
         ? A extends [`let`, [Sym[], LetVal[]], Sexpr]
           ? A extends [`let`, [infer letsyms, infer letvals], infer LC]
             ? Eval<[`let`, Interleave<letsyms, letvals>, LC], env, [prev]>
@@ -1519,25 +1512,17 @@ type Eval<A, env = [[]], prev = 0> = A extends Sexpr
 	      , prev : prev
 	      , sexpr : A} // : EvalError9 : EvalError10
         : { error: [EvalError11, prev, A] };
-        // : IsKeyMapSexpr<A> extends true
-        //     ? A extends [infer OPC, ...infer OPR]
-        //     ? IsKeyword<OPC> extends true
-        //       ? LispGet<Reading<[...OPR, OPC], env, [[prev]]>>
-        //       : IsKeyword<OPR[0]> extends true
-        //         ? LispGet<Reading<[OPC, ...OPR], env, [[prev]]>>
-        //         : { error: [EvalError12
-	// 		   , 'the 1st and 2nd is not keyword.']
-	// 	    , env: env
-	// 	    , sexpr: A}
-        //     : { error: [EvalError4, 'the 1st is not a symbol but it should be.']
-	//         , sexpr: A
-	//         , env: env}
-        //     : EvalError11
 
 const testvecvec0: Sexpr = [[['key', ':a'], ['map', [['key', ':a'], ['prim', `'-'`]]]], ['vec', ['prim', `'-'`]]]
 const testvecvec1: ['vec', ...(Sexpr | Each)[]] = ['vec', [['key', ':a'], ['map', [['key', ':a'], ['prim', `'-'`]]]], ['prim', '0']]
 const testvecvec2: Vector = ['vec', [['key', ':a'], ['map', [['key', ':a'], ['prim', `'-'`]]]], ['prim', '0']]
-const testvecvec3: Eval<['vec', [['key', ':a'], ['map', [['key', ':a'], ['prim', `'-'`]]]], ['prim', '0']]> = ['vec', [['key', ':a'], ['map', [['key', ':a'], ['prim', `'-'`]]]], ['prim', '0']]
+const testvecvec3: Eval<['vec', [['key', ':a'], ['map', [['key', ':a'], ['prim', `'-'`]]]], ['prim', '0']]> = ['vec', ['prim', `'-'`], ['prim', '0']]
+const testvecvec4a: Eval<['vec', [['key', ':a'], ['map', [['key', ':a'], ['prim', '0001']]]]]> = ['vec', ['prim', '0001']]
+const testvecvec4b: Eval<['vec', [['key', ':a'], ['map', [['key', ':a'], ['prim', '0001']]]], ['prim', '0001']]> = ['vec', ['prim', '0001'], ['prim', '0001']]
+// doing
+const testvecvec4c: Eval<['vec', [['key', ':a'], ['map', [['key', ':a'], ['prim', '0001']]]], ['prim', '0001'], ['prim', '0001']]> = ['vec', ['prim', '0001'], ['prim', '0001'], ['prim', '0001']]
+const testvecvec5: Eval<['sym', 'x']> = ['sym', 'x']
+const testvv6: Eval<['prim', '0']> = ['prim', '0']
 
 const testletfn0: Eval<['let', [['sym', 'x'], [['fn', [['sym', 'a']], [['sym', '+'], ['prim', '0000000000000001'], ['sym', 'a']]], ['prim', '0000000000000001']]], [['sym', '*'], ['prim', '0000000000000010'], ['sym', 'x']]]> = ['prim', '0000000000000100']
 const testletfn1: Eval<['let', [['sym', 'x'], [['fn', [['sym', 'a']], [['sym', '+'], ['prim', '0000000000000001'], ['sym', 'a']]], ['prim', '0000000000000001']]], [['sym', '*'], ['prim', '0000000000000010'], ['sym', 'x']]]> = ['prim', '0000000000000100']
@@ -1549,7 +1534,7 @@ const testletfn5: Eval<['let', [['sym', 'x'], ['let', [['sym', 'y'], ['prim', tr
 const testletfn6: Eval<['let', [['sym', 'x'], ['fn', [['sym', 'a']], [['sym', '+'], ['prim', '0000000000000001'], ['sym', 'a']]]], ['sym', 'x']]> = ['fn', [['sym', 'a']], [['sym', '+'], ['prim', '0000000000000001'], ['sym', 'a']]]
 const testletfn7: Eval<['let', [['sym', 'x'], ['let', [['sym', 'a'], ['prim', '0000000000000010'], ['sym', 'b'], ['prim', '0000000000000010']], [['sym', '+'], ['sym', 'a'], ['sym', 'b']]]], ['sym', 'x']]> = ['prim', '0000000000000100']
 const testletfn8: Eval<['let', [['sym', 'x'], ['let', [['sym', 'a'], ['prim', '0000000000000011'], ['sym', 'b'], ['prim', '0000000000000010']], ['fn', [['sym', 'c']], [['sym', '+'], ['sym', 'a'], ['sym', 'b']]]]], ['sym', 'x']]> = ['fn', [['sym', 'c']], [['sym', '+'], ['prim', '0000000000000011'], ['prim', '0000000000000010']]]
-
+const testletfn9: Eval<['vec', ['sym', '='], ['prim', "'in'"], ['prim', "'in'"]]> = ['vec', ['sym', '='], ['prim', "'in'"], ['prim', "'in'"]]
 
 
 // test get
@@ -1567,7 +1552,7 @@ type Tdddd = [[`sym`, `AppendP`], [`sym`, `str`]];
 // test raw
 const evalTest: Eval<Tdsds, [[]]> = [`prim`, "'+test'"];
 const evalTest2: Eval<Tdddd, [[]]> = {
-  error: ["AppendError", ["prim", "NotMatch"]],
+  error: ["AppendError", "NotMatch"],
 };
 const evalTest3: Eval<Tdddd, [[MakeVar<`str`, `'strval'`>]]> = [
   `prim`,
