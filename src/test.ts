@@ -279,6 +279,3 @@ const maintest_letmap_1cc: Lisp<`(let [v 'in'] [(:status {:status 'in' :message 
 const maintest_letmap_1cd: Lisp<`(let [v 'in'] [(:status {:status 'in' :message 'message1'}) ((fn [] (first [v v])))])`> = ['vec', ['prim', "'in'"], ['prim', "'in'"]]
 const maintest_letmap_1d: Lisp<`(let [c {:status 'in' :message 'message1'} cc {:status 'out' :message 'message2'} cv [c cc cc] msg 'in' f (fn [a b c] (= c (b a)))] [msg])`> = ['vec', ['prim', "'in'"]]
 const maintest_letmap_1ce: Lisp<`(let [v 'in'] [(:status {:status 'in' :message 'message1'}) ((fn [] (:a {:a 'in'})))])`> = ['vec', ['prim', "'in'"], ['prim', "'in'"]]
-// const maintest_letmap_1e: Lisp<`(let [c {:status 'in'}] (:status c))`> = ['vec', ['prim', "'in'"]]
-
-// todo : sym doesn't evaluate properly in current. especially, in vector and/or a return of function?

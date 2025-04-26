@@ -264,4 +264,64 @@ const lisptest_vec_3: Compiler.SCompiler<Compiler.SParser<Compiler.SPad<"(first 
 
 const lisptest_let_0: Compiler.SCompiler<Compiler.SParser<Compiler.SPad<"(let [x {:a 'a'} y 'a' z ['a']])">>> = ['let', [['sym', 'x'], ['map', [['key', ':a'], ['prim', "'a'"]]], ['sym', 'y'], ['prim', "'a'"], ['sym', 'z'], ['vec', ['prim', "'a'"]]]]
 
+
+
+type Unparse<
+  AST
+, Type extends 'vec' | 'list' | 'map' | 'atom' = 'list'> = 
+  AST extends infer H
+    ? H extends ['prim' | 'sym' | 'key', infer r0 extends boolean | string]
+      ? r0 extends string 
+        ? Decimal.IsBitExpr<r0> extends true
+          ? Decimal.BitToDecimal<r0>
+        : `${r0}`
+      : `${r0}`
+    : H extends ['vec', ...infer r]
+      ? r extends []
+        ? '[]'
+        : Unparse<r, 'vec'>
+    : H extends ['map', infer r]
+      ? Unparse<r, 'map'>
+
+    : H extends ['fn', infer r0, infer r1]
+      ? CloseBracket<`fn ${Unparse<r0, 'vec'>} ${Unparse<r1>}`, 'list'>
+    : H extends ['let', infer r0, infer r1]
+      ? CloseBracket<`let ${Unparse<r0, 'vec'>} ${Unparse<r1>}`, 'list'>
+    : H extends ['if', infer r0, infer r1, ...infer r2]
+      ? CloseBracket<`if ${Unparse<r0>} ${Unparse<r1>}${r2 extends [] ? '' : ' '}${Unparse<r2, 'atom'>}`, Type>
+    : H extends [infer H extends unknown[], ...infer T]
+      ? CloseBracket<`${Unparse<H>}${T extends [] ? '' : ' '}${Unparse<T, 'atom'>}`, Type>
+    : H extends []
+      ? ''
+    : never
+  : never
+
+const unparsetest_prim_0: Unparse<['prim', '0']> = '0'
+const unparsetest_prim_1: Unparse<['prim', "'str'"]> = "'str'"
+const unparsetest_sym_0: Unparse<['sym', 'x']> = 'x'
+
+const unparsetest_fn_0: Unparse<['fn', [['sym', 'x'], ['sym', 'y']], [['sym', '+'], ['sym', 'x'], ['sym', 'y']]]> = '(fn [x y] (+ x y))'
+const unparsetest_fn_1: Unparse<['fn', [['sym', 'x'], ['sym', 'y']], ['prim', '1']]> = '(fn [x y] 1)'
+const unparsetest_fn_2: Unparse<[['fn', [['sym', 'x'], ['sym', 'y']], [['sym', '+'], ['sym', 'x'], ['sym', 'y']]], ['prim', '2'], ['prim', '3']]> = '((fn [x y] (+ x y)) 2 3)'
+
+const unparsetest_if_0: Unparse<['if', ['prim', true], ['prim', '0']]> = '(if true 0)'
+const unparsetest_if_1: Unparse<['if', ['prim', true], ['prim', '0'], ['prim', '1']]> = '(if true 0 1)'
+const unparsetest_if_2: Unparse<['let', [['sym', 'a'], ['prim', '1']], ['if', ['prim', true], ['prim', '0'], ['prim', '1']]]> = '(let [a 1] (if true 0 1))'
+const unparsetest_if_3: Unparse<['let', [['sym', 'a'], ['prim', '1']], ['if', ['prim', true], ['prim', '0'], ['fn', [['sym', 'a'], ['sym', 'b']], ['prim' , '0']]]]> = '(let [a 1] (if true 0 (fn [a b] 0)))'
+
+const unparsetest_let_0: Unparse<['let', [['sym', 'a'], ['prim', '1']], ['prim', '1']]> = '(let [a 1] 1)'
+const unparsetest_let_1: Unparse<['let', [['sym', 'b'], ['prim', '10']], ['let', [['sym', 'a'], ['prim', '1']], ['prim', '1']]]> = '(let [b 2] (let [a 1] 1))'
+
+const unparsetest_vec_0: Unparse<['vec', ['prim', '0'], ['prim', '1']]> = '[0 1]'
+const unparsetest_vec_1: Unparse<['vec', ['key', ':a'], ['prim', '1']]> = '[:a 1]'
+const unparsetest_vec_2: Unparse<['vec', ['key', ':a'], ['prim', '1'], ['vec', ['prim', '01']]]> = '[:a 1 [1]]'
+const unparsetest_vec_3: Unparse<['vec']> = '[]'
+const unparsetest_vec_4: Unparse<['vec', ['prim', '0'], ['vec']]> = '[0 []]'
+const unparsetest_vec_5: Unparse<['vec', ['vec'], ['vec']]> = '[[] []]'
+
+const unparsetest_map_0: Unparse<['map', [['key', ':a'], ['prim', '0']]]> = '{:a 0}'
+const unparsetest_map_1: Unparse<['map', [['key', ':a'], ['prim', '0'], ['key', ':b'], ['prim', '1']]]> = '{:a 0 :b 1}'
+const unparsetest_map_2: Unparse<['map', [['key', ':a'], ['prim', '0'], ['key', ':b'], ['prim', '1'], ['key', ':c'], ['map', [['key', ':d'], ['prim', '10']]]]]> = '{:a 0 :b 1 :c {:d 2}}'
+
+
 export default Compiler

@@ -203,6 +203,22 @@ const bittodecimal_test_1: BitToDecimal<'1'> = '1'
 const bittodecimal_test_2: BitToDecimal<'0'> = '0'
 const bittodecimal_test_3: BitToDecimal<`${0}111110101101111`> = '32111'
 const bittodecimal_test_4: BitToDecimal<'0111111111111111'> = '32767'
-}
 
-export default Decimal
+export type IsBitExpr<
+  S extends string> = 
+  S extends `${infer H}${infer T}`
+    ? H extends '0' | '1'
+      ? T extends ''
+        ? H extends '0' | '1'
+          ? true
+          : false
+      : IsBitExpr<T>
+    : false
+  : false
+
+const isbitexpr_test_0: IsBitExpr<'00010'> = true
+const isbitexpr_test_1: IsBitExpr<'00010a'> = false
+const isbitexpr_test_2: IsBitExpr<'a00010'> = false
+const isbitexpr_test_3: IsBitExpr<''> = false
+
+} export default Decimal
