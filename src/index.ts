@@ -1835,6 +1835,9 @@ const readdef: typeof defined = [`sym`, `test`]; // null as any
 // -- Main
 // ----------------------------
 
-type Lisp<S extends string> = Eval<Compiler.SCompiler<Compiler.SParser<Compiler.SPad<S>>>>
+export namespace Cion {
+  export type RawLisp<S extends string> = Eval<Compiler.SCompiler<Compiler.SParser<Compiler.SPad<S>>>>
+  export type Lisp<S extends string> = Compiler.Unparse<RawLisp<S>>
+}
 
-export default Lisp
+export default Cion

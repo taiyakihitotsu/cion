@@ -133,33 +133,64 @@ type DeciOvers = ['4' | '5' | '6' | '7' | '8' | '9',
 type Digit1 = '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'
 
 type DecimalToBitError0 = 'DecimalToBitError0'
+type DecimalToBitError1 = 'DecimalToBitError1'
+type DecimalToBitError2 = 'DecimalToBitError2'
+type DecimalToBitError3 = 'DecimalToBitError3'
+type DecimalToBitError4 = 'DecimalToBitError4'
+type DecimalToBitError11 = 'DecimalToBitError11'
 
-export type DecimalToBit<
+export type _DecimalToBit<
   S extends string,
   IsLimited extends boolean = false,
   Ret extends string = '0',
-> = 
-//   true extends Util.Equal<Bit.BitLen<S>, PeanoLimited> | IsLimited
-   true extends Util.Equal<StrLen<S>, PeanoLimited> | IsLimited
+> =
+  true extends Peano.gethan<StrLen<S>, [PeanoLimited]>
+  ? { error: DecimalToBitError0
+      , message: 'greater than the max of unsigned-16-bit-number.'}       
+  : true extends Util.Equal<StrLen<S>, PeanoLimited> | IsLimited
      ? S extends `${infer F}${infer R}`
          ? F extends DeciOvers[PeanoToDecimal<Peano.min<PeanoLimited, StrLen<S>>>]
-             ? {error: [DecimalToBitError0, 'greater than the max of unsigned-16-bit-number.']}
+             ? { error: DecimalToBitError0
+               , message: 'greater than the max of unsigned-16-bit-number.'}
              : F extends Digit1
-                 ? PeanoToDecimal<Peano.dec<StrLen<S>>> extends infer D ? DecimalToBit<R, F extends DeciMaxes[PeanoToDecimal<Peano.min<PeanoLimited, StrLen<S>>>] ? true : false, Bit.BitAdd<Ret, D extends keyof DecimalTables ? F extends keyof DecimalTables[D] ? DecimalTables[D][F] : '' : ''>> : never
-           : never 
+                 ? PeanoToDecimal<Peano.dec<StrLen<S>>> extends infer D ? _DecimalToBit<R, F extends DeciMaxes[PeanoToDecimal<Peano.min<PeanoLimited, StrLen<S>>>] ? true : false, Bit.BitAdd<Ret, D extends keyof DecimalTables ? F extends keyof DecimalTables[D] ? DecimalTables[D][F] : '' : ''>> : never
+           : never
          : Ret
      : S extends `${infer F}${infer R}`
          ? F extends Digit1
-             ? PeanoToDecimal<Peano.dec<StrLen<S>>> extends infer D ? DecimalToBit<R, false, Bit.BitAdd<Ret, D extends keyof DecimalTables ? F extends keyof DecimalTables[D] ? DecimalTables[D][F] : 'never' : 'never'>> : never
+             ? PeanoToDecimal<Peano.dec<StrLen<S>>> extends infer D ? _DecimalToBit<R, false, Bit.BitAdd<Ret, D extends keyof DecimalTables ? F extends keyof DecimalTables[D] ? DecimalTables[D][F] : 'never' : 'never'>> : never
              : never
         : Ret
 
-const decimaltobit_test_0: DecimalToBit<'32111'> = `${0}111110101101111`
-const decimaltobit_test_1: DecimalToBit<'39000'> = {error: ['DecimalToBitError0', 'greater than the max of unsigned-16-bit-number.']}
-const decimaltobit_test_2: DecimalToBit<'666666'> = {error: ['DecimalToBitError0', 'greater than the max of unsigned-16-bit-number.']}
-const decimaltobit_test_3: DecimalToBit<'8'> = `0000000000001000`
-const decimaltobit_test_4: DecimalToBit<'9'> = `0000000000001001`
+    
+export type DecimalToBit<
+  S extends string> = 
+  S extends `${infer H}${infer T}`
+    ? H extends '-'
+        ? _DecimalToBit<T> extends infer retT
+            ? retT extends string
+                ? Bit.BitSub<'1000000000000000', retT> extends `${infer _}${infer rT}`
+                    ? `1${rT}`
+                  : never
+              : retT
+          : never
+      : _DecimalToBit<S>
+  : DecimalToBitError11
 
+
+const decimaltobit_test_0: DecimalToBit<'32111'> = `${0}111110101101111`
+const decimaltobit_test_1: DecimalToBit<'39000'> = {error: 'DecimalToBitError0', message: 'greater than the max of unsigned-16-bit-number.'}
+const decimaltobit_test_2: DecimalToBit<'666666'> = {error: 'DecimalToBitError0', message: 'greater than the max of unsigned-16-bit-number.'}
+const decimaltobit_test_3: DecimalToBit<'8'>  = `0000000000001000`
+const decimaltobit_test_4: DecimalToBit<'9'>  = `0000000000001001`
+const decimaltobit_test_5: DecimalToBit<'-9'> = '1111111111110111'
+const decimaltobit_test_6: DecimalToBit<'0'>  = '0000000000000000'
+const decimaltobit_test_7: DecimalToBit<'-1'> = '1111111111111111'
+const decimaltobit_test_8: DecimalToBit<'-111111'> = {error: 'DecimalToBitError0', message: 'greater than the max of unsigned-16-bit-number.'}
+const decimaltobit_test_9: DecimalToBit<'32767'> = "0111111111111111"
+const decimaltobit_test_10: DecimalToBit<'32768'> = {error: 'DecimalToBitError0', message: 'greater than the max of unsigned-16-bit-number.'}
+const decimaltobit_test_11: DecimalToBit<'-32768'> = {error: 'DecimalToBitError0', message: 'greater than the max of unsigned-16-bit-number.'}
+const decimaltobit_test_12: DecimalToBit<'-32767'> = "1000000000000001"
 
 
 type DigitTable = ['1', D10, D100, D1000, D10000]
@@ -192,17 +223,28 @@ type TrimZero<
         : S
     : S
 
-export type BitToDecimal<S extends string> =
+export type rBitToDecimal<S extends string> =
   _BitToDecimal<S> extends string & infer s
     ? TrimZero<s extends string ? s : never> extends infer trimed
         ? trimed extends ''
             ? '0' : trimed : never : never
 
+export type BitToDecimal<S extends string> =
+  Bit.BitFill<S, Peano.T16> extends `${infer H}${infer T}`
+    ? H extends '1'
+        ? `-${rBitToDecimal<Bit.BitAdd<'1', Bit.BitSub<'0111111111111111', `0${T}`>>>}`
+      : rBitToDecimal<S>
+  : never
+
 const bittodecimal_test_0: BitToDecimal<'1010'> = '10'
-const bittodecimal_test_1: BitToDecimal<'1'> = '1'
-const bittodecimal_test_2: BitToDecimal<'0'> = '0'
-const bittodecimal_test_3: BitToDecimal<`${0}111110101101111`> = '32111'
+const bittodecimal_test_1: BitToDecimal<'0001'> = '1'
+const bittodecimal_test_2: BitToDecimal<'0000'> = '0'
+const bittodecimal_test_3: BitToDecimal<`0111110101101111`> = '32111'
 const bittodecimal_test_4: BitToDecimal<'0111111111111111'> = '32767'
+const bittodecimal_test_5: BitToDecimal<`1111110101101111`> = '-657'
+const bittodecimal_test_6: BitToDecimal<'1111111111111111'> = '-1'
+
+
 
 export type IsBitExpr<
   S extends string> = 

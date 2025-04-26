@@ -153,7 +153,6 @@ export type SCompiler<
           ? SCompiler<R, Current, Stack, StrStack extends '"' ? `${StrStack}${H}` : `${StrStack} ${H}`>
           : never
     : never
-}
 
 const compileraaaa: Compiler.SCompiler<['(', '+', '0', '(', 'inc', '1', ')', ')']> = [['sym', '+'], ['prim', '0000000000000000'], [['sym', 'inc'], ['prim', '0000000000000001']]]
 const compilerbbbb: Compiler.SCompiler<['(', 'let', '[', 'a', '1', ']', '(', 'if', 'true', 't', 'f', ')', ')']> = ['let', [['sym', 'a'], ['prim', '0000000000000001']], ['if', ['prim', true], ['sym', 't'], ['sym', 'f']]]
@@ -264,9 +263,10 @@ const lisptest_vec_3: Compiler.SCompiler<Compiler.SParser<Compiler.SPad<"(first 
 
 const lisptest_let_0: Compiler.SCompiler<Compiler.SParser<Compiler.SPad<"(let [x {:a 'a'} y 'a' z ['a']])">>> = ['let', [['sym', 'x'], ['map', [['key', ':a'], ['prim', "'a'"]]], ['sym', 'y'], ['prim', "'a'"], ['sym', 'z'], ['vec', ['prim', "'a'"]]]]
 
+type GetErrorStr<K extends string, AST> =
+  K extends keyof AST ? AST[K] extends string ? AST[K] : '' : ''
 
-
-type Unparse<
+export type _Unparse<
   AST
 , Type extends 'vec' | 'list' | 'map' | 'atom' = 'list'> = 
   AST extends infer H
@@ -279,22 +279,24 @@ type Unparse<
     : H extends ['vec', ...infer r]
       ? r extends []
         ? '[]'
-        : Unparse<r, 'vec'>
+        : _Unparse<r, 'vec'>
     : H extends ['map', infer r]
-      ? Unparse<r, 'map'>
+      ? _Unparse<r, 'map'>
 
     : H extends ['fn', infer r0, infer r1]
-      ? CloseBracket<`fn ${Unparse<r0, 'vec'>} ${Unparse<r1>}`, 'list'>
+      ? CloseBracket<`fn ${_Unparse<r0, 'vec'>} ${_Unparse<r1>}`, 'list'>
     : H extends ['let', infer r0, infer r1]
-      ? CloseBracket<`let ${Unparse<r0, 'vec'>} ${Unparse<r1>}`, 'list'>
+      ? CloseBracket<`let ${_Unparse<r0, 'vec'>} ${_Unparse<r1>}`, 'list'>
     : H extends ['if', infer r0, infer r1, ...infer r2]
-      ? CloseBracket<`if ${Unparse<r0>} ${Unparse<r1>}${r2 extends [] ? '' : ' '}${Unparse<r2, 'atom'>}`, Type>
+      ? CloseBracket<`if ${_Unparse<r0>} ${_Unparse<r1>}${r2 extends [] ? '' : ' '}${_Unparse<r2, 'atom'>}`, Type>
     : H extends [infer H extends unknown[], ...infer T]
-      ? CloseBracket<`${Unparse<H>}${T extends [] ? '' : ' '}${Unparse<T, 'atom'>}`, Type>
+      ? CloseBracket<`${_Unparse<H>}${T extends [] ? '' : ' '}${_Unparse<T, 'atom'>}`, Type>
     : H extends []
       ? ''
-    : never
+    : `{error: "${GetErrorStr<'error', AST>}", message: "${GetErrorStr<'message', AST>}"}`
   : never
+
+export type Unparse<AST> = _Unparse<AST> extends infer r ? r extends '' ? 'nil' : r : never
 
 const unparsetest_prim_0: Unparse<['prim', '0']> = '0'
 const unparsetest_prim_1: Unparse<['prim', "'str'"]> = "'str'"
@@ -324,4 +326,4 @@ const unparsetest_map_1: Unparse<['map', [['key', ':a'], ['prim', '0'], ['key', 
 const unparsetest_map_2: Unparse<['map', [['key', ':a'], ['prim', '0'], ['key', ':b'], ['prim', '1'], ['key', ':c'], ['map', [['key', ':d'], ['prim', '10']]]]]> = '{:a 0 :b 1 :c {:d 2}}'
 
 
-export default Compiler
+} export default Compiler

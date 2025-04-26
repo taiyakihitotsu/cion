@@ -58,7 +58,7 @@ namespace Peano {
   export type TLesserUnion<T> = T extends [infer U] ? T0 | TELesserUnion<U> : never;
 
   export type gthan<T, U> = U extends TLesserUnion<T> ? true : false;
-  export type gethan<T,U>   = Util.Equal<T,U> extends true ? true : gethan<T,U>
+  export type gethan<T,U>   = Util.Equal<T,U> extends true ? true : lthan<U,T>
   export type lethan<T,U>  = gethan<U,T>
   export type lthan<T,U>   = gthan<U,T>
 }
