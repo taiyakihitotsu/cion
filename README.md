@@ -2,15 +2,21 @@
 Clojure Implemented on TypeScript, at the type level.
 
 ## How to Use
-(If you want to do a type-check of this doc, see src/test-in-doc.ts)
+Cion has a common grammer of [clojure](https://clojure.org/guides/learn/clojure). You can pick some of [builtins](#builtins), vector ```[]```, and map ```{}```.
+
+**NOTE**
+ - list, set is not supported. Use vector instead.
+ - Line break is not supported.
+
+(If you want to do a type-check of this doc, see [src/test-in-doc.ts](https://github.com/taiyakihitotsu/cion/blob/main/src/test-in-doc.ts))
 
 ### Basic
-```typescript
+```clojure
 const test_in_doc3: Cion.Lisp<`(let [c {:status 'in' :message 'message1'} cc {:status 'out' :message 'message2'} cv [c cc cc] f (fn [a b] (= 'in' (b a)))] (->> cv (filter (fn [x] (= 'in' (:status x)))) first :message))`> = "'message1'"
 ```
 
 ### Arithmetic
-```typescript
+```clojure
 const test_in_doc_a0: Cion.Lisp<`(+ 2 3)`> = '5'
 const test_in_doc_a1: Cion.Lisp<`(/ 2 3)`> = '0'
 const test_in_doc_a2: Cion.Lisp<`(/ 2 0)`> = 'nil'
@@ -22,12 +28,12 @@ const test_in_doc_a3: Cion.Lisp<`(+ 2 (- 1 4))`> = '-1'
 - The value range is from -32767 to 32767. Decimal numbers is converted to 16bit number internally though, the minimum, -32768, is excluded for convenience. 
 
 ### Logical operation
-```typescript
+```clojure
 const test_in_doc_log0: Cion.Lisp<`(> 3 2 1)`> = 'true'
 ```
 
 ### if, let, fn
-```typescript
+```clojure
 const test_in_doc_if0: Cion.Lisp<`(if true 1 2)`> = '1'
 const test_in_doc_let0: Cion.Lisp<`(let [a 2] (+ a 4))`> = '6'
 const test_in_doc_fn0: Cion.Lisp<`((fn [x y] (+ x y)) 2 3)`> = '5'
@@ -37,7 +43,7 @@ const test_in_doc_fn0: Cion.Lisp<`((fn [x y] (+ x y)) 2 3)`> = '5'
 - destructuring is not implemented.
 
 ### Loop
-```typescript
+```clojure
 const test_in_doc_loop0: Cion.Lisp<`(let [f (fn [r x] (if (>= 0 x) r (f (+ r 1) (- x 1))))] (f 1 3))`> = '4'
 ```
 
