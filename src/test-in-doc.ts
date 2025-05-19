@@ -30,6 +30,13 @@ const test_in_doc_a3: Cion.Lisp<`(+ 2 (- 1 4))`> = '-1'
 // --- logical operation
 const test_in_doc_log0: Cion.Lisp<`(> 3 2 1)`> = 'true'
 
+// --- get
+const test_in_doc_fst0: Cion.Lisp<`(first [1 2 3])`> = '1'
+const test_in_doc_fst1: Cion.Lisp<`(first [])`> = 'nil'
+const test_in_doc_get0: Cion.Lisp<`(get [1 2 3] 0)`> = '1'
+const test_in_doc_get1: Cion.Lisp<`(get [1 2 3] 4)`> = 'nil'
+// - Getting empty place is not allowe, to return nil.
+
 // --- if form
 const test_in_doc_if0: Cion.Lisp<`(if true 1 2)`> = '1'
 // - if form having only two components is not implemented.
@@ -37,10 +44,12 @@ const test_in_doc_if0: Cion.Lisp<`(if true 1 2)`> = '1'
 // --- let form
 const test_in_doc_let0: Cion.Lisp<`(let [a 2] (+ a 4))`> = '6'
 // - destructuring is not implemented.
+// - empty body part is not supported.
 
 // --- fn form
 const test_in_doc_fn0: Cion.Lisp<`((fn [x y] (+ x y)) 2 3)`> = '5'
 // - destructuring is not implemented.
+// - empty body part is not supported.
 
 // --- loop
 const test_in_doc_loop0: Cion.Lisp<`(let [f (fn [r x] (if (>= 0 x) r (f (+ r 1) (- x 1))))] (f 1 3))`> = '4'

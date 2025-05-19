@@ -32,6 +32,16 @@ const test_in_doc_a3: Cion.Lisp<`(+ 2 (- 1 4))`> = '-1'
 const test_in_doc_log0: Cion.Lisp<`(> 3 2 1)`> = 'true'
 ```
 
+### get
+```clojure
+const test_in_doc_fst0: Cion.Lisp<`(first [1 2 3])`> = '1'
+const test_in_doc_fst1: Cion.Lisp<`(first [])`> = 'nil'
+const test_in_doc_get0: Cion.Lisp<`(get [1 2 3] 0)`> = '1'
+const test_in_doc_get1: Cion.Lisp<`(get [1 2 3] 4)`> = 'nil'
+```
+
+ - Getting empty place is not allowe, to return nil.
+
 ### if, let, fn
 ```clojure
 const test_in_doc_if0: Cion.Lisp<`(if true 1 2)`> = '1'
@@ -41,6 +51,7 @@ const test_in_doc_fn0: Cion.Lisp<`((fn [x y] (+ x y)) 2 3)`> = '5'
 
 - if form having only two components is not implemented.
 - destructuring is not implemented.
+- empty body part is not supported.
 
 ### Loop
 ```clojure
