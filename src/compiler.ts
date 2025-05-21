@@ -9,39 +9,135 @@ namespace Compiler {
 
 export type SPad<S extends string> = S extends ` ${infer SS}` ? SS  : ` ${S}`
 
-export type SParser<Sexpr> =
-  // -- ()
+// NOTE (A)
+//
+// Don't delete this for an info.
+// See the below (A) note.
+//
+// export type LegacySParser<Sexpr> =
+//   // -- ()
+//   Sexpr extends ` (${infer U}`
+//     ? ['(', ...LegacySParser<` ${U}`>]
+//   : Sexpr extends ` ${infer V} ${infer W}`
+//     ? [...LegacySParser<` ${V}`>, ...LegacySParser<` ${W}`>]
+//   : Sexpr extends ` ${infer C})`
+//     ? [...LegacySParser<` ${C}`>, ')']
+//   // -- []
+//   : Sexpr extends ` [${infer U}`
+//     ? ['[', ...LegacySParser<` ${U}`>]
+//   : Sexpr extends ` ${infer V} ${infer W}`
+//     ? [...LegacySParser<` ${V}`>, ...LegacySParser<` ${W}`>]
+//   : Sexpr extends ` ${infer C}]`
+//     ? [...LegacySParser<` ${C}`>, ']']
+//   // -- {}
+//   : Sexpr extends ` {${infer U}`
+//     ? ['{', ...LegacySParser<` ${U}`>]
+//   : Sexpr extends ` ${infer V} ${infer W}`
+//     ? [...LegacySParser<` ${V}`>, ...LegacySParser<` ${W}`>]
+//   : Sexpr extends ` ${infer C}}`
+//     ? [...LegacySParser<` ${C}`>, '}']
+//   // -- ""
+//   : Sexpr extends ` "${infer U}`
+//     ? [`"`, ...LegacySParser<` ${U}`>]
+//   : Sexpr extends ` ${infer V} ${infer W}`
+//     ? [...LegacySParser<` ${V}`>, ...LegacySParser<` ${W}`>]
+//   : Sexpr extends ` ${infer C}"`
+//     ? [...LegacySParser<` ${C}`>, `"`]
+//   // -- _, as default.
+//   : Sexpr extends ` ${infer CC}`
+//     ? [CC]
+//     : []
+
+type _rec<T> =
+  T extends {r: never}
+    ? never
+  : T extends {r: {r: {r: {r: {r: {r: {r: {r: infer U}}}}}}}}
+    ? {r: _rec<U>}
+  : T extends {r: {r: {r: {r: infer U}}}}
+    ? {r: _rec<U>}
+  : T extends {r: {r: infer U}}
+    ? {r: _rec<U>}
+  : T extends {r: infer U}
+    ? U
+  : T
+
+type Rec<T> =
+  T extends {r: unknown}
+    ? Rec<_rec<T>>
+  : T
+
+type recp<
+
+  Sexpr
+, R extends string[] = []
+, Str extends string = ""> = 
+  // (
   Sexpr extends ` (${infer U}`
-    ? ['(', ...SParser<` ${U}`>]
-  : Sexpr extends ` ${infer V} ${infer W}`
-    ? [...SParser<` ${V}`>, ...SParser<` ${W}`>]
-  : Sexpr extends ` ${infer C})`
-    ? [...SParser<` ${C}`>, ')']
-  // -- []
-  : Sexpr extends ` [${infer U}`
-    ? ['[', ...SParser<` ${U}`>]
-  : Sexpr extends ` ${infer V} ${infer W}`
-    ? [...SParser<` ${V}`>, ...SParser<` ${W}`>]
-  : Sexpr extends ` ${infer C}]`
-    ? [...SParser<` ${C}`>, ']']
-  // -- {}
+    ? {r: recp<` ${U}`, [...R, '(']>}
+  // {
   : Sexpr extends ` {${infer U}`
-    ? ['{', ...SParser<` ${U}`>]
-  : Sexpr extends ` ${infer V} ${infer W}`
-    ? [...SParser<` ${V}`>, ...SParser<` ${W}`>]
-  : Sexpr extends ` ${infer C}}`
-    ? [...SParser<` ${C}`>, '}']
-  // -- ""
+      ? {r: recp<` ${U}`, [...R, '{']>}
+  // [
+  : Sexpr extends ` [${infer U}`
+      ? {r: recp<` ${U}`, [...R, '[']>}
+  // " string
   : Sexpr extends ` "${infer U}`
-    ? [`"`, ...SParser<` ${U}`>]
-  : Sexpr extends ` ${infer V} ${infer W}`
-    ? [...SParser<` ${V}`>, ...SParser<` ${W}`>]
-  : Sexpr extends ` ${infer C}"`
-    ? [...SParser<` ${C}`>, `"`]
-  // -- _, as default.
-  : Sexpr extends ` ${infer CC}`
-    ? [CC]
-    : []
+      ? {r: recp<` ${U}`, [...R, '"']>}
+  // normal
+  : Sexpr extends ` ${infer fU} ${infer Next}`
+      ? fU extends `${infer ffU}}`
+          ? ffU extends '' ? {r: recp<` ${Next}`, [...R, '}']>} : {r: recp<` ${ffU} } ${Next}`, R>}
+        : fU extends `${infer ffU}]`
+          ? ffU extends '' ? {r: recp<` ${Next}`, [...R, ']']>} : {r: recp<` ${ffU} ] ${Next}`, R>}
+        : fU extends `${infer ffU})`
+          ? ffU extends '' ? {r: recp<` ${Next}`, [...R, ')']>} : {r: recp<` ${ffU} ) ${Next}`, R>}
+        // string
+        : fU extends `${infer ffU}"`
+          ? {r: recp<` ${Next}`, [...R, ffU, '"']>}
+        : {r: recp<` ${Next}`, [...R, fU]>}
+  // end condition
+  : Sexpr extends ` ${infer U})`
+    ? {r: recp<` ${U} ) `, R>}
+  : Sexpr extends ` ${infer U}}`
+    ? {r: recp<` ${U} } `, R>}
+  : Sexpr extends ` ${infer U}]`
+    ? {r: recp<` ${U} ] `, R>}
+  // string end
+  : Sexpr extends ` ${infer U}"`
+    ? {r: recp<` ${U} " `, R>}
+  : {r: R}
+
+export type SParser<Sexpr> = Rec<recp<Sexpr>>
+
+type xxxa =  Rec<recp<' )))]]'>>
+type xa = Rec<recp<' (a or ((x y z {:a 11})))]]'>>
+type xb = Rec<recp<' (or ((x y z {:a 11})))]]'>>
+type xc = Rec<recp<SPad<'(fn [m0 m1] (>= (+ (:x m0) (:w m0)) (:x m1)))'>>>
+
+const recparseaaaaa: Rec<recp<' (x ((if a b c) y))'>> =
+    ['(', 'x', '(', '(', 'if', 'a', 'b', 'c', ')', 'y', ')', ')']
+const recparsebbbbb: Rec<recp<' (x (if a b c) y)'>> =
+    ['(', 'x', '(', 'if', 'a', 'b', 'c', ')', 'y', ')']
+const recparseccccc: Rec<recp<' ((f))'>> =
+    ['(', '(', 'f', ')', ')']
+const recparseddddd: Rec<recp<' ((((((x))))))'>> =
+    ['(', '(', '(', '(', '(', '(', 'x', ')', ')', ')', ')', ')', ')']
+const recparseeeeee: Rec<recp<' (let [a 1 b 2] (if true t f))'>> = ['(','let', '[', 'a', '1', 'b', '2', ']', '(', 'if', 'true', 't', 'f', ')', ')']
+const recparsestrtest0: Rec<recp<' (let [a "test is this"] (str "a b" a))'>> = ['(', 'let', '[', 'a', '"', 'test', 'is', 'this','"', ']', '(', 'str', '"', 'a', 'b', '"', 'a', ')', ')']
+// --- hash map ---
+const recparsehashtest0: Rec<recp<' (let [a {:a 1 :b 2}] (> (:a a) (:b a)))'>> = ['(', 'let', '[', 'a', '{', ':a', '1', ':b', '2', '}', ']', '(', '>', '(', ':a', 'a', ')', '(', ':b', 'a', ')', ')', ')']
+const recparsehashtest1: Rec<recp<' (let [a {:a -1 :b 2}] (> (:a a) (:b a)))'>> = ['(', 'let', '[', 'a', '{', ':a', '-1', ':b', '2', '}', ']', '(', '>', '(', ':a', 'a', ')', '(', ':b', 'a', ')', ')', ')']
+
+// NOTE (A) : they spit a 2589 error with LegacySParser.
+type crossX = '(fn [m0 m1] (>= (+ (:x m0) (:w m0)) (:x m1)))'
+type m0 = '{:x 0 :w 1}'
+type m1 = '{:x 1 :w 2}'
+type aa = `(or (${crossX} ${m0} ${m1}) (:x {:x false}))`
+type aaa = `(or (${crossX} ${m0} ${m1}) (${crossX} ${m1} ${m0}))`
+type aaaa = ['(', 'or', '(', '(', 'fn', '[', 'm0', 'm1', ']', '(', '>=', '(', '+', '(', ':x', 'm0', ')', '(', ':w', 'm0', ')', ')', '(', ':x', 'm1', ')', ')', ')', '{', ':x', '0', ':w', '1', '}', '{', ':x', '1', ':w', '2', '}', ')',  '(', '(', 'fn', '[', 'm0', 'm1', ']', '(', '>=', '(', '+', '(', ':x', 'm0', ')', '(', ':w', 'm0', ')', ')', '(', ':x', 'm1', ')', ')', ')', '{', ':x', '1', ':w', '2', '}', '{', ':x', '0', ':w', '1', '}', ')', ')']
+const aaaabb: aaaa = ['(', 'or', '(', '(', 'fn', '[', 'm0', 'm1', ']', '(', '>=', '(', '+', '(', ':x', 'm0', ')', '(', ':w', 'm0', ')', ')', '(', ':x', 'm1', ')', ')', ')', '{', ':x', '0', ':w', '1', '}', '{', ':x', '1', ':w', '2', '}', ')',  '(', '(', 'fn', '[', 'm0', 'm1', ']', '(', '>=', '(', '+', '(', ':x', 'm0', ')', '(', ':w', 'm0', ')', ')', '(', ':x', 'm1', ')', ')', ')', '{', ':x', '1', ':w', '2', '}', '{', ':x', '0', ':w', '1', '}', ')', ')']
+type tesa = Rec<recp<SPad<aaa>>>
+const aaaatesa: tesa = ['(', 'or', '(', '(', 'fn', '[', 'm0', 'm1', ']', '(', '>=', '(', '+', '(', ':x', 'm0', ')', '(', ':w', 'm0', ')', ')', '(', ':x', 'm1', ')', ')', ')', '{', ':x', '0', ':w', '1', '}', '{', ':x', '1', ':w', '2', '}', ')',  '(', '(', 'fn', '[', 'm0', 'm1', ']', '(', '>=', '(', '+', '(', ':x', 'm0', ')', '(', ':w', 'm0', ')', ')', '(', ':x', 'm1', ')', ')', ')', '{', ':x', '1', ':w', '2', '}', '{', ':x', '0', ':w', '1', '}', ')', ')']
 
 const parseaaaaa: SParser<' (x ((if a b c) y))'> =
     ['(', 'x', '(', '(', 'if', 'a', 'b', 'c', ')', 'y', ')', ')']
@@ -56,8 +152,6 @@ const parsestrtest0: SParser<' (let [a "test is this"] (str "a b" a))'> = ['(', 
 // --- hash map ---
 const parsehashtest0: SParser<' (let [a {:a 1 :b 2}] (> (:a a) (:b a)))'> = ['(', 'let', '[', 'a', '{', ':a', '1', ':b', '2', '}', ']', '(', '>', '(', ':a', 'a', ')', '(', ':b', 'a', ')', ')', ')']
 const parsehashtest1: SParser<' (let [a {:a -1 :b 2}] (> (:a a) (:b a)))'> = ['(', 'let', '[', 'a', '{', ':a', '-1', ':b', '2', '}', ']', '(', '>', '(', ':a', 'a', ')', '(', ':b', 'a', ')', ')', ')']
-// --- string ---
-
 
 type SIsNum<S, Top extends boolean = true> =
   S extends `${infer H}${infer R}`
@@ -170,8 +264,6 @@ const compilerHashT1: Compiler.SCompiler<['{', ':a', '01', ':b', '2', ':c', '{',
 // 1
 // ['map', ['key', ':a'], ['prim', '01'], ['key', ':b'], ['prim', '10'], ['key', ':c'], ['map', ['key', ':c1'], ['prim', '101']]]
 ['map', [['key', ':a'], ['prim', '0000000000000001'], ['key', ':b'], ['prim', '0000000000000010'], ['key', ':c'], ['map', [['key', ':c1'], ['prim', '0000000000000101']]]]]
-
-
 
 type CloseBracket<
   S extends string

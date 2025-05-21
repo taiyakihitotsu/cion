@@ -1413,7 +1413,7 @@ type Eval<A, env = [[]], prev = 0, Vscope extends boolean = false > =
                 : U extends `and`
                   ? LispAnd<Reading<OPR, env, [[prev]]>>
                 : U extends `or`
-                  ? LispOr<Reading<OPR, env, [[prev]]>> 
+                  ? LispOr<Reading<OPR, env, [[prev]]>>
                 : U extends `+`
                   ? LispAdd<Reading<OPR, env, [[prev]]>>
                 : U extends `-`
