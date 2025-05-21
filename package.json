@@ -4,6 +4,7 @@
   "private": true,
   "description": "Clojure implemented on type-level with TypeScript.",
   "main": "index.ts",
+  "types": "dist/index.d.ts",
   "scripts": {
     "build": "npx tsc",
     "build:watch": "npx tsc --watch",
@@ -12,7 +13,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/taiyakihitotsu/lots"
+    "url": "git+https://github.com/taiyakihitotsu/cion"
   },
   "devDependencies": {
     "@types/node": "^18.19.22",
