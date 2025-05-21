@@ -53,18 +53,21 @@ const test_in_doc_fn0: Cion.Lisp<`((fn [x y] (+ x y)) 2 3)`> = '5'
 - destructuring is not implemented.
 - empty body part is not supported.
 
-### Loop
+### loop
 ```clojure
 const test_in_doc_loop0: Cion.Lisp<`(let [f (fn [r x] (if (>= 0 x) r (f (+ r 1) (- x 1))))] (f 1 3))`> = '4'
 ```
 
 - Use recursion like above. loop and recur are not implemented.
 
-### def
-```def``` is not implemented, but ```typeof``` can be an alternative.
+### def, defn
+```def``` and ```defn``` is not implemented, but ```typeof``` can be an alternative.
 
 ```typescript
 const test_in_doc_def0: Cion.Lisp<`(+ ${typeof test_in_doc_loop0} 5)`> = '9'
+const test_in_doc_def1: Cion.Lisp<`(fn [i] (+ 1 i))`> = '(fn [i] (+ 1 i))'
+const test_in_doc_def2: Cion.Lisp<`(${typeof test_in_doc_def1} ${typeof test_in_doc_def0})`> = '10'
+
 ```
 
 ## Builtins
