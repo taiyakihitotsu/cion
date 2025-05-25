@@ -763,7 +763,7 @@ const testvcons2: VCons<['vec', 1, ['vec', 2, ['vec', 3, 3]]]> = ['vec', 1, 2, 3
 type LispConcat<S, R extends unknown[][] = []> =
   S extends Vector[] & [['vec', ...infer H], ...infer T]
     ? T extends []
-      ? TConcat<R>
+      ? ['vec', ...TConcat<[...R, H]>]
       : LispConcat<T, [...R, H]>
     : ConcatError0
 
