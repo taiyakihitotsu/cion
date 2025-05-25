@@ -8,7 +8,7 @@ Cion has a common grammer of [clojure](https://clojure.org/guides/learn/clojure)
  - list, set is not supported. Use vector instead.
  - Line break is not supported.
 
-(If you want to do a type-check of this doc, see [src/test-in-doc.ts](https://github.com/taiyakihitotsu/cion/blob/main/src/test-in-doc.ts))
+(If you want to do a type-check of this doc, see [test/test-in-doc.ts](https://github.com/taiyakihitotsu/cion/blob/main/test/test-in-doc.ts))
 
 ### Basic
 ```clojure
@@ -77,6 +77,7 @@ const test_in_doc_def7: test_in_doc_def6 = '10'
 
 ## Builtins
  - if, fn, let, str, eq, and, or, not, >, <, =, >=, <=, +, -, *, /, mod, map, filter, remove, reduce, conj, concat, interleave, reverse, first, last, rest, butlast, assoc, assoc-in, update, update-in, get, vec, nil, ->, ->>.
+ - number?, string?, vector?, map?, fn?, ifn?, nat-int?, pos-int?, neg-int?, odd?, even?, zero?, symbol?, keyword?, coll?, empty? 
  - vector & map syntax also be supported.
 
 # Author
