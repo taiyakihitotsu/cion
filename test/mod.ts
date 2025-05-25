@@ -1,0 +1,21 @@
+import type Cion from '../src/index.ts'
+
+const maintest0_mod: Cion.RawLisp<"(mod 2 5)"> = ['prim', '0000000000000010']
+const maintest1_mod: Cion.RawLisp<"(mod 5 5)"> = ['prim', '0000000000000000']
+const maintest2_mod: Cion.RawLisp<"(mod 7 6)"> = ['prim', '0000000000000001']
+const maintest3_mod: Cion.RawLisp<"(mod 14 6)"> = ['prim', '0000000000000010']
+const maintest4_mod: Cion.RawLisp<"(mod 6 0)"> = ['prim', 'nil']
+const maintest5_mod: Cion.RawLisp<"(mod -1 2)"> = ['prim', '0000000000000001']
+const maintest6_mod: Cion.RawLisp<"(mod (- 0 1) 2)"> = ['prim', '0000000000000001']
+const maintest7_mod: Cion.RawLisp<"(mod 6 1)"> = ['prim', '0000000000000000']
+const maintest8_mod: Cion.RawLisp<"(mod -17 5)"> = ['prim', '0000000000000011']
+
+const maintest0_mod1: Cion.RawLisp<"(% 2 5)"> = ['prim', '0000000000000010']
+const maintest1_mod1: Cion.RawLisp<"(% 5 5)"> = ['prim', '0000000000000000']
+const maintest2_mod1: Cion.RawLisp<"(% 7 6)"> = ['prim', '0000000000000001']
+const maintest3_mod1: Cion.RawLisp<"(% 14 6)"> = ['prim', '0000000000000010']
+const maintest4_mod1: Cion.RawLisp<"(% 6 0)"> = ['prim', 'nil']
+const maintest5_mod1: Cion.RawLisp<"(% -1 2)"> = ['prim', '0000000000000001']
+const maintest6_mod1: Cion.RawLisp<"(% (- 0 1) 2)"> = ['prim', '0000000000000001']
+const maintest7_mod1: Cion.RawLisp<"(% 6 1)"> = ['prim', '0000000000000000']
+const maintest8_mod1: Cion.RawLisp<"(% -17 5)"> = ['prim', '0000000000000011']

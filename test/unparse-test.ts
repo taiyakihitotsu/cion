@@ -1,4 +1,4 @@
-import type Cion from './index'
+import type Cion from '../src/index'
 
 // ---------------------
 // -- Unparse tests
