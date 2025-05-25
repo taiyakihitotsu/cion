@@ -1180,8 +1180,8 @@ type _FMap<F, V, Env = [[]], prev = [0]> = V extends Vector
     ? T[0] extends Atom
       ? [Eval<[F, H]>, ..._FMap<F, [`vec`, ...T]>]
       : [Eval<[F, H]>]
-    : [0]
-  : [1];
+    : []
+  : [];
 type FMap<F, V, Env = [[]], prev = [0]> = [`vec`, ..._FMap<F, V>];
 type LispMap<S> =
   S extends [infer f, infer vs]
@@ -1300,7 +1300,7 @@ const testreduce0: Reduce<
     ['prim', '0'],
     ['vec', ['prim', '01'], ['prim', '10']]
 > = ['prim', '0000000000000011']
-const testttt0: Eval<[['fn', [['sym', 'a'], ['sym', 'b']], [['sym', '+'], ['sym', 'a'], ['sym', 'b']]]]> = {error: ['LispAddError1']}
+const testttt0: Eval<[['fn', [['sym', 'a'], ['sym', 'b']], [['sym', '+'], ['sym', 'a'], ['sym', 'b']]]]> = {error: 'LispAddError1', sexpr: {sexpr: ['NotMatch'], error: 'ReadingError0', message: 'sexpr is not atom list.'}}
 const testttt1: Eval<['let', [], ['prim', '1']]> = ['prim', '1']
 const testttt2: Eval<[['fn', [['sym', 'a'], ['sym', 'b']], [['sym', '+'], ['sym', 'a'], ['sym', 'b']]], ['prim', '10'], ['prim', '11']]> = ['prim', '0000000000000101']
 
