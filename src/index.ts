@@ -1024,6 +1024,27 @@ type LispUpdateIn<S> = S extends
 type LispVectorError0 = "LispVectorError0"
 type LispVector<S> = S extends unknown[] ? ['vec', ...S] : {error: [LispGetError0, S, ""], sexpr: S}
 
+type CountError0 = "CountError0"
+type CountError1 = "CountError1"
+type Count<
+  S extends unknown[]
+, I extends string = '0'> = 
+  S extends [infer F, ...infer R]
+    ? R extends []
+        ? Bit.BitAdd<I,'1'>
+      : Count<R, Bit.BitAdd<I, '1'>>
+  : { error: CountError0
+    , sexpr: S}
+type LispCount<S> =
+  S extends [['vec', ...infer V]]
+    ? ['prim', Count<V>]
+  : { error: CountError1
+    , sexpr: S}
+
+// test
+const testcount: Count<[0,1,2]> = "0000000000000011"
+const testlcount: LispCount<[['vec', 0, 1, 2]]> = ['prim', "0000000000000011"]
+
 // fns of seq
 type FirstError0 = "FirstError0";
 type FirstError1 = "FirstError1";
@@ -1498,7 +1519,8 @@ type Eval<A, env = [[]], prev = 0, Vscope extends boolean = false > =
                   ? LispRemove<Reading<OPR, env, [[prev]]>>
                 : U extends `reduce`
                   ? LispReduce<Reading<OPR, env, [[prev]]>>
-
+                : U extends `count`
+                  ? LispCount<Reading<OPR, env, [[prev]]>>
                 : U extends `concat`
                   ? LispConcat<Reading<OPR, env, [[prev]]>>
                 : U extends `conj`
