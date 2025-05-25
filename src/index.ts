@@ -586,6 +586,138 @@ const eqtest9: Eq<[""], ["a"]> = false;
 const eqtest10: Eq<["a"], ["a"]> = true;
 const eqtest11: Eq<[""], [""]> = true;
 
+// predicate
+// - number?, string?, vector?, map?, fn?, ifn?, pos-int?, neg-int?, odd?, even?, zero?, symbol?, keyword?,  empty? 
+type NatNumber = '0'|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'
+type OddNumber = '1'|'3'|'5'|'7'|'9'
+type IsNumber<
+  S extends string> =
+  S extends `${infer F}${infer R}`
+    ? F extends NatNumber
+      ? R extends ''
+        ? true
+      : IsNumber<R>
+    : false
+  : false
+
+type _IsOdd<
+  S extends string> = 
+  S extends `${infer F}${infer R}`
+    ? R extends ''
+      ? F extends OddNumber
+        ? true
+      : false
+    : _IsOdd<R>
+  : false
+
+type IsOdd<
+  S extends string> = 
+  true extends IsNumber<S>
+    ? _IsOdd<S>
+  : false
+
+type IsEven<
+  S extends string> =
+  true extends IsNumber<S>
+    ? true extends _IsOdd<S> ? false : true
+  : false
+
+// number?
+type LispIsNumber<S> = 
+  S extends [['prim', infer N extends string]]
+    ? N extends `1${infer rN}`
+      ? ['prim', IsNumber<rN>]
+    : ['prim', IsNumber<N>]
+  : ['prim', false]
+
+// string?
+type LispIsString<S> = 
+  S extends [['prim', infer N extends string]]
+    ? N extends `'${infer _}'`
+      ? ['prim', true]
+    : ['prim', false]
+  : ['prim', false]
+
+// vector?
+type LispIsVector<S> = 
+  S extends [['vec', ...infer _]]
+    ? ['prim', true]
+  : ['prim', false]
+
+// map?
+type LispIsMap<S> = 
+  S extends [['map', ...infer _]]
+    ? ['prim', true]
+  : ['prim', false]
+
+// fn?
+type LispIsFn<S> = 
+  S extends [['fn', ...infer _]]
+    ? ['prim', true]
+  : ['prim', false]
+
+// keyword?
+type LispIsKeyword<S> = 
+  S extends [['key', infer _]]
+    ? ['prim', true]
+  : ['prim', false]
+
+// ifn?
+type LispIsIfn<S> = 
+  LispIsKeyword<S> extends ['prim', false]
+    ? LispIsFn<S>
+  : ['prim', true]
+
+// pos-int?
+type LispIsPosInt<S> = 
+  S extends [['prim', infer N extends string]]
+    ? N extends `1${infer _}`
+      ? ['prim', false]
+    : LispIsNumber<S>
+  : ['prim', false]
+
+// neg-int?
+type LispIsNegInt<S> = 
+  S extends [['prim', infer N extends string]]
+    ? N extends `1${infer _}`
+      ? LispIsNumber<S>
+    : ['prim', false]
+  : ['prim', false]
+
+// odd?
+type LispIsOdd<S> = 
+  S extends [['prim', infer N extends string]]
+    ? ['prim', IsOdd<N>]
+  : ['prim', false]
+
+// even?
+type LispIsEven<S> = 
+  S extends [['prim', infer N extends string]]
+    ? ['prim', IsEven<N>]
+  : ['prim', false]
+
+// zero?
+type LispIsZero<S> = 
+  S extends [['prim', infer N extends string]]
+    ? N extends '0'
+      ? ['prim', true]
+    : ['prim', false]
+  : ['prim', false]
+
+// symbol?
+type LispIsSymbol<S> = 
+  S extends [['sym', infer _]]
+    ? ['prim', true]
+  : ['prim', false]
+
+// empty?
+type LispIsEmpty<S> = 
+  S extends [['vec', ...infer V]]
+    ? V extends []
+      ? ['prim', true]
+    : ['prim', false]
+  : ['prim', false]
+
 // ----------------------------------
 // vector/list/array
 
@@ -1426,6 +1558,35 @@ type Eval<A, env = [[]], prev = 0, Vscope extends boolean = false > =
                   ? LispMod<Reading<OPR, env, [[prev]]>>
                 : U extends `>` | `<` | `>=` | `<=`
                   ? LispRelation<U, Reading<OPR, env, [[prev]]>>
+                // - number?, string?, vector?, map?, fn?, ifn?, pos-int?, neg-int?, odd?, even?, zero?, symbol?, keyword?, empty?
+                : U extends `number?`
+                  ? LispIsNumber<Reading<OPR, env, [[prev]]>>
+                : U extends `string?`
+                  ? LispIsString<Reading<OPR, env, [[prev]]>>
+                : U extends `vector?`
+                  ? LispIsVector<Reading<OPR, env, [[prev]]>>
+                : U extends `map?`
+                  ? LispIsMap<Reading<OPR, env, [[prev]]>>
+                : U extends `fn?`
+                  ? LispIsFn<Reading<OPR, env, [[prev]]>>
+                : U extends `keyword?`
+                  ? LispIsKeyword<Reading<OPR, env, [[prev]]>>
+                : U extends `ifn?`
+                  ? LispIsIfn<Reading<OPR, env, [[prev]]>>
+                : U extends `pos-int?`
+                  ? LispIsPosInt<Reading<OPR, env, [[prev]]>>
+                : U extends `neg-int?`
+                  ? LispIsNegInt<Reading<OPR, env, [[prev]]>>
+                : U extends `odd?`
+                  ? LispIsOdd<Reading<OPR, env, [[prev]]>>
+                : U extends `even?`
+                  ? LispIsEven<Reading<OPR, env, [[prev]]>>
+                : U extends `zero?`
+                  ? LispIsZero<Reading<OPR, env, [[prev]]>>
+                : U extends `symbol?`
+                  ? LispIsSymbol<Reading<OPR, env, [[prev]]>>
+                : U extends `empty?`
+                  ? LispIsEmpty<Reading<OPR, env, [[prev]]>>
                 : Eval<[ReadLet<U, env>, OPR[0]], env, [prev]>
               : ReadLet<U, env> extends Fn | Keyword | TMap & infer UU
                 ? Eval<[UU, ...OPR], env, [prev]>
