@@ -40,7 +40,7 @@ const test_in_doc_get0: Cion.Lisp<`(get [1 2 3] 0)`> = '1'
 const test_in_doc_get1: Cion.Lisp<`(get [1 2 3] 4)`> = 'nil'
 ```
 
- - Getting empty place is not allowe, to return nil.
+ - Getting empty place is not allowed, to return nil.
 
 ### if, let, fn
 ```clojure
@@ -76,9 +76,16 @@ const test_in_doc_def7: test_in_doc_def6 = '10'
 ```
 
 ## Builtins
- - if, fn, let, str, eq, and, or, not, >, <, =, >=, <=, +, -, *, /, mod, map, filter, remove, reduce, conj, concat, interleave, reverse, first, last, rest, butlast, assoc, assoc-in, update, update-in, get, vec, nil, ->, ->>.
- - number?, string?, vector?, map?, fn?, ifn?, nat-int?, pos-int?, neg-int?, odd?, even?, zero?, symbol?, keyword?, coll?, empty? 
- - vector & map syntax also be supported.
+ - if, fn, let, str, count, nil, ->, ->>
+ - +, -, *, /, mod
+ - and, or, not, >, <, =, eq, >=, <=
+ - number?, string?, vector?, map?, fn?, ifn?, nat-int?, pos-int?, neg-int?, odd?, even?, zero?, keyword?, empty?
+ - map, filter, remove, reduce
+ - conj, concat, interleave, reverse
+ - assoc, assoc-in, update, update-in
+ - first, last, rest, butlast, get
+ - ... and vector ```[0 1 2]``` & map ```{:x 0 :y 1 :z 2}``` syntax.
+
 
 # Author
 taiyakihitotsu
