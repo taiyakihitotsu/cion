@@ -17,7 +17,7 @@ type PrimNumber = ['prim', string];
 type Prim = PrimString | PrimBoolean | PrimNumber | PrimTestNumber;
 type Args = Sym[];
 type Fn = [`fn`, Args, Each | Each[] | Sexpr | Sexpr[]];
-type Vector = [`vec`, ...(Sexpr | Atom)[]] | [`vec`];
+type Vector = [`vec`, ...(Sexpr | LetForm | Atom)[]] | [`vec`];
 type Var = {
     name: string;
     value: string | Atom;
@@ -38,8 +38,9 @@ type ReadLetRecur<Sexpr, env, R extends unknown[] = []> = Sexpr extends [infer F
 type ReadAtom<A, EnvLifo = [[]], prev = 0> = A extends [`sym`, infer S] ? ReadLet<S, EnvLifo> : Eval<A, EnvLifo, [prev]>;
 type ReadingError0 = "ReadingError0";
 type ReadingError1 = "ReadingError1";
-type Reading<AS, EnvLifo = [[]], prev = 0, R = [], IsFn extends boolean = false> = R extends Atom[] ? AS extends [infer H, ...infer T] ? H extends Atom ? Reading<T, EnvLifo, prev, [...R, ReadAtom<H, EnvLifo, prev>]> : H extends Sexpr ? Reading<T, EnvLifo, prev, [...R, Eval<H, EnvLifo, prev>]> : {
-    error: [ReadingError1];
+type Reading<AS, EnvLifo = [[]], prev = 0, R = [], IsFn extends boolean = false> = R extends Atom[] ? AS extends [infer H, ...infer T] ? H extends Atom ? Reading<T, EnvLifo, prev, [...R, ReadAtom<H, EnvLifo, prev>]> : H extends Sexpr | LetForm ? Reading<T, EnvLifo, prev, [...R, Eval<H, EnvLifo, prev>]> : {
+    sexpr: AS;
+    error: ReadingError1;
 } : R : {
     sexpr: R;
     error: ReadingError0;
@@ -68,9 +69,11 @@ type LispNot<S> = S extends [['prim', infer U]] ? ['prim', _Not<U>] : never;
 type LispAddError0 = 'LispAddError0';
 type LispAddError1 = 'LispAddError1';
 type LispAdd<S, R extends string = "00000000"> = S extends [] ? [`prim`, R] : S extends [infer Fst, ...infer Rest] ? Fst extends [`prim`, infer FstP extends string] ? LispAdd<Rest, Bit.BitAdd<R, FstP>> : {
-    error: [LispAddError0];
+    error: LispAddError0;
+    sexpr: S;
 } : {
-    error: [LispAddError1];
+    error: LispAddError1;
+    sexpr: S;
 };
 type LispSubError0 = 'LispSubError0';
 type LispSub<S, R extends string = "00000000", Init extends boolean = true> = S extends [] ? [`prim`, R] : S extends [[`prim`, infer Fst extends string], ...infer Rest extends string[][]] ? Init extends true ? LispSub<Rest, Fst, false> : LispSub<Rest, Bit.BitSub<R, Fst>, false> : {
@@ -111,9 +114,29 @@ type EvalError11 = "EvalError11/ Some of elements type in SEXPR doesn't satisfy 
 type Eq<L, R> = L extends R ? (R extends L ? true : false) : false;
 type If<A, B, C> = A extends [`prim`, true] ? B : C;
 type IfForm = [`if`, Each | Sexpr, Each | Sexpr, Each | Sexpr];
+type NatNumber = '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9';
+type OddNumber = '1' | '3' | '5' | '7' | '9';
+type IsNumber<S extends string> = S extends `${infer F}${infer R}` ? F extends NatNumber ? R extends '' ? true : IsNumber<R> : false : false;
+type _IsOdd<S extends string> = S extends `${infer F}${infer R}` ? R extends '' ? F extends OddNumber ? true : false : _IsOdd<R> : false;
+type IsOdd<S extends string> = true extends IsNumber<S> ? _IsOdd<S> : false;
+type IsEven<S extends string> = true extends IsNumber<S> ? true extends _IsOdd<S> ? false : true : false;
+type LispIsNumber<S> = S extends [['prim', infer N extends string]] ? N extends `1${infer rN}` ? ['prim', IsNumber<rN>] : ['prim', IsNumber<N>] : ['prim', false];
+type LispIsString<S> = S extends [['prim', infer N extends string]] ? N extends `'${infer _}'` ? ['prim', true] : ['prim', false] : ['prim', false];
+type LispIsVector<S> = S extends [['vec', ...infer _]] ? ['prim', true] : ['prim', false];
+type LispIsMap<S> = S extends [['map', ...infer _]] ? ['prim', true] : ['prim', false];
+type LispIsFn<S> = S extends [['fn', ...infer _]] ? ['prim', true] : ['prim', false];
+type LispIsKeyword<S> = S extends [['key', infer _]] ? ['prim', true] : ['prim', false];
+type LispIsIfn<S> = LispIsKeyword<S> extends ['prim', false] ? LispIsFn<S> : ['prim', true];
+type LispIsPosInt<S> = S extends [['prim', infer N extends string]] ? N extends `1${infer _}` ? ['prim', false] : LispIsNumber<S> : ['prim', false];
+type LispIsNegInt<S> = S extends [['prim', infer N extends string]] ? N extends `1${infer _}` ? LispIsNumber<S> : ['prim', false] : ['prim', false];
+type LispIsOdd<S> = S extends [['prim', infer N extends string]] ? ['prim', IsOdd<N>] : ['prim', false];
+type LispIsEven<S> = S extends [['prim', infer N extends string]] ? ['prim', IsEven<N>] : ['prim', false];
+type LispIsZero<S> = S extends [['prim', infer N extends string]] ? N extends '0' ? ['prim', true] : ['prim', false] : ['prim', false];
+type LispIsSymbol<S> = S extends [['sym', infer _]] ? ['prim', true] : ['prim', false];
+type LispIsEmpty<S> = S extends [['vec', ...infer V]] ? V extends [] ? ['prim', true] : ['prim', false] : ['prim', false];
 type ConcatError0 = "ConcatError0";
 type TConcat<V extends Array<Array<unknown>>, Stack extends Array<unknown> = []> = V['length'] extends 0 ? Stack : V extends [infer Head extends Array<unknown>, ...infer Rest extends Array<Array<unknown>>] ? TConcat<Rest, [...Stack, ...Head]> : never;
-type LispConcat<S, R extends unknown[][] = []> = S extends Vector[] & [['vec', ...infer H], ...infer T] ? T extends [] ? TConcat<R> : LispConcat<T, [...R, H]> : ConcatError0;
+type LispConcat<S, R extends unknown[][] = []> = S extends Vector[] & [['vec', ...infer H], ...infer T] ? T extends [] ? ['vec', ...TConcat<[...R, H]>] : LispConcat<T, [...R, H]> : ConcatError0;
 type IsKeyword<T> = T extends ['key', `:${infer S}`] ? true : false;
 type IsMap<T> = T extends TMap ? true : false;
 type IsKeyMapSexpr<S, env = [[]]> = S extends [infer Fst, infer Snd] ? IsKeyword<Eval<Fst, env>> extends true ? IsMap<Eval<Snd, env>> extends true ? true : false : IsKeyword<Eval<Snd, env>> extends true ? IsMap<Eval<Fst, env>> extends true ? true : false : false : false;
@@ -216,7 +239,7 @@ type Drop<N extends string, V extends unknown[], R extends unknown[] = []> = V e
 type LispDrop<S> = S extends [['prim', infer N extends string], ['vec', ...infer V]] ? Drop<N, V> extends infer RV ? RV extends unknown[] ? ['vec', ...RV] : DropError2 : DropError3 : DropError1;
 type FMapError = "MapError";
 type FilterError = "FilterError";
-type _FMap<F, V, Env = [[]], prev = [0]> = V extends Vector ? V extends [`vec`, infer H, ...infer T] ? T[0] extends Atom ? [Eval<[F, H]>, ..._FMap<F, [`vec`, ...T]>] : [Eval<[F, H]>] : [0] : [1];
+type _FMap<F, V, Env = [[]], prev = [0]> = V extends Vector ? V extends [`vec`, infer H, ...infer T] ? T[0] extends Atom ? [Eval<[F, H]>, ..._FMap<F, [`vec`, ...T]>] : [Eval<[F, H]>] : [] : [];
 type FMap<F, V, Env = [[]], prev = [0]> = [`vec`, ..._FMap<F, V>];
 type LispMap<S> = S extends [infer f, infer vs] ? FMap<f, vs> : FMapError;
 type FilterError0 = "FilterError0";
@@ -281,12 +304,12 @@ type Eval<A, env = [[]], prev = 0, Vscope extends boolean = false> = A extends S
     OPR[0]
 ], env, [
     prev
-]> : OPC extends Sym & [`sym`, infer U] ? ReadLet<U, env> extends NotMatch ? U extends `AppendP` ? AppendP<ReadAtom<Eval<OPR[0], env, [[prev]]>, env, [prev]>> : U extends '->' ? Eval<LispThreadFirst<OPR>, env, [[prev]]> : U extends '->>' ? Eval<LispThreadLast<OPR>, env, [[prev]]> : U extends `str` ? Str<Reading<OPR, env, [[prev]]>> : U extends `vector` ? LispVector<Reading<OPR, env, [[prev]]>> : U extends `map` ? LispMap<Reading<OPR, env, [[prev]]>> : U extends `filter` ? LispFilter<Reading<OPR, env, [[prev]]>> : U extends `remove` ? LispRemove<Reading<OPR, env, [[prev]]>> : U extends `reduce` ? LispReduce<Reading<OPR, env, [[prev]]>> : U extends `concat` ? LispConcat<Reading<OPR, env, [[prev]]>> : U extends `conj` ? LispConj<Reading<OPR, env, [[prev]]>> : U extends `first` ? LispFirst<Reading<OPR, env, [[prev]]>> : U extends `last` ? LispLast<Reading<OPR, env, [[prev]]>> : U extends `rest` ? LispRest<Reading<OPR, env, [[prev]]>> : U extends `butlast` ? LispButlast<Reading<OPR, env, [[prev]]>> : U extends `reverse` ? LispReverse<Reading<OPR, env, [[prev]]>> : U extends `interleave` ? LispInterleave<Reading<OPR, env, [[prev]]>> : U extends `take` ? LispTake<Reading<OPR, env, [[prev]]>> : U extends `drop` ? LispDrop<Reading<OPR, env, [[prev]]>> : U extends `assoc-in` ? LispAssocIn<Reading<OPR, env, [[prev]]>> : U extends `update-in` ? LispUpdateIn<Reading<OPR, env, [[prev]]>> : U extends `assoc` ? LispAssoc<Reading<OPR, env, [[prev]]>> : U extends `update` ? LispUpdate<Reading<OPR, env, [[prev]]>> : U extends `get` ? LispGet<Reading<OPR, env, [[prev]]>> : U extends `eq` | `=` ? LispEq<Reading<OPR, env, [[prev]]>> : U extends `not` ? LispNot<Reading<OPR, env, [[prev]]>> : U extends `and` ? LispAnd<Reading<OPR, env, [[prev]]>> : U extends `or` ? LispOr<Reading<OPR, env, [[prev]]>> : U extends `+` ? LispAdd<Reading<OPR, env, [[prev]]>> : U extends `-` ? LispSub<Reading<OPR, env, [[prev]]>> : U extends `*` ? LispMul<Reading<OPR, env, [[prev]]>> : U extends `/` ? LispDiv<Reading<OPR, env, [[prev]]>> : U extends `mod` | `%` ? LispMod<Reading<OPR, env, [[prev]]>> : U extends `>` | `<` | `>=` | `<=` ? LispRelation<U, Reading<OPR, env, [[prev]]>> : Eval<[ReadLet<U, env>, OPR[0]], env, [prev]> : ReadLet<U, env> extends Fn | Keyword | TMap & infer UU ? Eval<[UU, ...OPR], env, [prev]> : {
+]> : OPC extends Sym & [`sym`, infer U] ? ReadLet<U, env> extends NotMatch ? U extends `AppendP` ? AppendP<ReadAtom<Eval<OPR[0], env, [[prev]]>, env, [prev]>> : U extends '->' ? Eval<LispThreadFirst<OPR>, env, [[prev]]> : U extends '->>' ? Eval<LispThreadLast<OPR>, env, [[prev]]> : U extends `str` ? Str<Reading<OPR, env, [[prev]]>> : U extends `vector` ? LispVector<Reading<OPR, env, [[prev]]>> : U extends `map` ? LispMap<Reading<OPR, env, [[prev]]>> : U extends `filter` ? LispFilter<Reading<OPR, env, [[prev]]>> : U extends `remove` ? LispRemove<Reading<OPR, env, [[prev]]>> : U extends `reduce` ? LispReduce<Reading<OPR, env, [[prev]]>> : U extends `concat` ? LispConcat<Reading<OPR, env, [[prev]]>> : U extends `conj` ? LispConj<Reading<OPR, env, [[prev]]>> : U extends `first` ? LispFirst<Reading<OPR, env, [[prev]]>> : U extends `last` ? LispLast<Reading<OPR, env, [[prev]]>> : U extends `rest` ? LispRest<Reading<OPR, env, [[prev]]>> : U extends `butlast` ? LispButlast<Reading<OPR, env, [[prev]]>> : U extends `reverse` ? LispReverse<Reading<OPR, env, [[prev]]>> : U extends `interleave` ? LispInterleave<Reading<OPR, env, [[prev]]>> : U extends `take` ? LispTake<Reading<OPR, env, [[prev]]>> : U extends `drop` ? LispDrop<Reading<OPR, env, [[prev]]>> : U extends `assoc-in` ? LispAssocIn<Reading<OPR, env, [[prev]]>> : U extends `update-in` ? LispUpdateIn<Reading<OPR, env, [[prev]]>> : U extends `assoc` ? LispAssoc<Reading<OPR, env, [[prev]]>> : U extends `update` ? LispUpdate<Reading<OPR, env, [[prev]]>> : U extends `get` ? LispGet<Reading<OPR, env, [[prev]]>> : U extends `eq` | `=` ? LispEq<Reading<OPR, env, [[prev]]>> : U extends `not` ? LispNot<Reading<OPR, env, [[prev]]>> : U extends `and` ? LispAnd<Reading<OPR, env, [[prev]]>> : U extends `or` ? LispOr<Reading<OPR, env, [[prev]]>> : U extends `+` ? LispAdd<Reading<OPR, env, [[prev]]>> : U extends `-` ? LispSub<Reading<OPR, env, [[prev]]>> : U extends `*` ? LispMul<Reading<OPR, env, [[prev]]>> : U extends `/` ? LispDiv<Reading<OPR, env, [[prev]]>> : U extends `mod` | `%` ? LispMod<Reading<OPR, env, [[prev]]>> : U extends `>` | `<` | `>=` | `<=` ? LispRelation<U, Reading<OPR, env, [[prev]]>> : U extends `number?` ? LispIsNumber<Reading<OPR, env, [[prev]]>> : U extends `string?` ? LispIsString<Reading<OPR, env, [[prev]]>> : U extends `vector?` ? LispIsVector<Reading<OPR, env, [[prev]]>> : U extends `map?` ? LispIsMap<Reading<OPR, env, [[prev]]>> : U extends `fn?` ? LispIsFn<Reading<OPR, env, [[prev]]>> : U extends `keyword?` ? LispIsKeyword<Reading<OPR, env, [[prev]]>> : U extends `ifn?` ? LispIsIfn<Reading<OPR, env, [[prev]]>> : U extends `pos-int?` ? LispIsPosInt<Reading<OPR, env, [[prev]]>> : U extends `neg-int?` ? LispIsNegInt<Reading<OPR, env, [[prev]]>> : U extends `odd?` ? LispIsOdd<Reading<OPR, env, [[prev]]>> : U extends `even?` ? LispIsEven<Reading<OPR, env, [[prev]]>> : U extends `zero?` ? LispIsZero<Reading<OPR, env, [[prev]]>> : U extends `symbol?` ? LispIsSymbol<Reading<OPR, env, [[prev]]>> : U extends `empty?` ? LispIsEmpty<Reading<OPR, env, [[prev]]>> : Eval<[ReadLet<U, env>, OPR[0]], env, [prev]> : ReadLet<U, env> extends Fn | Keyword | TMap & infer UU ? Eval<[UU, ...OPR], env, [prev]> : {
     sexpr: A;
     error: EvalError3;
     msg: '1st arg should be fn/keyword/map.';
     env: env;
-} : IsKeyMapSexpr<ReadLetRecur<A, env>, env> extends true ? IsKeyword<OPC> extends true ? LispGet<Reading<[...OPR, OPC], env, [[prev]]>> : LispGet<Reading<[OPC, ...OPR], env, [[prev]]>> : {
+} : IsKeyMapSexpr<ReadLetRecur<A, env>, env> extends true ? IsKeyword<OPC> extends true ? LispGet<Reading<[...OPR, OPC], env, [[prev]]>> : LispGet<Reading<[OPC, ...OPR], env, [[prev]]>> : OPC extends LetForm ? Eval<[Eval<OPC, env, [[prev]]>, ...OPR], env, [prev]> : {
     error: EvalError4;
     message: 'the 1st is not a symbol but it should be.';
     sexpr: A;
