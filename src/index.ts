@@ -1,16 +1,6 @@
 import type Bit from './bit.ts'
 import type Compiler from './compiler'
 
-
-// type TMapAtom = ['map', TMapAtom[]] | Atom
-// type TMap = Exclude<TMapAtom, Atom>
-
-// type Each = LetForm | IfForm | Atom
-// type Atom = Sym | Prim | Fn | Vector | Keyword | Nil
-// todo : naming
-// let itself isn't value and returning value, unlike fn, so maybe ok as it is.
-// todo
-// integrated let form to [[`sym`, string], EACH | Array<EACH>] in future.
 type LetVal = string | Each | Each[];
 type LetArg = [Sym, LetVal];
 // todo : too ugly.
@@ -35,8 +25,7 @@ type PrimNumber = ['prim', string]
 type Prim = PrimString | PrimBoolean | PrimNumber | PrimTestNumber
 type Args = Sym[];
 type Fn = [`fn`, Args, Each | Each[] | Sexpr | Sexpr[]]
-// type Vector = [`vec`, ...Atom[]] | [`vec`];
-type Vector = [`vec`, ...(Sexpr | Atom)[]] | [`vec`];
+type Vector = [`vec`, ...(Sexpr | LetForm | Atom)[]] | [`vec`];
 type Var = {
   name: string;
   value: string | Atom;
@@ -175,9 +164,10 @@ type Reading<
     ? AS extends [infer H, ...infer T]
       ? H extends Atom
         ? Reading<T, EnvLifo, prev, [...R, ReadAtom<H, EnvLifo, prev>]>
-        : H extends Sexpr
+        : H extends Sexpr | LetForm
           ? Reading<T, EnvLifo, prev, [...R, Eval<H, EnvLifo, prev>]>
-          : { error: [ReadingError1]}
+          : { sexpr: AS
+	      , error: ReadingError1}
       : R
     : { sexpr: R
         ; error: ReadingError0
@@ -380,8 +370,10 @@ type LispAdd<
     : S extends [infer Fst, ...infer Rest]
       ? Fst extends [`prim`, infer FstP extends string]
         ? LispAdd<Rest, Bit.BitAdd<R, FstP>>
-        : {error: [LispAddError0]}
-      : {error: [LispAddError1]}
+        : { error: LispAddError0
+	  , sexpr: S}
+      : { error: LispAddError1
+	  , sexpr: S}
 
 const testlispadd0: LispAdd<[[`prim`, '00000011'], [`prim`, '0000001']]> = [`prim`, '0000000000000100']
 const testlispadd1: LispAdd<[[`prim`, '00000011'], [`prim`, '0000001'], [`prim`, '00000011']]> = [`prim`, '0000000000000111']
@@ -1603,6 +1595,9 @@ type Eval<A, env = [[]], prev = 0, Vscope extends boolean = false > =
                 //     , error: EvalError12
                 //     , message: 'neither 1st or 2nd arg is keyword.'
 		//     , env: env}
+          : OPC extends LetForm
+              // Let
+              ? Eval<[Eval<OPC, env, [[prev]]>, ...OPR], env, [prev]>
           : { error: EvalError4
             , message: 'the 1st is not a symbol but it should be.'
             , sexpr: A}
