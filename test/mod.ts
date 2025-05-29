@@ -1,4 +1,13 @@
-import type Cion from '../src/index.ts'
+import type Cion from '../src/index'
+import type { LispMod } from '../src/index'
+
+const testlispmod0: LispMod<[[`prim`, '00000011'], [`prim`, '0000001']]> = [`prim`, '0000000000000000']
+const testlispmod1: LispMod<[[`prim`, '00001111'], [`prim`, '0000001'], [`prim`, '00000011']]> = [`prim`, '0000000000000000']
+const testlispmod2: LispMod<[[`prim`, '00000011'], [`prim`, '0000000']]> = [`prim`, 'nil']
+const testlispmod3: LispMod<[[`prim`, '00000101'], [`prim`, '0000010']]> = [`prim`, '0000000000000001']
+const testlispmod4: LispMod<[[`prim`, '00010001'], [`prim`, '00000011']]> = [`prim`, '0000000000000010']
+const testlispmod5: LispMod<[['prim', '1111111111111110'], ['prim', '0000000000000101']]> = ['prim', '0000000000000011']
+const testlispmod6: LispMod<[['prim', '1111111111101111'], ['prim', '0000000000000101']]> = ['prim', '0000000000000011']
 
 const maintest0_mod: Cion.RawLisp<"(mod 2 5)"> = ['prim', '0000000000000010']
 const maintest1_mod: Cion.RawLisp<"(mod 5 5)"> = ['prim', '0000000000000000']

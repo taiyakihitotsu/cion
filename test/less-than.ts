@@ -1,4 +1,9 @@
-import type Cion from '../src/index.ts'
+import type Cion from '../src/index'
+import type { LispRelation } from '../src/index'
+
+const testlisplt0: LispRelation<'<',  [[`prim`, '00000011'], [`prim`, '0000001']]> = [`prim`, false]
+const testlisplt1: LispRelation<'<',  [[`prim`, '00001111'], [`prim`, '00000011'], [`prim`, '0000001']]> = [`prim`, false]
+const testlisplt2: LispRelation<'<',  [[`prim`, '00001111'], [`prim`, '00001111'], [`prim`, '00001111']]> = [`prim`, false]
 
 const maintest11_lt_0: Cion.RawLisp<"(< 15 14)"> = [`prim`, false]
 const maintest11_lt_1: Cion.RawLisp<"(< 15 14 13)"> = [`prim`, false]

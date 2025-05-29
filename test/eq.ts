@@ -1,4 +1,49 @@
-import type Cion from '../src/index.ts'
+import type Cion from '../src/index'
+import type { Eq, LispEq, Eval, MakeVar } from '../src/index'
+
+const eqtest1: Eq<"a", "a"> = true;
+const eqtest2: Eq<"a", ""> = false;
+const eqtest3: Eq<null, []> = false;
+// const eqtest4: Eq<undefined, null> = true
+const eqtest5: Eq<undefined, undefined> = true;
+const eqtest6: Eq<{}, null> = false;
+const eqtest7: Eq<1, "1"> = false;
+const eqtest8: Eq<["a"], ["a", ""]> = false;
+const eqtest9: Eq<[""], ["a"]> = false;
+const eqtest10: Eq<["a"], ["a"]> = true;
+const eqtest11: Eq<[""], [""]> = true;
+
+const testletfn9: Eval<['vec', ['sym', '='], ['prim', "'in'"], ['prim', "'in'"]]> = ['vec', ['sym', '='], ['prim', "'in'"], ['prim', "'in'"]]
+
+// test lispeq
+const evallispeqtest0: Eval<[[`sym`, `eq`], [`prim`, 0], [`prim`, 0]]> = [
+  `prim`,
+  true,
+];
+const evallispeqtest1: Eval<[[`sym`, `eq`], [`prim`, 1], [`prim`, 0]]> = [
+  `prim`,
+  false,
+];
+const evallispeqtest2: Eval<
+  [[`sym`, `eq`], [`prim`, 0], [`prim`, 0], [`prim`, 0]]
+> = [`prim`, true];
+
+const testfnlispeqa: Eval<[[`sym`, `eq`], [`prim`, 0], [`prim`, 1]]> = [
+  `prim`,
+  false,
+];
+const testfnlispeqaa: Eval<
+  [[`sym`, `eq`], [`sym`, `a`], [`prim`, 1]],
+  [[MakeVar<`a`, [`prim`, 0]>]]
+> = [`prim`, false];
+
+const lispeqtest1: LispEq<[[`prim`, "'a'"], [`prim`, "'a'"]]> = [`prim`, true];
+const lispeqtest2: LispEq<[[`prim`, "'a'"], [`prim`, "'b'"]]> = [`prim`, false];
+const lispeqtest3: LispEq<[[`prim`, "'a'"], [`prim`, "'b'"], [`prim`, "'a'"]]> =
+  [`prim`, false];
+const lispeqtest4: LispEq<[[`prim`, "'a'"], [`prim`, "'a'"], [`prim`, "'a'"]]> =
+  [`prim`, true];
+const lispeqtest5: LispEq<[[`prim`, "'a'"], [`prim`, "''"]]> = [`prim`, false];
 
 const maintest0_eq: Cion.RawLisp<"(eq 'a' 'b')"> = [`prim`, false]
 const maintest1_eq: Cion.RawLisp<"(eq 'a' 'a')"> = [`prim`, true]

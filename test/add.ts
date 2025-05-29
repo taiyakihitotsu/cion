@@ -1,4 +1,9 @@
-import type Cion from '../src/index.ts'
+import type Cion from '../src/index'
+import type { LispAdd } from '../src/index'
+
+const testlispadd0: LispAdd<[[`prim`, '00000011'], [`prim`, '0000001']]> = [`prim`, '0000000000000100']
+const testlispadd1: LispAdd<[[`prim`, '00000011'], [`prim`, '0000001'], [`prim`, '00000011']]> = [`prim`, '0000000000000111']
+const testlispadd2: LispAdd<[[`prim`, '00001001'], [`prim`, '00000110'], [`prim`, '00000001']]> = [`prim`, '0000000000010000']
 
 const maintest0_add: Cion.RawLisp<"(+ 1 1)"> = ['prim', "0000000000000010"]
 const maintest1_add: Cion.RawLisp<"(+ 1 0)"> = ['prim', "0000000000000001"]

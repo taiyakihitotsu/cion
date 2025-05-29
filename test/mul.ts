@@ -1,4 +1,8 @@
-import type Cion from '../src/index.ts'
+import type Cion from '../src/index'
+import type { LispMul } from '../src/index'
+
+const testlispmul0: LispMul<[[`prim`, '00000011'], [`prim`, '0000001']]> = [`prim`, '0000000000000011']
+const testlispmul1: LispMul<[[`prim`, '00001111'], [`prim`, '0000001'], [`prim`, '00000011']]> = [`prim`, '0000000000101101']
 
 const maintest0_mul: Cion.RawLisp<"(* 3 1)"> = ['prim', "0000000000000011"]
 const maintest1_mul: Cion.RawLisp<"(* 0 1)"> = ['prim', "0000000000000000"]

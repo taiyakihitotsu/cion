@@ -1,4 +1,86 @@
-import type Cion from '../src/index.ts'
+import type Cion from '../src/index'
+import type { Eval } from '../src/index'
+import type {LetVal,LetArg,LetForm,Each,Atom,TMap,Sexpr,TNil,Keyword,Sym,PrimString,PrimBoolean,PrimTestNumber,PrimNumber,Prim,Args,Fn,Vector,Var,Env,TNotMatch,IfForm} from '../src/sexprtypes'
+
+// test let
+const evallettest: Eval<[`let`, [[`sym`, `t`], `'test'`], [`sym`, `t`]]> = {error: "EvalError7", message: '', sexpr: ["let", [["sym", "t"], "'test'"], ["sym", "t"]], env: [[]]}// {
+
+// recursive test[let]
+type InnerLetTest = [
+  `let`,
+  [[`sym`, `str`], [`prim`, `'test'`]],
+  [[`sym`, `AppendP`], [`sym`, `str`]],
+];
+type OuterLetTest = [
+  `let`,
+  [[`sym`, `aaa`], InnerLetTest],
+  [[`sym`, `AppendP`], [`sym`, `aaa`]],
+];
+type RecLetTest = [
+  `let`,
+  [[`sym`, `aaa`], InnerLetTest],
+  [
+    `let`,
+    [[`sym`, `bbb`], [`sym`, `aaa`]],
+    [[`sym`, `AppendP`], [`sym`, `bbb`]],
+  ],
+];
+
+const evalletwprimtest: Eval<
+  [`let`, [[`sym`, `t`], [`prim`, `'test'`]], [`sym`, `t`]],
+  []
+> = [`prim`, "'test'"];
+
+// recursive test[fn in let]
+type FlInnerTest = [
+  `let`,
+  [[`sym`, `str`], [`fn`, [[`sym`, `a`]], [[`sym`, `AppendP`], [`sym`, `a`]]]],
+  [[`sym`, `str`], [`prim`, `'test'`]],
+];
+
+// test interleaved let form
+const testiletform: Eval<
+  [
+    `let`,
+    [[[`sym`, `a`], [`sym`, `b`]], [[`prim`, `'1'`], [`prim`, `'2'`]]],
+    [[`sym`, `str`], [`sym`, `a`], [`sym`, `b`]],
+  ]
+> = [`prim`, `'12'`];
+
+const testttt1: Eval<['let', [], ['prim', '1']]> = ['prim', '1']
+
+// test let >1
+type Letmoretest = [
+  `let`,
+  [[`sym`, `a`], [`prim`, `text-a`], [`sym`, `b`], [`prim`, `/text-b`]],
+  [[`sym`, `str`], [`sym`, `a`], [`sym`, `b`]],
+];
+const evalletmoretest1: Eval<Letmoretest> = [`prim`, `'text-a/text-b'`];
+const aaaaaaaaa: LetForm = [
+  `let`,
+  [
+    [`sym`, `a`],
+    [`prim`, `text-a`],
+    [`sym`, `b`],
+    [`prim`, `text-b`],
+  ],
+  [
+    [`sym`, `str`],
+    [`sym`, `a`],
+    [`sym`, `b`],
+  ],
+];
+
+const testletfn0: Eval<['let', [['sym', 'x'], [['fn', [['sym', 'a']], [['sym', '+'], ['prim', '0000000000000001'], ['sym', 'a']]], ['prim', '0000000000000001']]], [['sym', '*'], ['prim', '0000000000000010'], ['sym', 'x']]]> = ['prim', '0000000000000100']
+const testletfn1: Eval<['let', [['sym', 'x'], [['fn', [['sym', 'a']], [['sym', '+'], ['prim', '0000000000000001'], ['sym', 'a']]], ['prim', '0000000000000001']]], [['sym', '*'], ['prim', '0000000000000010'], ['sym', 'x']]]> = ['prim', '0000000000000100']
+const testletfn2: Eval<['let', [['sym', 'x'], ['fn', [['sym', 'a']], [['sym', '+'], ['prim', '0000000000000001'], ['sym', 'a']]]], [['sym', 'x'], ['prim', '0000000000000010'], ['prim', '0000000000000001']]]> = ['prim', '0000000000000011']
+const testletfn3: Eval<['let', [['sym', 'x'], ['fn', [['sym', 'a'], ['sym', 'b']], [['sym', '+'], ['prim', '0000000000000001'], ['sym', 'a']]]], [['sym', 'x'], ['prim', '0000000000000010'], ['prim', '0000000000000001']]]> = ['prim', '0000000000000011']
+const testletfn4: Eval<['let', [['sym', 'x'], ['fn', [['sym', 'a'], ['sym', 'b']], [['sym', '+'], ['sym', 'b'], ['sym', 'a']]]], [['sym', 'x'], ['prim', '0000000000000010'], ['prim', '0000000000000001']]]> = ['prim', '0000000000000011']
+const testletfn5: Eval<['let', [['sym', 'x'], ['let', [['sym', 'y'], ['prim', true]], ['sym', 'y']]], ['sym', 'x']]> = ['prim', true]
+const testletfn6: Eval<['let', [['sym', 'x'], ['fn', [['sym', 'a']], [['sym', '+'], ['prim', '0000000000000001'], ['sym', 'a']]]], ['sym', 'x']]> = ['fn', [['sym', 'a']], [['sym', '+'], ['prim', '0000000000000001'], ['sym', 'a']]]
+const testletfn7: Eval<['let', [['sym', 'x'], ['let', [['sym', 'a'], ['prim', '0000000000000010'], ['sym', 'b'], ['prim', '0000000000000010']], [['sym', '+'], ['sym', 'a'], ['sym', 'b']]]], ['sym', 'x']]> = ['prim', '0000000000000100']
+const testletfn8: Eval<['let', [['sym', 'x'], ['let', [['sym', 'a'], ['prim', '0000000000000011'], ['sym', 'b'], ['prim', '0000000000000010']], ['fn', [['sym', 'c']], [['sym', '+'], ['sym', 'a'], ['sym', 'b']]]]], ['sym', 'x']]> = ['fn', [['sym', 'c']], [['sym', '+'], ['prim', '0000000000000011'], ['prim', '0000000000000010']]]
+
 
 const maintest0_letif_0: Cion.RawLisp<'(let [x (fn [a b] (+ a b)) y 8] (+ 2 1))'> = ['prim', '0000000000000011']
 const maintest0_letif_01: Cion.RawLisp<'(let [x (fn [a b] (+ a b)) y 8] (+ y 2 1))'> = ['prim', '0000000000001011']

@@ -1,4 +1,8 @@
-import type Cion from '../src/index.ts'
+import type Cion from '../src/index'
+import type { LispSub } from '../src/index'
+
+const testlispsub0: LispSub<[[`prim`, '00000011'], [`prim`, '0000001']]> = [`prim`, '0000000000000010']
+const testlispsub1: LispSub<[[`prim`, '00001111'], [`prim`, '0000001'], [`prim`, '00000011']]> = [`prim`, '0000000000001011']
 
 const maintest0_sub: Cion.RawLisp<"(- 4 1)"> = ['prim', "0000000000000011"]
 const maintest1_sub: Cion.RawLisp<"(- 1 0)"> = ['prim', "0000000000000001"]

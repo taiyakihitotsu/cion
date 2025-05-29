@@ -1,4 +1,23 @@
-import type Cion from '../src/index.ts'
+import type Cion from '../src/index'
+import type { Eval } from '../src/index'
+
+// test if
+type IfTruePrimTest = [`if`, [`prim`, true], [`prim`, true], [`prim`, false]];
+type IfFalsePrimTest = [`if`, [`prim`, false], [`prim`, true], [`prim`, false]];
+const evaliftest2: Eval<IfTruePrimTest> = [`prim`, true];
+const evaliftest3: Eval<IfFalsePrimTest> = [`prim`, false];
+type IfRecTrueTest = [`if`, IfTruePrimTest, [`prim`, true], [`prim`, false]];
+const evalifrectest0: Eval<IfRecTrueTest> = [`prim`, true];
+type IfRecFalseTest = [`if`, IfFalsePrimTest, [`prim`, true], [`prim`, false]];
+const evalifrectest1: Eval<IfRecFalseTest> = [`prim`, false];
+type IfRetFnPattern = [
+  `if`,
+  IfFalsePrimTest,
+  [`fn`, [[`sym`, `ifa`]], [[`sym`, `AppendP`], [`sym`, `ifa`]]],
+  [`fn`, [[`sym`, `ifa`]], [[`sym`, `AppendP`], [`sym`, `ifa`]]],
+];
+type IfRetFnSexpr = [IfRetFnPattern, [`prim`, `'test'`]];
+
 
 // todo :
 // string split works but not correctly, in current.
