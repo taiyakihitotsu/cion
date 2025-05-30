@@ -10,7 +10,9 @@
     "build:watch": "npx tsc --watch",
     "check": "npx tsc --noEmit",
     "check:test": "npx tsc --noEmit --project tsconfig.test.json",
-    "run": "npx ts-node src/index.ts"
+    "format:smith": "npm --prefix submodules/condsmith run format:smith ../../src",
+    "run": "npx ts-node src/index.ts",
+    "prepare": "husky"
   },
   "repository": {
     "type": "git",
@@ -18,11 +20,9 @@
   },
   "devDependencies": {
     "@types/node": "^18.19.22",
+    "husky": "^9.1.7",
     "ts-node": "^10.9.2",
-    "typescript": "^5.5.4"
-  },
-  "dependencies": {
-    "tsc": "^2.0.4"
+    "typescript": "^5.8.3"
   },
   "author": "taiyakihitotsu <nel3_nel1@protonmail.com> https://github.com/taiyakihitotsu",
   "license": "3-clause BSD license"

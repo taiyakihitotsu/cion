@@ -1,0 +1,9 @@
+changed_files=$(git diff --cached --name-only)
+
+if echo "$changed_files" | grep -qE '^(src/|test/)'; then
+  npm run format:smith
+  npm run check
+  npm run check:test
+else
+  echo "husky is skiped."
+fi
