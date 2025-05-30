@@ -1,0 +1,3 @@
+[submodule "submodules/condsmith"]
+	path = submodules/condsmith
+	url = git@github.com:taiyakihitotsu/condsmith.git
