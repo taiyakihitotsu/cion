@@ -26,10 +26,9 @@ export type Prim = PrimString | PrimBoolean | PrimNumber | PrimTestNumber
 export type Args = Sym[];
 export type Fn = [`fn`, Args, Each | Each[] | Sexpr | Sexpr[]]
 export type Vector = [`vec`, ...(Sexpr | LetForm | Atom)[]] | [`vec`];
-export type Var = {
-  name: string;
-  value: string | Atom;
-};
+export type Var =
+{ name: string
+    , value: string | Atom }
 
 export type Env = [] | Var[];
 
