@@ -995,6 +995,17 @@ export type LispRemove<
     ? Filter<['fn', [['sym', 'aaa']], [['sym', 'not'], [f, ['sym', 'aaa']]]], vs>
   : ErrorCase<RemoveError0, "remove should have 2 args.", S>
 
+// every?
+type EveryError0 = 'EveryError0'
+type EveryError1 = 'EveryError1'
+export type LispIsEvery<
+  S> =
+  S extends [infer f, infer vs]
+    ? vs extends ['vec']
+      ? ['prim', false]
+    : Eval<[['sym', '='], [['sym', 'filter'], f, vs], vs]>
+  : ErrorCase<EveryError0, 'every should have 2 args.', S>
+
 type InterleaveError0 = "InterleaveError0"
 type InterleaveError1 = "InterleaveError1";
 export type Interleave<
@@ -1247,6 +1258,8 @@ type Builtins<
     ? LispIsSymbol<Reading<OPR, env, [[prev]]>>
   : U extends `empty?`
     ? LispIsEmpty<Reading<OPR, env, [[prev]]>>
+  : U extends `every?`
+    ? LispIsEvery<Reading<OPR, env, [[prev]]>>
   : Eval<[ReadLet<U, env>, OPR[0]], env, [prev]>
 
 type EvalError1 = "EvalError1";
