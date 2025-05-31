@@ -2,10 +2,8 @@ import type Bit from './bit.ts'
 import type Compiler from './compiler'
 import type Util from './util'
 
-import type {LetVal,LetArg,LetForm,Each,Atom,TMap,Sexpr,TNil,Keyword,Sym,PrimString,PrimBoolean,PrimTestNumber,PrimNumber,Prim,Args,Fn,Vector,Var,Env,TNotMatch,IfForm} from './sexprtypes'
+import type {LetVal,LetArg,LetForm,Each,Atom,TMap,Sexpr,TNil,Keyword,Sym,PrimString,PrimBoolean,PrimTestNumber,PrimNumber,Prim,Args,Fn,IFn,Vector,Var,Env,TNotMatch,IfForm} from './sexprtypes'
 import {VNil,VNotMatch} from './sexprtypes'
-
-
 
 // -----------------
 // -- Error Handle
@@ -18,9 +16,7 @@ type ErrorCase<
 , Msg extends string
 , S
 , Env = []> =
-  S extends ErrorMatch
-    ? S
-  : {error: Case, message: Msg, sexpr: S} & (Env extends [] ? {} : {env: Env})
+{error: Case, message: Msg, sexpr: S} & (Env extends [] ? {} : {env: Env})
 
 
 
@@ -153,7 +149,9 @@ type Reading<
 , R = []> =
   R extends Atom[]
     ? AS extends [infer H, ...infer T]
-      ? H extends Atom
+      ? H extends Sym & ['sym', infer _ extends BuiltinsUnion]
+        ? Reading<T, EnvLifo, prev, [...R, H]>
+      : H extends Atom
         ? Reading<T, EnvLifo, prev, [...R, ReadAtom<H, EnvLifo, prev>]>
       : H extends Sexpr | LetForm
         ? Reading<T, EnvLifo, prev, [...R, Eval<H, EnvLifo, prev>]>
@@ -1144,6 +1142,9 @@ export type LispThreadLast<
 // ---------------------------------------
 // -- Eval
 // ---------------------------------------
+
+type BuiltinsUnion =
+'->' | '->>' | 'str' | 'vector' | 'map' | 'filter' | 'remove' | 'reduce' | 'count' | 'concat' | 'conj' | 'first' | 'last' | 'rest' | 'butlast' | 'reverse' | 'interleave' | 'take' | 'drop' | 'assoc-in' | 'update-in' | 'assoc' | 'update' | 'get' | 'eq' | '=' | 'not' | 'and' | 'or' | '+' | '-' | '*' | '/' | '%' | 'mod' | '>' | '<' | '>=' | '<=' | 'number?' | 'string?' | 'vector?' | 'map?' | 'fn?' | 'keyword?' | 'ifn?' | 'pos-int?' | 'neg-int?' | 'odd?' | 'even?' | 'zero?' | 'symbol?' | 'empty?' | 'every?'
 
 type Builtins<
   U
