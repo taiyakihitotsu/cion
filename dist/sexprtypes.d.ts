@@ -1,0 +1,28 @@
+export type LetVal = string | Each | Each[];
+export type LetArg = [Sym, LetVal];
+export type LetForm = [`let`, (Sym | LetVal)[] | [Sym[], LetVal[]], Each | Each[] | Sexpr];
+export declare const larttest: LetArg;
+export type Each = LetForm | IfForm | Atom;
+export type Atom = ['map', Atom[]] | Sym | Prim | Fn | Vector | Keyword | TNil;
+export type TMap = Exclude<Atom, Sym | Prim | Fn | Vector | Keyword | TNil>;
+export type Sexpr = Array<Each | Each[] | Sexpr>;
+export type TNil = [];
+export declare const VNil: TNil;
+export type Keyword = [`key`, string];
+export type Sym = [`sym`, string];
+export type PrimString = ['prim', string];
+export type PrimBoolean = ['prim', boolean];
+export type PrimTestNumber = ['prim', number];
+export type PrimNumber = ['prim', string];
+export type Prim = PrimString | PrimBoolean | PrimNumber | PrimTestNumber;
+export type Args = Sym[];
+export type Fn = [`fn`, Args, Each | Each[] | Sexpr | Sexpr[]];
+export type Vector = [`vec`, ...(Sexpr | LetForm | Atom)[]] | [`vec`];
+export type Var = {
+    name: string;
+    value: string | Atom;
+};
+export type Env = [] | Var[];
+export type TNotMatch = "NotMatch";
+export declare const VNotMatch = "NotMatch";
+export type IfForm = [`if`, Each | Sexpr, Each | Sexpr, Each | Sexpr];
