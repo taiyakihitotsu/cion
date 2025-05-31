@@ -1,4 +1,4 @@
-// import type {LetVal,LetArg,LetForm,Each,Atom,TMap,Sexpr,TNil,Keyword,Sym,PrimString,PrimBoolean,PrimTestNumber,PrimNumber,Prim,Args,Fn,Vector,Var,Env,TNotMatch,IfForm} from './sexprtypes.ts'
+// import type {LetVal,LetArg,LetForm,Each,Atom,TMap,Sexpr,TNil,Keyword,Sym,PrimString,PrimBoolean,PrimTestNumber,PrimNumber,Prim,Args,Fn,IFn,Vector,Var,Env,TNotMatch,IfForm} from './sexprtypes.ts'
 // import {VNil,VNotMatch} from './sexprtypes.ts'
 
 export type LetVal = string | Each | Each[];
@@ -25,6 +25,7 @@ export type PrimNumber = ['prim', string]
 export type Prim = PrimString | PrimBoolean | PrimNumber | PrimTestNumber
 export type Args = Sym[];
 export type Fn = [`fn`, Args, Each | Each[] | Sexpr | Sexpr[]]
+export type IFn = Fn | Keyword | TMap
 export type Vector = [`vec`, ...(Sexpr | LetForm | Atom)[]] | [`vec`];
 export type Var =
 { name: string
