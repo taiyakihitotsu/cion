@@ -1,7 +1,7 @@
 import type { Eval } from '../src/index'
 import type {LetVal,LetArg,LetForm,Each,Atom,TMap,Sexpr,TNil,Keyword,Sym,PrimString,PrimBoolean,PrimTestNumber,PrimNumber,Prim,Args,Fn,Vector,Var,Env,TNotMatch,IfForm} from '../src/sexprtypes'
 
-const testttt0: Eval<[['fn', [['sym', 'a'], ['sym', 'b']], [['sym', '+'], ['sym', 'a'], ['sym', 'b']]]]> = {sexpr: ['NotMatch'], error: 'ReadingError0', message: 'sexpr is not atom list.'}
+const testttt0: Eval<[['fn', [['sym', 'a'], ['sym', 'b']], [['sym', '+'], ['sym', 'a'], ['sym', 'b']]]]> = {error: 'LispAddError1', message: '', sexpr: {sexpr: ['NotMatch'], error: 'ReadingError0', message: 'sexpr is not atom list.'}}
 const testttt2: Eval<[['fn', [['sym', 'a'], ['sym', 'b']], [['sym', '+'], ['sym', 'a'], ['sym', 'b']]], ['prim', '10'], ['prim', '11']]> = ['prim', '0000000000000101']
 
 const testfnlispeq0: Eval<
