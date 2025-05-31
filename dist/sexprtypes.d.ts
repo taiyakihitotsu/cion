@@ -17,6 +17,7 @@ export type PrimNumber = ['prim', string];
 export type Prim = PrimString | PrimBoolean | PrimNumber | PrimTestNumber;
 export type Args = Sym[];
 export type Fn = [`fn`, Args, Each | Each[] | Sexpr | Sexpr[]];
+export type IFn = Fn | Keyword | TMap;
 export type Vector = [`vec`, ...(Sexpr | LetForm | Atom)[]] | [`vec`];
 export type Var = {
     name: string;
