@@ -1008,6 +1008,16 @@ export type LispIsEvery<
     : Eval<[['sym', '='], [['sym', 'filter'], f, vs], vs]>
   : ErrorCase<EveryError0, 'every should have 2 args.', S>
 
+type SomeError0 = 'SomeError0'
+type SomeError1 = 'SomeError1'
+export type LispSome<
+  S> =
+  S extends [infer f, infer vs]
+    ? vs extends ['vec']
+      ? ['prim', false]
+    : Eval<[['sym', '->>'], vs, [['sym', 'filter'], f], ['sym', 'count'], ['sym', 'zero?'], ['sym', 'not']]>
+  : ErrorCase<EveryError0, 'every should have 2 args.', S>
+
 type InterleaveError0 = "InterleaveError0"
 type InterleaveError1 = "InterleaveError1";
 export type Interleave<
@@ -1157,7 +1167,7 @@ export type LispThreadLast<
 // ---------------------------------------
 
 type BuiltinsUnion =
-'->' | '->>' | 'str' | 'vector' | 'map' | 'filter' | 'remove' | 'reduce' | 'count' | 'concat' | 'conj' | 'first' | 'last' | 'rest' | 'butlast' | 'reverse' | 'interleave' | 'take' | 'drop' | 'assoc-in' | 'update-in' | 'assoc' | 'update' | 'get' | 'eq' | '=' | 'not' | 'and' | 'or' | '+' | '-' | '*' | '/' | '%' | 'mod' | '>' | '<' | '>=' | '<=' | 'number?' | 'string?' | 'vector?' | 'map?' | 'fn?' | 'keyword?' | 'ifn?' | 'pos-int?' | 'neg-int?' | 'odd?' | 'even?' | 'zero?' | 'symbol?' | 'empty?' | 'every?'
+'->' | '->>' | 'str' | 'vector' | 'map' | 'filter' | 'remove' | 'reduce' | 'count' | 'concat' | 'conj' | 'first' | 'last' | 'rest' | 'butlast' | 'reverse' | 'interleave' | 'take' | 'drop' | 'assoc-in' | 'update-in' | 'assoc' | 'update' | 'get' | 'eq' | '=' | 'not' | 'and' | 'or' | '+' | '-' | '*' | '/' | '%' | 'mod' | '>' | '<' | '>=' | '<=' | 'number?' | 'string?' | 'vector?' | 'map?' | 'fn?' | 'keyword?' | 'ifn?' | 'pos-int?' | 'neg-int?' | 'odd?' | 'even?' | 'zero?' | 'symbol?' | 'empty?' | 'every?' | 'some'
 
 type Builtins<
   U
@@ -1262,6 +1272,8 @@ type Builtins<
     ? LispIsEmpty<Reading<OPR, env, [[prev]]>>
   : U extends `every?`
     ? LispIsEvery<Reading<OPR, env, [[prev]]>>
+  : U extends `some`
+    ? LispSome<Reading<OPR, env, [[prev]]>>
   : Eval<[ReadLet<U, env>, OPR[0]], env, [prev]>
 
 type EvalError1 = "EvalError1";
