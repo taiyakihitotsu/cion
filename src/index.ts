@@ -792,7 +792,9 @@ export type Count<
   : ErrorCase<CountError0, '1st should be an array as an inner expression.', S>
 export type LispCount<
   S> =
-  S extends [['vec', ...infer V]]
+  S extends [Vector] & [['vec']]
+    ? ['prim', '0']
+  : S extends [Vector] & [['vec', ...infer V]]
     ? ['prim', Count<V>]
   : ErrorCase<CountError1, 'Arg of count should be vector.', S>
 
