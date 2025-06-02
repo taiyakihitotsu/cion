@@ -189,7 +189,9 @@ export type SSymlator<MSym> =
         ? [`prim`, true]
           : MSym extends 'false'
             ? [`prim`, false]
-            : [`sym`, MSym]
+            : MSym extends 'nil'
+              ? [`prim`, 'nil']
+              : [`sym`, MSym]
   : never
 
 export type SCompiler<
@@ -264,6 +266,11 @@ const compilerHashT1: Compiler.SCompiler<['{', ':a', '01', ':b', '2', ':c', '{',
 // 1
 // ['map', ['key', ':a'], ['prim', '01'], ['key', ':b'], ['prim', '10'], ['key', ':c'], ['map', ['key', ':c1'], ['prim', '101']]]
 ['map', [['key', ':a'], ['prim', '0000000000000001'], ['key', ':b'], ['prim', '0000000000000010'], ['key', ':c'], ['map', [['key', ':c1'], ['prim', '0000000000000101']]]]]
+const compilerHashT2: Compiler.SCompiler<['{', ':a', '01', ':b', '2', ':c', '{', ':c1', 'nil', '}', '}']> =
+// 1
+// ['map', ['key', ':a'], ['prim', '01'], ['key', ':b'], ['prim', '10'], ['key', ':c'], ['map', ['key', ':c1'], ['prim', '101']]]
+['map', [['key', ':a'], ['prim', '0000000000000001'], ['key', ':b'], ['prim', '0000000000000010'], ['key', ':c'], ['map', [['key', ':c1'], ['prim', 'nil']]]]]
+
 
 type CloseBracket<
   S extends string
