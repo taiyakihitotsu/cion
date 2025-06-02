@@ -1036,6 +1036,15 @@ export type LispIsNil<
     : ['prim', false]
   : ErrorCase<LispIsNilError0, '[compile error] S should be wraped with a taple.', S>
 
+type LispIsSomeError0 = 'LispIsSomeError0'
+export type LispIsSome<
+  S> =
+  S extends [infer A]
+    ? A extends TNil
+      ? ['prim', false]
+    : ['prim', true]
+  : ErrorCase<LispIsSomeError0, '[compile error] S should be wraped with a taple.', S>
+
 type InterleaveError0 = "InterleaveError0"
 type InterleaveError1 = "InterleaveError1";
 export type Interleave<
@@ -1185,7 +1194,7 @@ export type LispThreadLast<
 // ---------------------------------------
 
 type BuiltinsUnion =
-'->' | '->>' | 'str' | 'vector' | 'map' | 'filter' | 'remove' | 'reduce' | 'count' | 'concat' | 'conj' | 'first' | 'second' | 'last' | 'rest' | 'butlast' | 'reverse' | 'interleave' | 'take' | 'drop' | 'assoc-in' | 'update-in' | 'assoc' | 'update' | 'get' | 'eq' | '=' | 'not' | 'and' | 'or' | '+' | '-' | '*' | '/' | '%' | 'mod' | '>' | '<' | '>=' | '<=' | 'number?' | 'string?' | 'vector?' | 'map?' | 'fn?' | 'keyword?' | 'ifn?' | 'pos-int?' | 'neg-int?' | 'odd?' | 'even?' | 'zero?' | 'symbol?' | 'empty?' | 'every?' | 'some' | 'nil?'
+'->' | '->>' | 'str' | 'vector' | 'map' | 'filter' | 'remove' | 'reduce' | 'count' | 'concat' | 'conj' | 'first' | 'second' | 'last' | 'rest' | 'butlast' | 'reverse' | 'interleave' | 'take' | 'drop' | 'assoc-in' | 'update-in' | 'assoc' | 'update' | 'get' | 'eq' | '=' | 'not' | 'and' | 'or' | '+' | '-' | '*' | '/' | '%' | 'mod' | '>' | '<' | '>=' | '<=' | 'number?' | 'string?' | 'vector?' | 'map?' | 'fn?' | 'keyword?' | 'ifn?' | 'pos-int?' | 'neg-int?' | 'odd?' | 'even?' | 'zero?' | 'symbol?' | 'empty?' | 'every?' | 'some' | 'nil?' | 'some?'
 
 type Builtins<
   U
@@ -1296,6 +1305,8 @@ type Builtins<
     ? LispSome<Reading<OPR, env, [[prev]]>>
   : U extends `nil?`
     ? LispIsNil<Reading<OPR, env, [[prev]]>>
+  : U extends `some?`
+    ? LispIsSome<Reading<OPR, env, [[prev]]>>
   : Eval<[ReadLet<U, env>, OPR[0]], env, [prev]>
 
 type EvalError1 = "EvalError1";
