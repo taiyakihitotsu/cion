@@ -650,6 +650,13 @@ export type LispGet<
     ? Get<Idx, Vec>
   : ErrorCase<LispGetError0, "this is not map and key or vector and idx-num.", S>
 
+type LispSecondError0 = "LispSecondError0"
+export type LispSecond<
+  S> =
+  S extends [Vector]
+    ? LispGet<[...S, ['prim', '0000000000000001']]>
+  : ErrorCase<LispSecondError0, "arg should be a vector.", S>
+
 type AssocError0 = 'AssocError0'
 type AssocError1 = 'AssocError1'
 type AssocError2 = 'AssocError2'
@@ -1167,7 +1174,7 @@ export type LispThreadLast<
 // ---------------------------------------
 
 type BuiltinsUnion =
-'->' | '->>' | 'str' | 'vector' | 'map' | 'filter' | 'remove' | 'reduce' | 'count' | 'concat' | 'conj' | 'first' | 'last' | 'rest' | 'butlast' | 'reverse' | 'interleave' | 'take' | 'drop' | 'assoc-in' | 'update-in' | 'assoc' | 'update' | 'get' | 'eq' | '=' | 'not' | 'and' | 'or' | '+' | '-' | '*' | '/' | '%' | 'mod' | '>' | '<' | '>=' | '<=' | 'number?' | 'string?' | 'vector?' | 'map?' | 'fn?' | 'keyword?' | 'ifn?' | 'pos-int?' | 'neg-int?' | 'odd?' | 'even?' | 'zero?' | 'symbol?' | 'empty?' | 'every?' | 'some'
+'->' | '->>' | 'str' | 'vector' | 'map' | 'filter' | 'remove' | 'reduce' | 'count' | 'concat' | 'conj' | 'first' | 'second' | 'last' | 'rest' | 'butlast' | 'reverse' | 'interleave' | 'take' | 'drop' | 'assoc-in' | 'update-in' | 'assoc' | 'update' | 'get' | 'eq' | '=' | 'not' | 'and' | 'or' | '+' | '-' | '*' | '/' | '%' | 'mod' | '>' | '<' | '>=' | '<=' | 'number?' | 'string?' | 'vector?' | 'map?' | 'fn?' | 'keyword?' | 'ifn?' | 'pos-int?' | 'neg-int?' | 'odd?' | 'even?' | 'zero?' | 'symbol?' | 'empty?' | 'every?' | 'some' 
 
 type Builtins<
   U
@@ -1198,6 +1205,8 @@ type Builtins<
     ? LispConj<Reading<OPR, env, [[prev]]>>
   : U extends `first`
     ? LispFirst<Reading<OPR, env, [[prev]]>>
+  : U extends `second`
+    ? LispSecond<Reading<OPR, env, [[prev]]>>
   : U extends `last`
     ? LispLast<Reading<OPR, env, [[prev]]>>
   : U extends `rest`
