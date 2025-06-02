@@ -13,8 +13,8 @@ export type Atom = ['map', Atom[]] | Sym | Prim | Fn | Vector | Keyword | TNil
 export type TMap = Exclude<Atom, Sym | Prim | Fn | Vector | Keyword | TNil>
 
 export type Sexpr = Array<Each | Each[] | Sexpr>;
-export type  TNil = [];
-export const VNil: TNil = [];
+export type  TNil = ['prim', 'nil']
+export const VNil: TNil = ['prim', 'nil']
 
 export type Keyword = [`key`, string]
 export type Sym = [`sym`, string];

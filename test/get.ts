@@ -14,7 +14,7 @@ const evallisp_get_2: IsKeyMapSexpr<[['map', [['key', ':a'], ['prim', '0']]],['k
 const evallisp_get_3: Eval<[['map', [['key', ':a'], ['prim', '0']]], ['key', ':a']]> = ['prim', '0']
 
 const test_get_0: LispGet<[['map', [['key', ':a'], ['prim', '0']]], ['key', ':a']]> = ['prim', '0']
-const test_get_1: LispGet<[['map', [['key', ':'], ['prim', '0']]], ['key', ':a']]> = []
+const test_get_1: LispGet<[['map', [['key', ':'], ['prim', '0']]], ['key', ':a']]> = VNil
 
 const testget0: Get<
   ['prim', '11'],

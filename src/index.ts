@@ -222,7 +222,7 @@ type _LispOr<
   S extends []
     ? false
   : S extends [infer Fst, ...infer Rest]
-    ? Fst extends [`prim`, false] | [`prim`, 'nil']
+    ? Fst extends [`prim`, false] | TNil
       ? _LispOr<Rest>
     : true
   : never
@@ -507,7 +507,9 @@ export type LispIsZero<
   S> =
   S extends [['prim', infer N extends string]]
     ? Bit.BitIsZero<N> extends true
-      ? ['prim', true]
+      ? N extends 'nil'
+        ? ['prim', false]
+      : ['prim', true]
     : ['prim', false]
   : ['prim', false]
 
