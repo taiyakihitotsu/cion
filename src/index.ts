@@ -506,7 +506,7 @@ export type LispIsEven<
 export type LispIsZero<
   S> =
   S extends [['prim', infer N extends string]]
-    ? N extends '0'
+    ? Bit.BitIsZero<N> extends true
       ? ['prim', true]
     : ['prim', false]
   : ['prim', false]
