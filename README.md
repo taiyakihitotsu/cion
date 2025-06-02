@@ -83,7 +83,7 @@ const test_in_doc_def7: test_in_doc_def6 = '10'
  - map, filter, remove, reduce
  - conj, concat, interleave, reverse
  - assoc, assoc-in, update, update-in
- - first, last, rest, butlast, get
+ - first, second, last, rest, butlast, get
  - ... and vector ```[0 1 2]``` & map ```{:x 0 :y 1 :z 2}``` syntax.
 
 
