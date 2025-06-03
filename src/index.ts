@@ -1439,6 +1439,7 @@ const evalprimerrortest: Eval<[`prim`, 0]> = [`prim`, 0];
 export namespace Cion {
   export type RawLisp<S extends string> = Eval<Compiler.SCompiler<Compiler.SParser<Compiler.SPad<S>>>>
   export type Lisp<S extends string> = Compiler.Unparse<RawLisp<S>>
+  export type CionParser<S extends string> = Compiler.SParser<Compiler.SPad<S>>
 }
 
 export default Cion
