@@ -1358,6 +1358,8 @@ export type Eval<
           : LispGet<Reading<[OPC, ...OPR], env, [[prev]]>>
         : OPC extends LetForm
           ? Eval<[Eval<OPC, env, [[prev]]>, ...OPR], env, [prev]>
+        : OPC extends Sexpr
+          ? Eval<[Eval<OPC, env, [[prev]]>, ...OPR], env, [prev]>
         : ErrorCase<EvalError4, `the 1st is not a symbol but it should be.`, A, env>
       : ErrorCase<EvalError6, `env 1st should not be [].`, A, env>
     : ErrorCase<EvalError2, ``, A, env>

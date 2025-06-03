@@ -1,3 +1,4 @@
+import type Cion from '../src/index'
 import type { Eval } from '../src/index'
 import type {LetVal,LetArg,LetForm,Each,Atom,TMap,Sexpr,TNil,Keyword,Sym,PrimString,PrimBoolean,PrimTestNumber,PrimNumber,Prim,Args,Fn,Vector,Var,Env,TNotMatch,IfForm} from '../src/sexprtypes'
 
@@ -36,3 +37,9 @@ const testmultiargfn0: Eval<
     [`prim`, `'1'`],
   ]
 > = [`prim`, `'01'`];
+
+// fn arg
+const maintest_fn0: Cion.Lisp<'((fn [n] (n 1)) (fn [m] (+ 1 m)))'> = '2'
+const maintest_fn1: Cion.Lisp<'(let [b (fn [m] (+ 1 m))] ((fn [n] (n 1)) b))'> = '2'
+const maintest_fn2: Cion.Lisp<'(((fn [n] (fn [m] (+ n m 1))) 1) ((fn [] 1)))'> = '3'
+const maintest_fn3: Cion.Lisp<'(((fn [n] (fn [m] (+ n m 1))) 1) 1)'> = '3'
