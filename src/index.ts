@@ -1343,13 +1343,14 @@ export type Eval<
         ? OPC extends Fn & [`fn`, infer syms, infer D]
           ? Eval<[`let`, Interleave<syms, OPR>, D], env, [prev]>
         : OPC extends IfForm & [`if`, infer IFCond, infer IFT, infer IFF]
-          // point (A)
           ? Eval<[If<Eval<IFCond, env, [[prev]]>, IFT, IFF>, OPR[0]], env, [prev]>
         : OPC extends Sym & [`sym`, infer U]
           ? ReadLet<U, env> extends TNotMatch
             ? Builtins<U,OPR,env,prev>
           : ReadLet<U, env> extends Fn | Keyword | TMap & infer UU
             ? Eval<[UU, ...OPR], env, [prev]>
+          : ReadLet<U, env> extends BuiltinsUnion & infer UU
+            ? Eval<[['sym', UU], ...OPR], env, [prev]>
           : ErrorCase<EvalError3, `1st arg should be fn/keyword/map.`, A, env>
         : IsKeyMapSexpr<ReadLetRecur<A, env>, env> extends true
           ? IsKeyword<OPC> extends true
@@ -1397,7 +1398,9 @@ export type Eval<
       : LV extends Prim & [`prim`, infer _]
         ? Eval<LC, Let<LN, LV, env>, [prev]>
       : LV extends Sym & [`sym`, infer LP]
-        ? Eval<LC, Let<LN, ReadLet<LP, env>, env>, [prev]>
+        ? LP extends BuiltinsUnion
+          ? Eval<LC, Let<LN, LP, env>, [prev]>
+        : Eval<LC, Let<LN, ReadLet<LP, env>, env>, [prev]>
       : LV extends LetForm
         ? Eval<[`let`, [[`sym`, LN], Eval<LV, env, [prev]>], LC], env, [prev]>
       : LV extends Fn
