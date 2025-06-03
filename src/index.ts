@@ -1343,11 +1343,8 @@ export type Eval<
         ? OPC extends Fn & [`fn`, infer syms, infer D]
           ? Eval<[`let`, Interleave<syms, OPR>, D], env, [prev]>
         : OPC extends IfForm & [`if`, infer IFCond, infer IFT, infer IFF]
-          ? Eval< // point (A)
-              [If<Eval<IFCond, env, [[prev]]>, IFT, IFF>, OPR[0]],
-              env,
-              [prev]
-            >
+          // point (A)
+          ? Eval<[If<Eval<IFCond, env, [[prev]]>, IFT, IFF>, OPR[0]], env, [prev]>
         : OPC extends Sym & [`sym`, infer U]
           ? ReadLet<U, env> extends TNotMatch
             ? Builtins<U,OPR,env,prev>
@@ -1394,31 +1391,15 @@ export type Eval<
       ? A extends [`let`, [infer letsyms, infer letvals], infer LC]
         ? Eval<[`let`, Interleave<letsyms, letvals>, LC], env, [prev]>
       : ErrorCase<EvalError5, '', A, env>
-    : A extends [
-                `let`,
-                [[`sym`, infer LN], infer LV, ...infer LRest],
-                infer LC,
-              ]
+    : A extends [`let`, [[`sym`, infer LN], infer LV, ...infer LRest], infer LC]
       ? LRest extends [[`sym`, infer LRLN], infer LRLV, ...infer RRest]
-        ? Eval<
-                  [
-                    `let`,
-                    [[`sym`, LN], LV],
-                    [`let`, [[`sym`, LRLN], LRLV, ...RRest], LC],
-                  ],
-                  env,
-                  [prev]
-                >
+        ? Eval<[`let`, [[`sym`, LN], LV], [`let`, [[`sym`, LRLN], LRLV, ...RRest], LC]], env, [prev]>
       : LV extends Prim & [`prim`, infer _]
         ? Eval<LC, Let<LN, LV, env>, [prev]>
       : LV extends Sym & [`sym`, infer LP]
         ? Eval<LC, Let<LN, ReadLet<LP, env>, env>, [prev]>
       : LV extends LetForm
-        ? Eval<
-                        [`let`, [[`sym`, LN], Eval<LV, env, [prev]>], LC],
-                        env,
-                        [prev]
-                      >
+        ? Eval<[`let`, [[`sym`, LN], Eval<LV, env, [prev]>], LC], env, [prev]>
       : LV extends Fn
         ? Eval<LC, Let<LN, LV, env>, [prev]>
       : LV extends Sexpr | Atom
