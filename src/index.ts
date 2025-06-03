@@ -1321,7 +1321,7 @@ type EvalError8 = "EvalError8";
 type EvalError9 = "EvalError9";
 type EvalError10 = "EvalError10";
 type EvalError11 =
-"EvalError11/ Some of elements type in SEXPR doesn't satisfy EACH."
+"EvalError11"
 type EvalError12 = "EvalError12";
 type EvalError13 = "EvalError13"
 type EvalError14 = "EvalError14"
@@ -1427,7 +1427,9 @@ export type Eval<
     : A extends ['let', [], infer Sexpr]
       ? Eval<Sexpr, env, [prev]>
     : ErrorCase<EvalError8, 'this is not proper let-form.', A, env>
-  : { error: [EvalError11, prev, A] }
+  : { sexpr: A
+    , message: `Some of Elem isn't Sexpr.`
+    , error: EvalError11 } 
 
 const evalatomtest: Eval<[`prim`, `'test'`]> = [`prim`, `'test'`];
 const evalatomtest2: Eval<[`sym`, `test`], [[MakeVar<`test`, `'testval'`>]]> = [

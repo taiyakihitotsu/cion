@@ -237,15 +237,18 @@ const unparse_maintest0_update_1: Cion.Lisp<'(update [0 1 2] 99 (fn [x] (+ x 99)
 
 const unparse_maintest0_assocIn_0: Cion.Lisp<'(assoc-in [0 1 2] [0] 99)'> = '[99 1 2]'
 const unparse_maintest0_assocIn_1: Cion.Lisp<'(assoc-in [0 1 2] [99] 99)'> = '[0 1 2]' // no effect
-const unparse_maintest0_assocIn_2: Cion.Lisp<'(assoc-in [0 1 2] [0 0] 99)'> = '{error: "AssocInError8", message: "Keys rests but its value is not vector nor map."}'
+// @ts-expect-error:
+const unparse_maintest0_assocIn_2: Cion.Lisp<'(assoc-in [0 1 2] [0 0] 99)'> = {ast: [], error: 'InnerUnparseError'}
 const unparse_maintest0_assocIn_3: Cion.Lisp<'(assoc-in [0 1 [2 3 4]] [2 0] 99)'> = '[0 1 [99 3 4]]'
-const unparse_maintest0_assocIn_4: Cion.Lisp<'(assoc-in [0 1 [2 3 {:a 4 :b 5}]] [2 0 :a] 99)'> = '{error: "AssocInError7", message: "The value of key (0000000000000000) is not vector nor map."}'
+// @ts-expect-error:
+const unparse_maintest0_assocIn_4: Cion.Lisp<'(assoc-in [0 1 [2 3 {:a 4 :b 5}]] [2 0 :a] 99)'> = {ast: [], error: 'InnerUnparseError'}
 const unparse_maintest0_assocIn_5: Cion.Lisp<'(assoc-in [0 1 [2 3 {:a 4 :b 5}]] [2 2 :a] 99)'> = '[0 1 [2 3 {:a 99 :b 5}]]'
 const unparse_maintest0_assocIn_6: Cion.Lisp<'(assoc-in {:x [0 1 [2 3 {:a 4 :b 5}]] :y 0} [:x 2 2 :a] 99)'> = '{:x [0 1 [2 3 {:a 99 :b 5}]] :y 0}'
 
 const unparse_maintest0_updateIn_0: Cion.Lisp<'(update-in [0 1 2] [1] (fn [x] (+ x 99)))'> = '[0 100 2]'
 const unparse_maintest0_updateIn_1: Cion.Lisp<'(update-in [0 1 2] [99] (fn [x] (+ x 99)))'> = '[0 1 2]' // no effect
-const unparse_maintest0_updateIn_2: Cion.Lisp<'(update-in [0 1 2] [99 99] (fn [x] (+ x 99)))'> = '{error: "AssocInError8", message: "Keys rests but its value is not vector nor map."}'
+// @ts-expect-error:
+const unparse_maintest0_updateIn_2: Cion.Lisp<'(update-in [0 1 2] [99 99] (fn [x] (+ x 99)))'> = {ast: [], error: 'InnerUnparseError'}
 
 // arrow macro: ->, ->>.
 

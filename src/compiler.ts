@@ -383,16 +383,16 @@ export type _Unparse<
       ? _Unparse<r, 'map'>
 
     : H extends ['fn', infer r0, infer r1]
-      ? CloseBracket<`fn ${_Unparse<r0, 'vec'>} ${_Unparse<r1>}`, 'list'>
+      ? CloseBracket<`fn ${(_Unparse<r0, 'vec'> extends infer s ? s extends string ? s : '' : '')} ${(_Unparse<r1> extends infer s ? s extends string ? s : '' : '')}`, 'list'>
     : H extends ['let', infer r0, infer r1]
-      ? CloseBracket<`let ${_Unparse<r0, 'vec'>} ${_Unparse<r1>}`, 'list'>
+      ? CloseBracket<`let ${(_Unparse<r0, 'vec'> extends infer s ? s extends string ? s : '' : '')} ${(_Unparse<r1> extends infer s ? s extends string ? s : '' : '')}`, 'list'>
     : H extends ['if', infer r0, infer r1, ...infer r2]
-      ? CloseBracket<`if ${_Unparse<r0>} ${_Unparse<r1>}${r2 extends [] ? '' : ' '}${_Unparse<r2, 'atom'>}`, Type>
+      ? CloseBracket<`if ${(_Unparse<r0> extends infer s ? s extends string ? s : '' : '')} ${(_Unparse<r1> extends infer s ? s extends string ? s : '' : '')}${r2 extends [] ? '' : ' '}${(_Unparse<r2, 'atom'> extends infer s ? s extends string ? s : '' : '')}`, Type>
     : H extends [infer H extends unknown[], ...infer T]
-      ? CloseBracket<`${_Unparse<H>}${T extends [] ? '' : ' '}${_Unparse<T, 'atom'>}`, Type>
+      ? CloseBracket<`${(_Unparse<H> extends infer s ? s extends string ? s : '' : '')}${T extends [] ? '' : ' '}${(_Unparse<T, 'atom'> extends infer s ? s extends string ? s : '' : '')}`, Type>
     : H extends []
       ? ''
-    : `{error: "${GetErrorStr<'error', AST>}", message: "${GetErrorStr<'message', AST>}"}`
+    : {ast: AST, error: 'InnerUnparseError'}
   : never
 
 export type Unparse<AST> = _Unparse<AST> extends infer r ? r extends '' ? 'nil' : r : never
