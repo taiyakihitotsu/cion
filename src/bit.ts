@@ -468,6 +468,18 @@ const testbitmod1: BitMod<"00001001", "00000011"> =  `${CurPad}00000000`
 const testbitmod2: BitMod<"00001001", "00000010"> =  `${CurPad}00000001`
 const testbitmod3: BitMod<"00001001", "00000000"> = nil
 const testbitmod4: BitMod<"00000010", "00001010"> =  `${CurPad}00000010`
+
+export type BitDec<B extends string> = BitSub<B, "0000000000000001">
+export type BitInc<B extends string> = BitAdd<B, "0000000000000001">
+
+const testbitdec0: BitDec<"0000000000000001"> = "0000000000000000"
+const testbitdec1: BitDec<"0000000000000000"> = "1111111111111111"
+const testbitdec2: BitDec<"0000000000000100"> = "0000000000000011"
+
+const testbitinc0: BitInc<"0000000000000000"> = "0000000000000001"
+const testbitinc1: BitInc<"1111111111111111"> = "0000000000000000"
+const testbitinc2: BitInc<"0000000000000011"> = "0000000000000100"
+
 }
 
 export default Bit
