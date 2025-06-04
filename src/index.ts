@@ -1193,7 +1193,7 @@ export type LispThreadLast<
 // -- Eval
 // ---------------------------------------
 
-type BuiltinsUnion =
+export type BuiltinsUnion =
 '->' | '->>' | 'str' | 'vector' | 'map' | 'filter' | 'remove' | 'reduce' | 'count' | 'concat' | 'conj' | 'first' | 'second' | 'last' | 'rest' | 'butlast' | 'reverse' | 'interleave' | 'take' | 'drop' | 'assoc-in' | 'update-in' | 'assoc' | 'update' | 'get' | 'eq' | '=' | 'not' | 'and' | 'or' | '+' | '-' | '*' | '/' | '%' | 'mod' | '>' | '<' | '>=' | '<=' | 'number?' | 'string?' | 'vector?' | 'map?' | 'fn?' | 'keyword?' | 'ifn?' | 'pos-int?' | 'neg-int?' | 'odd?' | 'even?' | 'zero?' | 'symbol?' | 'empty?' | 'every?' | 'some' | 'nil?' | 'some?'
 
 type Builtins<
@@ -1440,6 +1440,7 @@ export namespace Cion {
   export type RawLisp<S extends string> = Eval<Compiler.SCompiler<Compiler.SParser<Compiler.SPad<S>>>>
   export type Lisp<S extends string> = Compiler.Unparse<RawLisp<S>>
   export type CionParser<S extends string> = Compiler.SParser<Compiler.SPad<S>>
+  export type Builtins = BuiltinsUnion
 }
 
 export default Cion
