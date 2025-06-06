@@ -1,0 +1,154 @@
+import type regex from '../src/regex'
+import type Bit from '../src/bit'
+import type { tZero, tOne, tTwo } from '../src/strutil'
+import { vZero, vOne, vTwo } from '../src/strutil'
+
+// type  Zero = '0000000000000000'
+// type  One  = '0000000000000001'
+// type  Two  = '0000000000000010'
+// const Zero = '0000000000000000'
+// const One  = '0000000000000001'
+// const Two  = '0000000000000010'
+
+// note : should test zero pattern.
+const test_mloop0: regex.MatchLoop<'xxxxx', 'xx', 'char', tOne>     = [['xx', 'xxx'], vOne]
+const test_mloop1: regex.MatchLoop<'xxxxx', 'xx', 'pattern'>       = [['xx', 'x'], '0000000000000010']
+const test_mloop1a: regex.MatchLoop<'xxxxx', 'xx', 'pattern', tOne> = [['xx', 'xxx'], vOne]
+const test_mloop2: regex.MatchLoop<'xxxxx', 'x', 'char'>           = [['x', ''], '0000000000000101']
+const test_mloop3: regex.MatchLoop<'xxxxxx', 'x', 'char'>          = [['x', ''], '0000000000000110']
+const test_mloop2a: regex.MatchLoop<'xxxxx', 'x', 'char', Bit.BitInc<tOne>> = [['x', 'xxx'], '0000000000000010']
+const test_mloop3a: regex.MatchLoop<'xxxxxx', 'x', 'char', Bit.BitInc<Bit.BitInc<tOne>>> = [['x', 'xxx'], '0000000000000011']
+const test_mloop4: regex.MatchLoop<'xxxyxxx', 'x', 'char'>                  = [['x', 'yxxx'], '0000000000000011']
+const test_mloop5: regex.MatchLoop<'xxxyxxx', 'x', 'char', Bit.BitInc<tOne>> = [['x', 'xyxxx'], '0000000000000010']
+// dot
+const dot_test_mloop0: regex.MatchLoop<'xxxxx', 'xx', 'char', tOne>     = [['xx', 'xxx'], vOne]
+const dot_test_mloop1: regex.MatchLoop<'xxxxx', 'xx', 'pattern'>       = [['xx', 'x'], '0000000000000010']
+const dot_test_mloop1a: regex.MatchLoop<'xxxxx', 'xx', 'pattern', tOne> = [['xx', 'xxx'], vOne]
+const dot_test_mloop2: regex.MatchLoop<'xxxxx', 'x', 'char'>           = [['x', ''], '0000000000000101']
+const dot_test_mloop3: regex.MatchLoop<'xxxxxx', 'x', 'char'>          = [['x', ''], '0000000000000110']
+const dot_test_mloop2a: regex.MatchLoop<'xxxxx', 'x', 'char', Bit.BitInc<tOne>> = [['x', 'xxx'], '0000000000000010']
+const dot_test_mloop3a: regex.MatchLoop<'xxxxxx', 'x', 'char', Bit.BitInc<Bit.BitInc<tOne>>> = [['x', 'xxx'], '0000000000000011']
+const dot_test_mloop4: regex.MatchLoop<'xxxyxxx', 'x', 'char'> = [['x', 'yxxx'], '0000000000000011']
+const dot_test_mloop5: regex.MatchLoop<'xxxyxxx', 'x', 'char', Bit.BitInc<tOne>> = [['x', 'xyxxx'], '0000000000000010']
+
+// test
+const test_comp0: regex.Comp<'ssss'> = [['s'],['s'],['s'],['s']]
+const test_comp0a: regex.Comp<'s(ss)s'> = [['s'], ['ss'], ['s']]
+const test_comp0b: regex.Comp<'s(s|x)s'> = [['s'], ['s', 'x'], ['s']]
+const test_comp0xa: regex.Comp<'s[ss]s'> = [['s'], ['s', 's'], ['s']]
+const test_comp0xb: regex.Comp<'s[sx]s'> = [['s'], ['s', 'x'], ['s']]
+const test_comp0y: regex.Comp<'ss+ss'> = [['s'],['s'], [['s'], '*'] ,['s'],['s']]
+const test_comp0yy: regex.Comp<'sss+ss'> = [['s'],['s'],['s'],[['s'], '*'] ,['s'],['s']]
+const test_comp0ya: regex.Comp<'s(ss)s'> = [['s'], ['ss'], ['s']]
+const test_comp0yaa: regex.Comp<'s(ss)+s'> = [['s'], ['ss'], [['ss'], '*'], ['s']]
+const test_comp0yaaa: regex.Comp<'s(ss|x)+s'> = [['s'], ['ss', 'x'], [['ss', 'x'], '*'], ['s']]
+const test_comp0yb: regex.Comp<'s(s|x)s'> = [['s'], ['s', 'x'], ['s']]
+const test_comp0yxa: regex.Comp<'s[ss]s'> = [['s'], ['s', 's'], ['s']]
+const test_comp0yxb: regex.Comp<'s[sx]s'> = [['s'], ['s', 'x'], ['s']]
+const test_comp0yxba: regex.Comp<'s[sx]?s'> = [['s'], [['s', 'x'], '?'], ['s']]
+// -- ^
+const test_fcomp0yb:  regex.Comp<'^s(s|x)s'> = [['^'], ['s'], ['s', 'x'], ['s']]
+const test_fcomp0yxa: regex.Comp<'^s[ss]s'> = [['^'], ['s'], ['s', 's'], ['s']]
+const test_fcomp0yxb: regex.Comp<'^s[sx]s'> = [['^'], ['s'], ['s', 'x'], ['s']]
+// -- $
+const test_tcomp0yb:  regex.Comp<'s(s|x)s$'> = [['s'], ['s', 'x'], ['s'], ['$']]
+const test_tcomp0yxa: regex.Comp<'s[ss]s$'> = [['s'], ['s', 's'], ['s'], ['$']]
+const test_tcomp0yxb: regex.Comp<'s[sx]s$'> = [['s'], ['s', 'x'], ['s'], ['$']]
+// -- {n,m}
+const test_nmcompa0: regex.Comp<'s[sx]s{1,2}ss'> = [['s'], ['s', 'x'], [['s'], [['0000000000000001', '0000000000000010'], 'times']], ['s'], ['s']]
+const test_nmcompa1: regex.Comp<'s[sx]{1,2}ss'> = [['s'], [['s', 'x'], [['0000000000000001', '0000000000000010'], 'times']], ['s'], ['s']]
+const test_nmcompa0x: regex.Comp<'s[sx]s{1,15}ss'> = [['s'], ['s', 'x'], [['s'], [['0000000000000001', '0000000000001111'], 'times']], ['s'], ['s']]
+const test_nmcompa1x: regex.Comp<'s[sx]{1,15}ss'> = [['s'], [['s', 'x'], [['0000000000000001', '0000000000001111'], 'times']], ['s'], ['s']]
+const test_nmcompa0y: regex.Comp<'s[sx]s{15,16}ss'> = [['s'], ['s', 'x'], [['s'], [['0000000000001111', '0000000000010000'], 'times']], ['s'], ['s']]
+const test_nmcompa1y: regex.Comp<'s[sx]{15,16}ss'> = [['s'], [['s', 'x'], [['0000000000001111', '0000000000010000'], 'times']], ['s'], ['s']]
+
+
+// test
+const evaltest_comp0: regex.TapeEval<'ssssssss', regex.Comp<'ssss'>> = ['s', 'ssss']
+const evaltest_comp0a: regex.TapeEval<'ssssssss', regex.Comp<'s(ss)s'>> = ['s', 'ssss']
+const evaltest_comp0b: regex.TapeEval<'ssssssss', regex.Comp<'s(s|x)s'>> = ['s', 'sssss']
+const evaltest_comp0xa: regex.TapeEval<'ssssssss', regex.Comp<'s[ss]s'>> = ['s', 'sssss']
+const evaltest_comp0xb: regex.TapeEval<'ssssssss', regex.Comp<'s[sx]s'>> = ['s', 'sssss']
+const evaltest_comp0g: regex.TapeEval<'ssssxssss', regex.Comp<'ssss'>> = ['s', 'xssss']
+const evaltest_comp0g1: regex.TapeEval<'ssssxssss', regex.Comp<'ssx'>> = []
+const evaltest_comp0ga: regex.TapeEval<'ssssxssss', regex.Comp<'s(ss)s'>> = ['s', 'xssss']
+const evaltest_comp0gb: regex.TapeEval<'ssssxssss', regex.Comp<'s(s|x)s'>> = ['s', 'sxssss']
+const evaltest_comp0gxa: regex.TapeEval<'ssssxssss', regex.Comp<'s[ss]s'>> = ['s', 'sxssss']
+const evaltest_comp0gxb: regex.TapeEval<'ssssxssss', regex.Comp<'s[sx]s'>> = ['s', 'sxssss']
+
+const evaltest_comp0by: regex.TapeEval<'sssssxuss', regex.Comp<'ss+xu'>> = ['u', 'ss']
+const evaltest_comp0byy: regex.TapeEval<'sssssssssssssssssxu', regex.Comp<'sss+xu'>> = ['u', '']
+const evaltest_comp0y: regex.TapeEval<'ssssssss', regex.Comp<'ss+ss'>> = [] // illegal as greedy
+const evaltest_comp0yy: regex.TapeEval<'ssssssss', regex.Comp<'sss+ss'>> = [] // illegal as greedy
+const evaltest_comp0ya: regex.TapeEval<'ssssssss', regex.Comp<'s(ss)s'>> = ['s', 'ssss']
+const evaltest_comp0yaa: regex.TapeEval<'ssssssss', regex.Comp<'s(ss)+s'>> = ['s', '']
+const evaltest_comp0yaaa: regex.TapeEval<'ssssssss', regex.Comp<'s(ss|x)+s'>> = ['s', '']
+const evaltest_comp0yb: regex.TapeEval<'ssssssss', regex.Comp<'s(s|x)s'>> = ['s', 'sssss']
+const evaltest_comp0yxa: regex.TapeEval<'ssssssss', regex.Comp<'s[ss]s'>> = ['s', 'sssss']
+const evaltest_comp0yxb: regex.TapeEval<'ssssssss', regex.Comp<'s[sx]s'>> = ['s', 'sssss']
+
+const evaltestq_comp0: regex.TapeEval<'ssssssss', regex.Comp<'sss?s'>> = ['s', 'ssss']
+const evaltestq_comp0a: regex.TapeEval<'ssssssss', regex.Comp<'s(ss)?s'>> = ['s', 'ssss']
+const evaltestq_comp0b: regex.TapeEval<'ssssssss', regex.Comp<'s(s|x)?s'>> = ['s', 'sssss']
+const evaltestq_comp0xa: regex.TapeEval<'ssssssss', regex.Comp<'s[ss]?s'>> = ['s', 'sssss']
+const evaltestq_comp0xb: regex.TapeEval<'ssssssss', regex.Comp<'s[sx]?s'>> = ['s', 'sssss']
+const evaltestq_comp0g: regex.TapeEval<'ssssxssss', regex.Comp<'ss?ss'>> = ['s', 'xssss']
+const evaltestq_comp0ga: regex.TapeEval<'ssssxssss', regex.Comp<'s(ss)?s'>> = ['s', 'xssss']
+const evaltestq_comp0gb: regex.TapeEval<'ssssxssss', regex.Comp<'s(s|x)?s'>> = ['s', 'sxssss']
+const evaltestq_comp0gxa: regex.TapeEval<'ssssxssss', regex.Comp<'s[ss]?s'>> = ['s', 'sxssss']
+const evaltestq_comp0gxb: regex.TapeEval<'ssssxssss', regex.Comp<'s[sx]?s'>> = ['s', 'sxssss']
+
+const evaltestqf_comp0: regex.TapeEval<'ssssssss', regex.Comp<'ssx?s'>> = ['s', 'sssss']
+const evaltestqf_comp0a: regex.TapeEval<'ssssssss', regex.Comp<'s(ab)?s'>> = ['s', 'ssssss']
+const evaltestqf_comp0b: regex.TapeEval<'ssssssss', regex.Comp<'s(y|x)?s'>> = ['s', 'ssssss']
+const evaltestqf_comp0xa: regex.TapeEval<'ssssssss', regex.Comp<'s[jg]?s'>> = ['s', 'ssssss']
+const evaltestqf_comp0xb: regex.TapeEval<'ssssssss', regex.Comp<'s[kx]?s'>> = ['s', 'ssssss']
+const evaltestqf_comp0g: regex.TapeEval<'ssssxssss', regex.Comp<'sn?ss'>> = ['s', 'sxssss']
+const evaltestqf_comp0ga: regex.TapeEval<'ssssxssss', regex.Comp<'s(xd)?s'>> = ['s', 'ssxssss']
+const evaltestqf_comp0gb: regex.TapeEval<'ssssxssss', regex.Comp<'s(d|x)?s'>> = ['s', 'ssxssss']
+const evaltestqf_comp0gxa: regex.TapeEval<'ssssxssss', regex.Comp<'s[ed]?s'>> = ['s', 'ssxssss']
+const evaltestqf_comp0gxb: regex.TapeEval<'ssssxssss', regex.Comp<'sss[cx]?s'>> = ['s', 'xssss']
+const evaltestqf_comp0gxc: regex.TapeEval<'ssssxssss', regex.Comp<'ssss[cx]?s'>> = ['s', 'sss']
+
+const evaltesttms_comp0: regex.TapeEval<'ssssssss', regex.Comp<'ss{1,2}x?s'>> = ['s', 'ssss']
+
+const evaltesttms_comp0a1: regex.TapeEval<'ssabssss', regex.Comp<'s(ab){1,1}s'>> = []
+const evaltesttms_comp0a2: regex.TapeEval<'ssabssss', regex.Comp<'s(ab){1,2}s'>> = []
+const evaltesttms_comp0a3: regex.TapeEval<'ssabssss', regex.Comp<'ss(ab){0,2}s'>> = ['s', 'sss']
+const evaltesttms_comp0a4: regex.TapeEval<'ssssss', regex.Comp<'ss(ab){0,2}s'>> = ['s', 'sss']
+const evaltesttms_comp0a1x: regex.TapeEval<'ssababssss', regex.Comp<'ss(ab){1,1}s'>> = []
+const evaltesttms_comp0a2x: regex.TapeEval<'ssababssss', regex.Comp<'ss(ab){1,2}s'>> = ['s', 'sss']
+const evaltesttms_comp0a3x: regex.TapeEval<'ssabssss', regex.Comp<'ss(ab){0,2}s'>> = ['s', 'sss']
+const evaltesttms_comp0a4x: regex.TapeEval<'ssssss', regex.Comp<'ss(ab){0,2}s'>> = ['s', 'sss']
+const evaltesttms_comp0b: regex.TapeEval<'ssssssss', regex.Comp<'s(y|x){1,2}s'>> = []
+const evaltesttms_comp0bb: regex.TapeEval<'ssssssss', regex.Comp<'s(y|x){0,2}s'>> = ['s', 'ssssss']
+const evaltesttms_comp0xa: regex.TapeEval<'ssssssss', regex.Comp<'s[jg]{0,1}s'>> = ['s', 'ssssss']
+const evaltesttms_comp0xb: regex.TapeEval<'ssssssss', regex.Comp<'s[kx]{0,1}s'>> = ['s', 'ssssss']
+const evaltesttms_comp0g: regex.TapeEval<'ssssxssss', regex.Comp<'sn{0,1}ss'>> = ['s', 'sxssss']
+const evaltesttms_comp0ga: regex.TapeEval<'ssssxssss', regex.Comp<'s(xd){0,1}s'>> = ['s', 'ssxssss']
+const evaltesttms_comp0gb: regex.TapeEval<'ssssxssss', regex.Comp<'s(d|x)?s'>> = ['s', 'ssxssss']
+const evaltesttms_comp0gxa: regex.TapeEval<'ssssxssss', regex.Comp<'s[ed]?s'>> = ['s', 'ssxssss']
+const evaltesttms_comp0gxb: regex.TapeEval<'ssssxssss', regex.Comp<'sss[cx]?s'>> = ['s', 'xssss']
+const evaltesttms_comp0gxc: regex.TapeEval<'ssssxssss', regex.Comp<'ssss[cx]?s'>> = ['s', 'sss']
+
+// now testing this
+const evaltesttms_comp0bbz0s: regex.TapeEval<'syxsssssss', regex.Comp<'s(y|x){0,2}s'>> = ['s', 'ssssss']
+const evaltesttms_comp0bbz0b: regex.TapeEval<'sxysssssss', regex.Comp<'s(y|x){0,2}s'>> = ['s', 'ssssss']
+const evaltesttms_comp0bbz0d: regex.TapeEval<'syxsssssss', regex.Comp<'s(y|x){1,2}s'>> = ['s', 'ssssss']
+const evaltesttms_comp0bbz0e: regex.TapeEval<'sxysssssss', regex.Comp<'s(y|x){1,2}s'>> = ['s', 'ssssss']
+const evaltesttms_comp0bbz0y: regex.TapeEval<'syxsssssss', regex.Comp<'s(x|y){0,2}s'>> = ['s', 'ssssss']
+const evaltesttms_comp0bbz0x: regex.TapeEval<'sxysssssss', regex.Comp<'s(x|y){0,2}s'>> = ['s', 'ssssss']
+const evaltesttms_comp0bbz0w: regex.TapeEval<'syxsssssss', regex.Comp<'s(x|y){1,2}s'>> = ['s', 'ssssss']
+const evaltesttms_comp0bbz0z: regex.TapeEval<'sxysssssss', regex.Comp<'s(x|y){1,2}s'>> = ['s', 'ssssss']
+//this
+const evaltesttms_comp0a0d: regex.TapeEval<'ssabssss', regex.Comp<'ss(ab){1,1}s'>> = ['s', 'sss']
+const evaltesttms_comp0a0e: regex.TapeEval<'sabssss', regex.Comp<'s(ab){1,1}s'>> = ['s', 'sss']
+
+const evaltesttms_comp0bbz1: regex.TapeEval<'sxxsssssss', regex.Comp<'s(y|x){0,2}s'>> = ['s', 'ssssss']
+const evaltesttms_comp0bbz2: regex.TapeEval<'sxxsssssss', regex.Comp<'s(x|y){0,2}s'>> = ['s', 'ssssss']
+const evaltesttms_comp0bbz3: regex.TapeEval<'syysssssss', regex.Comp<'s(y|x){0,2}s'>> = ['s', 'ssssss']
+
+const evaltesttms_comp0vvz1: regex.TapeEval<'sxxsssssss', regex.Comp<'s(y|x){0,2}s'>> = ['s', 'ssssss']
+const evaltesttms_comp0vvz2: regex.TapeEval<'sxxsssssss', regex.Comp<'s(x|y){0,2}s'>> = ['s', 'ssssss']
+const evaltesttms_comp0vbz3: regex.TapeEval<'syysssssss', regex.Comp<'s(z|d){0,2}s'>> = []
+const evaltesttms_comp0vbz4: regex.TapeEval<'ssssssss', regex.Comp<'s(z|d){0,2}s'>> = ['s', 'ssssss']
