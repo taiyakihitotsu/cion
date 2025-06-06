@@ -147,34 +147,37 @@ export type Comp<
 , MergeString extends string = ''
 , MergeStack extends unknown[] = []
 , Stack extends unknown[] = []
-, tobeStack extends unknown[] = []> =
+, tobeStack extends unknown[] = []
+, condition extends string = ''> =
   S extends ''
-    ? [...Stack, tobeStack]
+    ? {condition: condition, tape: [...Stack, tobeStack]}
   : S extends `${infer sFirst}${infer sRest}`
-    ? sFirst extends '('
-      ? Comp<sRest, '(', '', MergeStack, [...Stack, tobeStack]>
+    ? sFirst extends '^' | '$'
+      ? Comp<sRest, IsMerge, MergeString, MergeStack, Stack, tobeStack, `${condition}${sFirst}`>
+    : sFirst extends '('
+      ? Comp<sRest, '(', '', MergeStack, [...Stack, tobeStack], [], condition>
     : sFirst extends ')'
-      ? Comp<sRest, '', '', [...MergeStack, MergeString], [...Stack]>
+      ? Comp<sRest, '', '', [...MergeStack, MergeString], [...Stack], [], condition>
     : sFirst extends '['
-      ? Comp<sRest, '[', '', MergeStack, [...Stack, tobeStack]>
+      ? Comp<sRest, '[', '', MergeStack, [...Stack, tobeStack], [], condition>
     : sFirst extends ']'
-      ? Comp<sRest, '', '', [...MergeStack, MergeString], [...Stack]>
+      ? Comp<sRest, '', '', [...MergeStack, MergeString], [...Stack], [], condition>
     : sFirst extends '+'
       ? Comp<sRest, '', '', [...(MergeStack extends [] ? [] : [MergeStack, '*'])], [...Stack, ...(MergeStack extends [] ? [] : [MergeStack]), ...(tobeStack extends [] ? [] : [tobeStack])], [...(tobeStack extends [] ? [] : [tobeStack, '*'])]>
     : sFirst extends '*' | '?'
-      ? Comp<sRest, '', '', [...(MergeStack extends [] ? [] : [MergeStack, sFirst])], Stack, [...(tobeStack extends [] ? [] : [tobeStack, sFirst])]>
+      ? Comp<sRest, '', '', [...(MergeStack extends [] ? [] : [MergeStack, sFirst])], Stack, [...(tobeStack extends [] ? [] : [tobeStack, sFirst])], condition>
     : sFirst extends '{'
       ? ReadMinMax<S> extends [infer FnPart, infer RestPart extends string]
-        ? Comp<RestPart, '', '', [...(MergeStack extends [] ? [] : [MergeStack, FnPart])], Stack, [...(tobeStack extends [] ? [] : [tobeStack, FnPart])]>
+        ? Comp<RestPart, '', '', [...(MergeStack extends [] ? [] : [MergeStack, FnPart])], Stack, [...(tobeStack extends [] ? [] : [tobeStack, FnPart])], condition>
       : CompFailed
     : IsMerge extends '('
       ? sFirst extends '|'
-        ? Comp<sRest, '(', '', [...MergeStack, MergeString], Stack>
-      : Comp<sRest, '(', `${MergeString}${sFirst}`, MergeStack, Stack>
+        ? Comp<sRest, '(', '', [...MergeStack, MergeString], Stack, [], condition>
+      : Comp<sRest, '(', `${MergeString}${sFirst}`, MergeStack, Stack, [], condition>
     : IsMerge extends '['
-      ? Comp<sRest, '[', sFirst, [...MergeStack, ...(MergeString extends '' ? [] : [MergeString])], Stack>
+      ? Comp<sRest, '[', sFirst, [...MergeStack, ...(MergeString extends '' ? [] : [MergeString])], Stack, [], condition>
     : IsMerge extends ''
-      ? Comp<sRest, '', '', [], [...Stack, ...(tobeStack extends [] ? [] : [tobeStack]), ...(MergeStack extends [] ? [] : [MergeStack])], [sFirst]>
+      ? Comp<sRest, '', '', [], [...Stack, ...(tobeStack extends [] ? [] : [tobeStack]), ...(MergeStack extends [] ? [] : [MergeStack])], [sFirst], condition>
     : CompFailed
   : CompFailed
 
@@ -221,7 +224,6 @@ const aaaab: ClimaxMatchLoopVec<'xysssssss', ['y', 'x'], '0000000000000010', '00
 const aaaabbbb: ClimaxMatchLoopVec<'xsssssss', ['y', 'x'], '0000000000000010', '0000000000000001'> = [['x', 'sssssss'], vOne] 
 const aaaabbbbc: ClimaxMatchLoopVec<'xsssssss', ['y', 'z'], '0000000000000010', '0000000000000001'> = [] 
 
-
 type JustSymbolScene  = [string]
 type UnionSymbolScene = string[]
 type FnTimesSign = [[string, string], 'times']
@@ -230,11 +232,22 @@ type TapeType = (JustSymbolScene|UnionSymbolScene|FnScene|FnTimesSign)[]
 type RTape<T> = T extends TapeType ? T : never
 type FnSigns = '*' | '?' | FnTimesSign
 type SearchFailed = []
+//
+// TapeEval
+//   This reads a compiled regex.
+//
 // [note]
 //    plus is expanded to *, with comp.
+//
 // [note]
 //   ss*s should be merged to ss*, the same as (xyz)*xyz to (xyz)*
 //   I abandoned this task as I admit an greedy, so this regex has been illegal.
+//
+// [note]
+// This TapeEval works as all of tape has '^'.
+// see this case (in test/regex.ts):
+// // const evaltesttms_comp0vbz3e: regex.TapeEval<'esssyysssssss', regex.Comp<'s(z|d){0,2}s'>> = []
+// 
 export type TapeEval<
   String extends string
 , Tape extends TapeType = []
@@ -270,4 +283,13 @@ export type TapeEval<
       : never
     : never
   : never
+
+export type ReadTape<
+  String extends string
+, TapeEnv extends {condition: string, tape: TapeType}
+, LastMatch extends string = ''> =
+  TapeEnv extends {condition: infer cond, tape: infer tape extends TapeType}
+    ? TapeEval<String, tape>
+  : []
+
 } export default regex
