@@ -8,6 +8,19 @@ export const vZero = '0000000000000000'
 export const vOne  = '0000000000000001'
 export const vTwo  = '0000000000000010'
 
+export type Digit = '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'
+export type Lower = 'a' | 'b' | 'c' | 'd' | 'e' | 'f' | 'g' | 'h' | 'i' | 'j' | 'k' | 'l' | 'm' | 'n' | 'o' | 'p' | 'q' | 'r' | 's' | 't' | 'u' | 'v' | 'w' | 'x' | 'y' | 'z'
+export type Upper = Uppercase<Lower>
+export type WordChar = Digit | Lower | Upper | '_'
+export type ASCII =
+WordChar | ' ' | '!' | '"' | '#' | '$' | '%' | '&' | "'" | '(' | ')' |
+  '*' | '+' | ',' | '-' | '.' | '/' | ':' | ';' | '<' | '=' | '>' | '?' | '@' |
+  '[' | '\\' | ']' | '^' | '`' | '{' | '|' | '}' | '~'
+export type NonDigit = Exclude<ASCII, Digit>
+export type NonWordChar = Exclude<ASCII, WordChar>
+export type NonLower = Exclude<ASCII, Upper>
+export type NonUpper = Exclude<ASCII, Upper>
+
 export namespace strutil {
 
 export type CharAt<
@@ -25,7 +38,39 @@ export type MatchChar<
   S extends string
 , T extends string> =
   S extends `${infer sF}${infer sRest}`
-    ? T extends `${infer tF}${infer tRest}`
+    ? T extends `\\d`
+      ? sF extends Digit
+        ? true
+      : false
+    : T extends `\\w`
+      ? sF extends WordChar
+        ? true
+      : false
+    : T extends `\\l`
+      ? sF extends Lower
+        ? true
+      : false
+    : T extends `\\u`
+      ? sF extends Upper
+        ? true
+      : false
+    : T extends `\\D`
+      ? sF extends NonDigit
+        ? true
+      : false
+    : T extends `\\W`
+      ? sF extends NonWordChar
+        ? true
+      : false
+    : T extends `\\L`
+      ? sF extends NonLower
+        ? true
+      : false
+    : T extends `\\U`
+      ? sF extends NonUpper
+        ? true
+      : false
+    : T extends `${infer tF}${infer tRest}`
       ? sRest extends ''
         ? tRest extends ''
           ? sF extends tF
@@ -96,5 +141,9 @@ export type StrSearchAll<
     : StrSearchAll<Rest, Pattern, Tag, `${Forward}${F}`>
   : 'not all'
 } export default strutil
+
+
+
+
 
 
