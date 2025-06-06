@@ -66,7 +66,7 @@ export type MatchLoop<
     : []
   : Result
 
-type MatchLoopVec<
+export type MatchLoopVec<
   S extends string
 , Pat extends string[]
 , Tag extends 'pattern' | 'char' = 'pattern'
@@ -82,40 +82,9 @@ type MatchLoopVec<
     : never
   : never
 
-// test
-const xtest_mloop0: MatchLoopVec<'xxxxx', ['xx'], 'char', tOne> = [['xx', 'xxx'], vOne]
-const xtest_mloop1: MatchLoopVec<'xxxxx', ['xx'], 'pattern'> = [['xx', 'x'], vTwo]
-const xtest_mloop1a: MatchLoopVec<'xxxxx', ['xx'], 'pattern', tOne> = [['xx', 'xxx'], vOne]
-const xtest_mloop2: MatchLoopVec<'xxxxx', ['x'], 'char'>  = [['x', ''], '0000000000000101']
-const xtest_mloop3: MatchLoopVec<'xxxxxx', ['x'], 'char'> = [['x', ''], '0000000000000110']
-const xtest_mloop2a: MatchLoopVec<'xxxxx', ['x'], 'char', Bit.BitInc<tOne>, tOne> = [['x', 'xxx'], vTwo]
-const xtest_mloop3a: MatchLoopVec<'xxxxxx', ['x'], 'char', Bit.BitInc<Bit.BitInc<tOne>>, tOne> = [['x', 'xxx'], '0000000000000011']
-const xtest_mloop4: MatchLoopVec<'xxxyxxx', ['x'], 'char'> = [['x', 'yxxx'], '0000000000000011']
-const xtest_mloop5: MatchLoopVec<'xxxyxxx', ['x'], 'char', Bit.BitInc<tOne>> = [['x', 'xyxxx'], vTwo]
-// group
-const ytest_mloop0: MatchLoopVec<'xxxxx', ['y','xx'], 'char', tOne>     = [['xx', 'xxx'], vOne]
-const ytest_mloop1: MatchLoopVec<'xxxxx', ['y','xx'], 'pattern'>       = [['xx', 'x'], vTwo]
-const ytest_mloop1a: MatchLoopVec<'xxxxx', ['y','xx'], 'pattern', tOne> = [['xx', 'xxx'], vOne]
-const ytest_mloop2: MatchLoopVec<'xxxxx', ['y','x'], 'char'>  = [['x', ''], "0000000000000101"]
-const ytest_mloop3: MatchLoopVec<'xxxxxx', ['y','x'], 'char'> = [['x', ''], "0000000000000110"]
-const ytest_mloop2a: MatchLoopVec<'xxxxx', ['y','x'], 'char', Bit.BitInc<tOne>, tOne> = [['x', 'xxx'], vTwo]
-const ytest_mloop3a: MatchLoopVec<'xxxxxx', ['y','x'], 'char', Bit.BitInc<Bit.BitInc<tOne>>, tOne> = [['x', 'xxx'], "0000000000000011"]
-const ytest_mloop4: MatchLoopVec<'xxxyxxx', ['y', 'x'], 'char'> = [['x', 'yxxx'], "0000000000000011"]
-const ytest_mloop5: MatchLoopVec<'xxxyxxx', ['y','x'], 'char', Bit.BitInc<tOne>> = [['x', 'xyxxx'], vTwo]
+export type MaxMinMatch = ['{.,.}', '{.,..}', '{..,..}', '{.,}', '{..,}', '{.}', '{..}', '{,.}','{,..}']
 
-type MaxMinMatch = ['{.,.}', '{.,..}', '{..,..}', '{.,}', '{..,}', '{.}', '{..}', '{,.}','{,..}']
-const testmaxmin0a: MatchLoopVec<'{n,m}rest', MaxMinMatch, 'char'>[0]   = ['{n,m}', 'rest']
-const testmaxmin1a: MatchLoopVec<'{n,mm}rest', MaxMinMatch, 'char'>[0]  = ['{n,mm}', 'rest']
-const testmaxmin2a: MatchLoopVec<'{nn,mm}rest', MaxMinMatch, 'char'>[0] = ['{nn,mm}', 'rest']
-// they are not used though.
-const testmaxmin0b: MatchLoopVec<'{,m}rest', MaxMinMatch, 'char'>[0]  = ['{,m}', 'rest']
-const testmaxmin1b: MatchLoopVec<'{,mm}rest', MaxMinMatch, 'char'>[0] = ['{,mm}', 'rest']
-const testmaxmin0c: MatchLoopVec<'{n,}rest', MaxMinMatch, 'char'>[0]  = ['{n,}', 'rest']
-const testmaxmin1c: MatchLoopVec<'{nn,}rest', MaxMinMatch, 'char'>[0] = ['{nn,}', 'rest']
-const testmaxmin0d: MatchLoopVec<'{n}rest', MaxMinMatch, 'char'>[0]   = ['{n}', 'rest']
-const testmaxmin1d: MatchLoopVec<'{nn}rest', MaxMinMatch, 'char'>[0]  = ['{nn}', 'rest']
-
-type ReadMinMax<
+export type ReadMinMax<
   S extends string> =
   MatchLoopVec<S, ['{.,.}', '{.,..}', '{..,..}'], 'char'> extends [[infer Match, infer Next], infer _Times]
     ? Match extends `{${infer n},${infer m}}`
@@ -134,11 +103,7 @@ type ReadMinMax<
       ? [[[Decimal.DecimalToBit<`${zza}${zzb}`>,Decimal.DecimalToBit<`${zza}${zzb}`>], 'times'], Next]
     : []
   : []
-// test
-const testmaxminr0: ReadMinMax<`{0,1}rest`> = [[['0000000000000000', '0000000000000001'], 'times'], 'rest']
-const testmaxminr1: ReadMinMax<`{0,15}rest`> = [[['0000000000000000', '0000000000001111'], 'times'], 'rest']
-const testmaxminr2: ReadMinMax<`{15,16}rest`> = [[['0000000000001111', '0000000000010000'], 'times'], 'rest']
-const testmaxminr3: ReadMinMax<`{0,1rest`> = []
+
 
 type CompFailed = []
 export type Comp<
@@ -203,8 +168,7 @@ type recClimaxMatchLoopVec<
     ? Result
   : ClimaxFailed
   
-
-type ClimaxMatchLoopVec<
+export type ClimaxMatchLoopVec<
   String extends string
 , groupTape extends string[]
 , maxTime extends string
@@ -216,13 +180,6 @@ type ClimaxMatchLoopVec<
   : Bit.BitIsZero<minTime> extends true
     ? recClimaxMatchLoopVec<String, groupTape, maxTime, Bit.BitInc<minTime>>
   : recClimaxMatchLoopVec<String, groupTape, maxTime, minTime>
-
-// test
-type aaaaaaaaa = Comp<'s(y|x){0,2}s'>
-const aaaa: ClimaxMatchLoopVec<'xxsssssss', ['y', 'x'], '0000000000000010', '0000000000000001'> = [['x', 'sssssss'], vTwo]
-const aaaab: ClimaxMatchLoopVec<'xysssssss', ['y', 'x'], '0000000000000010', '0000000000000001'> = [['y', 'sssssss'], vOne]
-const aaaabbbb: ClimaxMatchLoopVec<'xsssssss', ['y', 'x'], '0000000000000010', '0000000000000001'> = [['x', 'sssssss'], vOne] 
-const aaaabbbbc: ClimaxMatchLoopVec<'xsssssss', ['y', 'z'], '0000000000000010', '0000000000000001'> = [] 
 
 type JustSymbolScene  = [string]
 type UnionSymbolScene = string[]

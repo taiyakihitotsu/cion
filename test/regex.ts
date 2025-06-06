@@ -10,6 +10,48 @@ import { vZero, vOne, vTwo } from '../src/strutil'
 // const One  = '0000000000000001'
 // const Two  = '0000000000000010'
 
+// test
+const xtest_mloop0: regex.MatchLoopVec<'xxxxx', ['xx'], 'char', tOne> = [['xx', 'xxx'], vOne]
+const xtest_mloop1: regex.MatchLoopVec<'xxxxx', ['xx'], 'pattern'> = [['xx', 'x'], vTwo]
+const xtest_mloop1a: regex.MatchLoopVec<'xxxxx', ['xx'], 'pattern', tOne> = [['xx', 'xxx'], vOne]
+const xtest_mloop2: regex.MatchLoopVec<'xxxxx', ['x'], 'char'>  = [['x', ''], '0000000000000101']
+const xtest_mloop3: regex.MatchLoopVec<'xxxxxx', ['x'], 'char'> = [['x', ''], '0000000000000110']
+const xtest_mloop2a: regex.MatchLoopVec<'xxxxx', ['x'], 'char', Bit.BitInc<tOne>, tOne> = [['x', 'xxx'], vTwo]
+const xtest_mloop3a: regex.MatchLoopVec<'xxxxxx', ['x'], 'char', Bit.BitInc<Bit.BitInc<tOne>>, tOne> = [['x', 'xxx'], '0000000000000011']
+const xtest_mloop4: regex.MatchLoopVec<'xxxyxxx', ['x'], 'char'> = [['x', 'yxxx'], '0000000000000011']
+const xtest_mloop5: regex.MatchLoopVec<'xxxyxxx', ['x'], 'char', Bit.BitInc<tOne>> = [['x', 'xyxxx'], vTwo]
+// group
+const ytest_mloop0: regex.MatchLoopVec<'xxxxx', ['y','xx'], 'char', tOne>     = [['xx', 'xxx'], vOne]
+const ytest_mloop1: regex.MatchLoopVec<'xxxxx', ['y','xx'], 'pattern'>       = [['xx', 'x'], vTwo]
+const ytest_mloop1a: regex.MatchLoopVec<'xxxxx', ['y','xx'], 'pattern', tOne> = [['xx', 'xxx'], vOne]
+const ytest_mloop2: regex.MatchLoopVec<'xxxxx', ['y','x'], 'char'>  = [['x', ''], "0000000000000101"]
+const ytest_mloop3: regex.MatchLoopVec<'xxxxxx', ['y','x'], 'char'> = [['x', ''], "0000000000000110"]
+const ytest_mloop2a: regex.MatchLoopVec<'xxxxx', ['y','x'], 'char', Bit.BitInc<tOne>, tOne> = [['x', 'xxx'], vTwo]
+const ytest_mloop3a: regex.MatchLoopVec<'xxxxxx', ['y','x'], 'char', Bit.BitInc<Bit.BitInc<tOne>>, tOne> = [['x', 'xxx'], "0000000000000011"]
+const ytest_mloop4: regex.MatchLoopVec<'xxxyxxx', ['y', 'x'], 'char'> = [['x', 'yxxx'], "0000000000000011"]
+const ytest_mloop5: regex.MatchLoopVec<'xxxyxxx', ['y','x'], 'char', Bit.BitInc<tOne>> = [['x', 'xyxxx'], vTwo]
+
+const testmaxmin0a: regex.MatchLoopVec<'{n,m}rest', regex.MaxMinMatch, 'char'>[0]   = ['{n,m}', 'rest']
+const testmaxmin1a: regex.MatchLoopVec<'{n,mm}rest', regex.MaxMinMatch, 'char'>[0]  = ['{n,mm}', 'rest']
+const testmaxmin2a: regex.MatchLoopVec<'{nn,mm}rest', regex.MaxMinMatch, 'char'>[0] = ['{nn,mm}', 'rest']
+// they are not used though.
+const testmaxmin0b: regex.MatchLoopVec<'{,m}rest', regex.MaxMinMatch, 'char'>[0]  = ['{,m}', 'rest']
+const testmaxmin1b: regex.MatchLoopVec<'{,mm}rest', regex.MaxMinMatch, 'char'>[0] = ['{,mm}', 'rest']
+const testmaxmin0c: regex.MatchLoopVec<'{n,}rest', regex.MaxMinMatch, 'char'>[0]  = ['{n,}', 'rest']
+const testmaxmin1c: regex.MatchLoopVec<'{nn,}rest', regex.MaxMinMatch, 'char'>[0] = ['{nn,}', 'rest']
+const testmaxmin0d: regex.MatchLoopVec<'{n}rest', regex.MaxMinMatch, 'char'>[0]   = ['{n}', 'rest']
+const testmaxmin1d: regex.MatchLoopVec<'{nn}rest', regex.MaxMinMatch, 'char'>[0]  = ['{nn}', 'rest']
+
+const testmaxminr0: regex.ReadMinMax<`{0,1}rest`> = [[['0000000000000000', '0000000000000001'], 'times'], 'rest']
+const testmaxminr1: regex.ReadMinMax<`{0,15}rest`> = [[['0000000000000000', '0000000000001111'], 'times'], 'rest']
+const testmaxminr2: regex.ReadMinMax<`{15,16}rest`> = [[['0000000000001111', '0000000000010000'], 'times'], 'rest']
+const testmaxminr3: regex.ReadMinMax<`{0,1rest`> = []
+
+const aaaa: regex.ClimaxMatchLoopVec<'xxsssssss', ['y', 'x'], '0000000000000010', '0000000000000001'> = [['x', 'sssssss'], vTwo]
+const aaaab: regex.ClimaxMatchLoopVec<'xysssssss', ['y', 'x'], '0000000000000010', '0000000000000001'> = [['y', 'sssssss'], vOne]
+const aaaabbbb: regex.ClimaxMatchLoopVec<'xsssssss', ['y', 'x'], '0000000000000010', '0000000000000001'> = [['x', 'sssssss'], vOne] 
+const aaaabbbbc: regex.ClimaxMatchLoopVec<'xsssssss', ['y', 'z'], '0000000000000010', '0000000000000001'> = [] 
+
 // note : should test zero pattern.
 const test_mloop0: regex.MatchLoop<'xxxxx', 'xx', 'char', tOne>     = [['xx', 'xxx'], vOne]
 const test_mloop1: regex.MatchLoop<'xxxxx', 'xx', 'pattern'>       = [['xx', 'x'], '0000000000000010']
