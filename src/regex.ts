@@ -286,10 +286,56 @@ export type TapeEval<
 
 export type ReadTape<
   String extends string
-, TapeEnv extends {condition: string, tape: TapeType}
-, LastMatch extends string = ''> =
+, TapeEnv extends {condition: string, tape: TapeType}> =
   TapeEnv extends {condition: infer cond, tape: infer tape extends TapeType}
     ? TapeEval<String, tape>
   : []
 
+export type TapeEvalLoop<
+  S extends string
+, Tape extends TapeType> =
+  S extends ''
+    ? []
+  : TapeEval<S, Tape> extends infer R
+    ? R extends [] 
+      ? S extends `${infer _f}${infer sRest}`
+        ? TapeEvalLoop<sRest, Tape>
+      : never
+    : R
+  : never
+
+export type RegexFind<
+  String extends string
+, Regex  extends string> =
+  Comp<Regex> extends {condition: infer Condition extends string
+		      , tape: infer Tape extends TapeType}
+    ? Condition extends '^' | '^$'
+      ? ReadTape<String, {condition: Condition, tape: Tape}>
+    : Condition extends '$' | '^$'
+      ? TapeEvalLoop<String, Tape> extends [infer M extends string, infer Result extends string]
+        ? Result extends ''
+          ? [M, Result]
+        : []
+      : []
+    : TapeEvalLoop<String, Tape>
+  : never
+
 } export default regex
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

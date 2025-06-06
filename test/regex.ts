@@ -157,3 +157,10 @@ const evaltesttms_comp0vbz3d: regex.ReadTape<'sssyysssssss', regex.Comp<'s(z|d){
 const evaltesttms_comp0vbz3e: regex.ReadTape<'esssyysssssss', regex.Comp<'s(z|d){0,2}s'>> = []
 const evaltesttms_comp0vbz4: regex.ReadTape<'ssssssss', regex.Comp<'s(z|d){0,2}s'>> = ['s', 'ssssss']
 const evaltesttms_comp0vbz5: regex.ReadTape<'szds', regex.Comp<'s(z|d){0,2}s'>> = ['s', '']
+
+// regex loop
+const evaltesttms_comp0vbzf0: regex.RegexFind<'szds', 's(z|d){0,2}s'> = ['s', '']
+const evaltesttms_comp0vbzf2: regex.RegexFind<'xszds', 's(z|d){0,2}s'> = ['s', '']
+const evaltesttms_comp0vbzf4: regex.RegexFind<'xszds', 's(z|d){0,2}s$'> = ['s', '']
+const evaltesttms_comp0vbzf4b: regex.RegexFind<'xszds', '^s(z|d){0,2}s'> = []
+const evaltesttms_comp0vbzf6: regex.RegexFind<'xszds', 's(z|d){0,2}s'> = ['s', '']
