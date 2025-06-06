@@ -5,7 +5,7 @@ namespace Bit {
 
 // CONSTANTS.
 export type MAX = Peano.T16;
-export type _Zero = BitPadding<"0", MAX>;
+export type Zero = BitPadding<"0", MAX>;
 
 export const Pad8  = '00000000'
 export const Pad16 = `${Pad8}${Pad8}`
@@ -166,6 +166,7 @@ export type BitPadding<B extends string, P = Peano.T0, F = "0"> = P extends Pean
   : F extends "0" | "1"
     ? BitPadding<`${F}${B}`, Peano.dec<P>, F>
     : never;
+
 // test
 const bitpadding0: BitPadding<"10101", [null]> = "010101";
 const bitpadding1: BitPadding<"10101", [[null]]> = "0010101";
@@ -197,11 +198,11 @@ const bitcut1: BitCut<"11111", [null]> = "1111";
 // const bitcut3: BitCut<"", [null]> = null as never
 
 // todo
-export type BitIsZero<B extends string> = BitUniform<_Zero, B> extends [
+export type BitIsZero<B extends string> = BitUniform<Zero, B> extends [
   infer Z,
   infer U,
 ]
-  ? BitEq<_Zero, U>
+  ? BitEq<Zero, U>
   : never;
 // test
 const bitiszero0: BitIsZero<"111"> = false;
