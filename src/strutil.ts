@@ -101,6 +101,8 @@ export type SomeLen<
 // -- base of regexp
 // -------------------
 
+export type RegGet<S extends string, N extends 0|1> = S extends `${infer f}${infer rest}` ? f extends '\\' ? rest extends `${infer snd}${infer rrest}` ? [`${f}${snd}`, rrest][N] : never : [f, rest][N] : never
+
 // [note]
 // this works as ^.
 export type StrSearchHead<
@@ -109,18 +111,34 @@ export type StrSearchHead<
 , Complete extends string = ''
 , Forward extends string = ''> =
   S extends `${infer sf}${infer srest}`
-    ? Pattern extends `${infer pf}${infer prest}`
-      ? (pf extends '.' ? true : false) | MatchChar<sf, pf> extends false
+      ? (RegGet<Pattern,0> extends '.' ? true : false) | MatchChar<sf, RegGet<Pattern,0>> extends false
         ? []
-      : prest extends ''
+      : RegGet<Pattern,1> extends ''
         ? Complete extends 'complete'
           ? sf extends ''
             ? [`${Forward}${sf}`, srest]
           : []
         : [`${Forward}${sf}`, srest]
-      : StrSearchHead<srest, prest, Complete, `${Forward}${sf}`>
-    : never
+      : StrSearchHead<srest, RegGet<Pattern,1>, Complete, `${Forward}${sf}`>
   : never
+// export type StrSearchHead<
+//   S extends string
+// , Pattern extends string
+// , Complete extends string = ''
+// , Forward extends string = ''> =
+//   S extends `${infer sf}${infer srest}`
+//     ? Pattern extends `${infer pf}${infer prest}`
+//       ? (pf extends '.' ? true : false) | MatchChar<sf, pf> extends false
+//         ? []
+//       : prest extends ''
+//         ? Complete extends 'complete'
+//           ? sf extends ''
+//             ? [`${Forward}${sf}`, srest]
+//           : []
+//         : [`${Forward}${sf}`, srest]
+//       : StrSearchHead<srest, prest, Complete, `${Forward}${sf}`>
+//     : never
+//   : never
 
 export type StrSearchAll<
   S extends string

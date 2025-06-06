@@ -105,8 +105,20 @@ const test_nmcompa1x: regex.Comp<'s[sx]{1,15}ss'> = {condition: '', tape: [['s']
 const test_nmcompa0y: regex.Comp<'s[sx]s{15,16}ss'> = {condition: '', tape: [['s'], ['s', 'x'], [['s'], [['0000000000001111', '0000000000010000'], 'times']], ['s'], ['s']]}
 const test_nmcompa1y: regex.Comp<'s[sx]{15,16}ss'> = {condition: '', tape: [['s'], [['s', 'x'], [['0000000000001111', '0000000000010000'], 'times']], ['s'], ['s']]}
 
+const test_nmcompa1ya: regex.Comp<'s\\d{15,16}ss'> = {condition: '', tape: [['s'], [['\\d'], [['0000000000001111', '0000000000010000'], 'times']], ['s'], ['s']]}
+const test_nmcompa1yb: regex.Comp<'s[\\d]{15,16}ss'> = {condition: '', tape: [['s'], [['\\d'], [['0000000000001111', '0000000000010000'], 'times']], ['s'], ['s']]}
+const test_nmcompa1yc: regex.Comp<'s(\\d){15,16}ss'> = {condition: '', tape: [['s'], [['\\d'], [['0000000000001111', '0000000000010000'], 'times']], ['s'], ['s']]}
+const test_nmcompa1yd: regex.Comp<'s(\\d|\\w){15,16}ss'> = {condition: '', tape: [['s'], [['\\d', '\\w'], [['0000000000001111', '0000000000010000'], 'times']], ['s'], ['s']]}
+const test_nmcompa1yd1: regex.Comp<'s(\\d|w|s){15,16}ss'> = {condition: '', tape: [['s'], [['\\d', 'w', 's'], [['0000000000001111', '0000000000010000'], 'times']], ['s'], ['s']]}
+const test_nmcompa1ye: regex.Comp<'s[\\dab]{15,16}ss'> = {condition: '', tape: [['s'], [['\\d', 'a', 'b'], [['0000000000001111', '0000000000010000'], 'times']], ['s'], ['s']]}
+const test_nmcompa1yf: regex.Comp<'s[a\\db]{15,16}ss'> = {condition: '', tape: [['s'], [['a', '\\d', 'b'], [['0000000000001111', '0000000000010000'], 'times']], ['s'], ['s']]}
 
-// test
+
+
+// --------------------
+// -- main test
+// --------------------
+
 const evaltest_comp0: regex.ReadTape<'ssssssss', regex.Comp<'ssss'>> = ['s', 'ssss']
 const evaltest_comp0a: regex.ReadTape<'ssssssss', regex.Comp<'s(ss)s'>> = ['s', 'ssss']
 const evaltest_comp0b: regex.ReadTape<'ssssssss', regex.Comp<'s(s|x)s'>> = ['s', 'sssss']
@@ -203,6 +215,17 @@ const evaltesttms_comp0vbz5: regex.ReadTape<'szds', regex.Comp<'s(z|d){0,2}s'>> 
 // regex loop
 const evaltesttms_comp0vbzf0: regex.RegexFind<'szds', 's(z|d){0,2}s'> = ['s', '']
 const evaltesttms_comp0vbzf2: regex.RegexFind<'xszds', 's(z|d){0,2}s'> = ['s', '']
+const evaltesttms_comp0vbzf2a: regex.RegexFind<'xsds', 's(z|d){0,2}s'> = ['s', '']
 const evaltesttms_comp0vbzf4: regex.RegexFind<'xszds', 's(z|d){0,2}s$'> = ['s', '']
 const evaltesttms_comp0vbzf4b: regex.RegexFind<'xszds', '^s(z|d){0,2}s'> = []
 const evaltesttms_comp0vbzf6: regex.RegexFind<'xszds', 's(z|d){0,2}s'> = ['s', '']
+
+const evaltesttms_regg3x: regex.RegexFind<'sz1s', 'sz\\d'> = ['1', 's']
+const evaltesttms_comp0vbzfx0:  regex.RegexFind<'szds', 's(z|\\d){0,2}s'>  = []
+const evaltesttms_comp0vbzfx0a: regex.RegexFind<'szds', 's[z\\d]{0,2}s'>   = []
+const evaltesttms_comp0vbzfx2:  regex.RegexFind<'xszds', 's[zd\\d]{0,2}s'> = ['s', '']
+const evaltesttms_comp0vbzfx2a: regex.RegexFind<'s12s', 's[zd\\d]{0,2}s'>  = ['s', '']
+const evaltesttms_comp0vbzfx2b: regex.RegexFind<'s12s', 's[zd12]{0,2}s'>   = ['s', '']
+const evaltesttms_comp0vbzfx4:  regex.RegexFind<'xszds', 's(z|d){0,2}s$'>  = ['s', '']
+const evaltesttms_comp0vbzfx4b: regex.RegexFind<'xszds', '^s(z|d){0,2}s'>  = []
+const evaltesttms_comp0vbzfx6:  regex.RegexFind<'xszds', 's(z|d){0,2}s'>   = ['s', '']

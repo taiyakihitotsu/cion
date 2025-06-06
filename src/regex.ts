@@ -104,7 +104,6 @@ export type ReadMinMax<
     : []
   : []
 
-
 type CompFailed = []
 export type Comp<
   S extends string
@@ -140,9 +139,13 @@ export type Comp<
         ? Comp<sRest, '(', '', [...MergeStack, MergeString], Stack, [], condition>
       : Comp<sRest, '(', `${MergeString}${sFirst}`, MergeStack, Stack, [], condition>
     : IsMerge extends '['
-      ? Comp<sRest, '[', sFirst, [...MergeStack, ...(MergeString extends '' ? [] : [MergeString])], Stack, [], condition>
+      ? Comp<str.RegGet<S,1>, '[', str.RegGet<S,0>, [...MergeStack, ...(MergeString extends '' ? [] : [MergeString])], Stack, [], condition>
     : IsMerge extends ''
-      ? Comp<sRest, '', '', [], [...Stack, ...(tobeStack extends [] ? [] : [tobeStack]), ...(MergeStack extends [] ? [] : [MergeStack])], [sFirst], condition>
+      ? sFirst extends '\\'
+        ? sRest extends `${infer sSecond}${infer srestRest}`
+          ? Comp<srestRest, '', '', [], [...Stack, ...(tobeStack extends [] ? [] : [tobeStack]), ...(MergeStack extends [] ? [] : [MergeStack])], [`${sFirst}${sSecond}`], condition>
+        : never
+      : Comp<sRest, '', '', [], [...Stack, ...(tobeStack extends [] ? [] : [tobeStack]), ...(MergeStack extends [] ? [] : [MergeStack])], [sFirst], condition>
     : CompFailed
   : CompFailed
 
