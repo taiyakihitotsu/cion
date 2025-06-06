@@ -1,0 +1,100 @@
+import type Bit from './bit'
+import type Decimal from './decimal'
+
+export type  tZero = '0000000000000000'
+export type  tOne  = '0000000000000001'
+export type  tTwo  = '0000000000000010'
+export const vZero = '0000000000000000'
+export const vOne  = '0000000000000001'
+export const vTwo  = '0000000000000010'
+
+export namespace strutil {
+
+export type CharAt<
+  S extends string
+, Index extends string> =
+  S extends `${infer F}${infer Rest}`
+    ? Bit.BitIsZero<Index> extends true
+      ? F
+    : Rest extends ''
+      ? ''
+    : CharAt<Rest, Bit.BitDec<Index>>
+  : ''
+
+export type MatchChar<
+  S extends string
+, T extends string> =
+  S extends `${infer sF}${infer sRest}`
+    ? T extends `${infer tF}${infer tRest}`
+      ? sRest extends ''
+        ? tRest extends ''
+          ? sF extends tF
+            ? true
+          : false
+        : false
+      : false
+    : false
+  : false
+
+export type StrLen<
+  S extends string
+, N extends string = Bit.Zero> =
+  S extends `${infer F}${infer Rest}`
+    ? Rest extends ''
+      ? Bit.BitInc<N>
+    : StrLen<Rest, Bit.BitInc<N>>
+  : tZero
+
+export type SomeLen<
+  S extends string
+, T extends string> =
+  StrLen<S> extends StrLen<T>
+    ? true
+  : false
+
+// -------------------
+// -- base of regexp
+// -------------------
+
+// [note]
+// this works as ^.
+export type StrSearchHead<
+  S extends string
+, Pattern extends string
+, Complete extends string = ''
+, Forward extends string = ''> =
+  S extends `${infer sf}${infer srest}`
+    ? Pattern extends `${infer pf}${infer prest}`
+      ? (pf extends '.' ? true : false) | MatchChar<sf, pf> extends false
+        ? []
+      : prest extends ''
+        ? Complete extends 'complete'
+          ? sf extends ''
+            ? [`${Forward}${sf}`, srest]
+          : []
+        : [`${Forward}${sf}`, srest]
+      : StrSearchHead<srest, prest, Complete, `${Forward}${sf}`>
+    : never
+  : never
+
+export type StrSearchAll<
+  S extends string
+, Pattern extends string
+, Tag extends string = ''
+, Forward extends string = ''> =
+  S extends ''
+    ? []
+  : S extends `${infer F}${infer Rest}`
+    ? Tag extends 'Head' | '^'
+      ? StrSearchHead<S, Pattern, '^'>
+    : StrSearchHead<S, Pattern, '^'> extends infer Ret & [string, string]
+      ? Tag extends 'Tail' | '$'
+        ? StrLen<S> extends StrLen<Pattern>
+          ? Ret
+        : StrSearchAll<Rest, Pattern, Tag, `${Forward}${F}`>
+      : Ret
+    : StrSearchAll<Rest, Pattern, Tag, `${Forward}${F}`>
+  : 'not all'
+} export default strutil
+
+
