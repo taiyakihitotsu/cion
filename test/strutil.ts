@@ -18,6 +18,14 @@ const test_somelen2: strutil.SomeLen<'sss', ''> = false
 const test_somelen3: strutil.SomeLen<'', 'xxa'> = false
 const test_somelen4: strutil.SomeLen<'', ''> = true
 
+const test_strtake0: strutil.StrTake<'012345', '0000000000000011'> = '012'
+const test_strtake1: strutil.StrTake<'012345', '0000000000000000'> = ''
+const test_strtake2: strutil.StrTake<'012345', '0000000000001111'> = '012345'
+
+const test_strDrop0: strutil.StrDrop<'012345', '0000000000000011'> = '345'
+const test_strDrop1: strutil.StrDrop<'012345', '0000000000000000'> = '012345'
+const test_strDrop2: strutil.StrDrop<'012345', '0000000000001111'> = ''
+
 const test_charsone0: strutil.StrSearchHead<'sssss', 's'> = ['s', 'ssss']
 const test_charsone1: strutil.StrSearchHead<'sssxx', 'xx'> = []
 const test_charsone2: strutil.StrSearchHead<'xxsss', 'xx'> = ['xx', 'sss']

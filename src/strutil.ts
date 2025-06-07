@@ -97,6 +97,24 @@ export type SomeLen<
     ? true
   : false
 
+export type StrTake<
+  S extends string
+, N extends string
+, R extends string = ''> = 
+  (S extends '' ? true : false) & Bit.BitIsZero<N> extends true ? R
+  : S extends `${infer f}${infer r}`
+    ? StrTake<r, Bit.BitDec<N>, `${R}${f}`>
+  : never
+
+export type StrDrop<
+  S extends string
+, N extends string> = 
+  (S extends '' ? true : false) & Bit.BitIsZero<N> extends true ? S
+  : S extends `${infer _f}${infer r}`
+    ? StrDrop<r, Bit.BitDec<N>>
+  : never
+
+
 // -------------------
 // -- base of regexp
 // -------------------
