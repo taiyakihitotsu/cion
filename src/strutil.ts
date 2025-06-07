@@ -139,24 +139,6 @@ export type StrSearchHead<
         : [`${Forward}${sf}`, srest]
       : StrSearchHead<srest, RegGet<Pattern,1>, Complete, `${Forward}${sf}`>
   : never
-// export type StrSearchHead<
-//   S extends string
-// , Pattern extends string
-// , Complete extends string = ''
-// , Forward extends string = ''> =
-//   S extends `${infer sf}${infer srest}`
-//     ? Pattern extends `${infer pf}${infer prest}`
-//       ? (pf extends '.' ? true : false) | MatchChar<sf, pf> extends false
-//         ? []
-//       : prest extends ''
-//         ? Complete extends 'complete'
-//           ? sf extends ''
-//             ? [`${Forward}${sf}`, srest]
-//           : []
-//         : [`${Forward}${sf}`, srest]
-//       : StrSearchHead<srest, prest, Complete, `${Forward}${sf}`>
-//     : never
-//   : never
 
 export type StrSearchAll<
   S extends string
@@ -168,7 +150,7 @@ export type StrSearchAll<
   : S extends `${infer F}${infer Rest}`
     ? Tag extends 'Head' | '^'
       ? StrSearchHead<S, Pattern, '^'>
-    : StrSearchHead<S, Pattern, '^'> extends infer Ret & [string, string]
+    : StrSearchHead<S, Pattern, '^', Forward> extends infer Ret & [string, string]
       ? Tag extends 'Tail' | '$'
         ? StrLen<S> extends StrLen<Pattern>
           ? Ret
