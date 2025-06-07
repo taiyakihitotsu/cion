@@ -12,6 +12,7 @@
     "check:test": "npx tsc --noEmit --project tsconfig.test.json",
     "format:smith": "npm --prefix submodules/condsmith run format:smith ../../src",
     "run": "npx ts-node src/index.ts",
+    "precommit": "sh scripts/precommit.sh",
     "prepare": "husky"
   },
   "repository": {
