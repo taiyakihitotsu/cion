@@ -76,8 +76,9 @@ const test_in_doc_def7: test_in_doc_def6 = '10'
 ```
 
 ## Builtins
- - if, fn, let, str, count, nil, ->, ->>
+ - if, fn, let, count, nil, ->, ->>
  - +, -, *, /, mod
+ - str, re-find
  - and, or, not, >, <, =, eq, >=, <=
  - number?, string?, vector?, map?, fn?, ifn?, nat-int?, pos-int?, neg-int?, odd?, even?, zero?, keyword?, empty?, every?, some, nil?, some?
  - map, filter, remove, reduce

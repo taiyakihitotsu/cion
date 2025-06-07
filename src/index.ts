@@ -1,6 +1,7 @@
 import type Bit from './bit.ts'
 import type Compiler from './compiler'
 import type Util from './util'
+import type { regex } from './regex'
 
 import type {LetVal,LetArg,LetForm,Each,Atom,TMap,Sexpr,TNil,Keyword,Sym,PrimString,PrimBoolean,PrimTestNumber,PrimNumber,Prim,Args,Fn,IFn,Vector,Var,Env,TNotMatch,IfForm} from './sexprtypes'
 import {VNil,VNotMatch} from './sexprtypes'
@@ -181,7 +182,11 @@ const readingtest2: Reading<
  [MakeVar<"a", ['sym', 'str']>, 
   MakeVar<'b', ['prim', "'bs'"]>]]> = [['sym', 'str'], ['prim', "'bs'"], ['prim', "'s1s2'"]]
 
-type StrError0 = "StrError0";
+// -----------------
+// -- String Fn
+// -----------------
+
+type StrError0 = "StrError0"
 export type Str<
   S
 , R extends string = ""> =
@@ -191,6 +196,14 @@ export type Str<
     : Str<T, `${R}${HS}`>
   : [`prim`, `'${R}'`]
 
+type LispRefindError0 = "LispRefindError0"
+export type LispRefind<
+  S> =
+  S extends [[`prim`, `'${infer regex}'`], [`prim`, `'${infer searched}'`]]
+    ? regex.RegexFind<searched, regex> extends [infer match extends string, infer _]
+      ? ['prim', `'${match}'`]
+    : ['prim', `''`]
+  : LispRefindError0
 
 
 
@@ -1194,7 +1207,7 @@ export type LispThreadLast<
 // ---------------------------------------
 
 export type BuiltinsUnion =
-'->' | '->>' | 'str' | 'vector' | 'map' | 'filter' | 'remove' | 'reduce' | 'count' | 'concat' | 'conj' | 'first' | 'second' | 'last' | 'rest' | 'butlast' | 'reverse' | 'interleave' | 'take' | 'drop' | 'assoc-in' | 'update-in' | 'assoc' | 'update' | 'get' | 'eq' | '=' | 'not' | 'and' | 'or' | '+' | '-' | '*' | '/' | '%' | 'mod' | '>' | '<' | '>=' | '<=' | 'number?' | 'string?' | 'vector?' | 'map?' | 'fn?' | 'keyword?' | 'ifn?' | 'pos-int?' | 'neg-int?' | 'odd?' | 'even?' | 'zero?' | 'symbol?' | 'empty?' | 'every?' | 'some' | 'nil?' | 'some?'
+'->' | '->>' | 'str' | 'vector' | 'map' | 'filter' | 'remove' | 'reduce' | 'count' | 'concat' | 'conj' | 'first' | 'second' | 'last' | 'rest' | 'butlast' | 'reverse' | 'interleave' | 'take' | 'drop' | 'assoc-in' | 'update-in' | 'assoc' | 'update' | 'get' | 'eq' | '=' | 'not' | 'and' | 'or' | '+' | '-' | '*' | '/' | '%' | 'mod' | '>' | '<' | '>=' | '<=' | 'number?' | 'string?' | 'vector?' | 'map?' | 'fn?' | 'keyword?' | 'ifn?' | 'pos-int?' | 'neg-int?' | 'odd?' | 'even?' | 'zero?' | 'symbol?' | 'empty?' | 'every?' | 'some' | 'nil?' | 'some?' | 're-find'
 
 type Builtins<
   U
@@ -1207,6 +1220,8 @@ type Builtins<
     ? Eval<LispThreadLast<OPR>, env, [[prev]]>
   : U extends `str`
     ? Str<Reading<OPR, env, [[prev]]>>
+  : U extends `re-find`
+    ? LispRefind<Reading<OPR, env, [[prev]]>>
   : U extends `vector`
     ? LispVector<Reading<OPR, env, [[prev]]>>
   : U extends `map`
