@@ -1,4 +1,4 @@
-import type Compiler from '../src/compiler'
+import type * as Compiler from '../src/compiler'
 
 type xxxa =  Compiler.Rec<Compiler.recp<' )))]]'>>
 type xa = Compiler.Rec<Compiler.recp<' (a or ((x y z {:a 11})))]]'>>

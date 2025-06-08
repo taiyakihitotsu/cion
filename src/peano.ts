@@ -5,15 +5,14 @@
 // but I think that should be rewritten with bit-number as well.
 // ... 2024.05.19
 
-import type Util from './util'
+import type * as Util from './util'
 
-namespace Peano {
   export type T0 = null;
   export type T1 = [T0];
-  export type T8 = [[[[[[[[Peano.T0]]]]]]]];
-  export type T16 = Peano.mul<T8, [[null]]>;
-  export type T32 = Peano.mul<T16, [[null]]>;
-  export type T64 = Peano.mul<T32, [[null]]>;
+  export type T8 = [[[[[[[[T0]]]]]]]];
+  export type T16 = mul<T8, [[null]]>;
+  export type T32 = mul<T16, [[null]]>;
+  export type T64 = mul<T32, [[null]]>;
 
   export const P0:T0 = null
   export const P1:T1 = [P0]
@@ -61,6 +60,5 @@ namespace Peano {
   export type gethan<T,U>   = Util.Equal<T,U> extends true ? true : lthan<U,T>
   export type lethan<T,U>  = gethan<U,T>
   export type lthan<T,U>   = gthan<U,T>
-}
 
-export default Peano;
+export * as Peano from './peano'

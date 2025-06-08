@@ -1,5 +1,5 @@
-import type Bit from './bit'
-import type Decimal from './decimal'
+import type * as Bit from './bit'
+import type * as Decimal from './decimal'
 
 export type  tZero = '0000000000000000'
 export type  tOne  = '0000000000000001'
@@ -20,8 +20,6 @@ export type NonDigit = Exclude<ASCII, Digit>
 export type NonWordChar = Exclude<ASCII, WordChar>
 export type NonLower = Exclude<ASCII, Upper>
 export type NonUpper = Exclude<ASCII, Upper>
-
-export namespace strutil {
 
 export type CharAt<
   S extends string
@@ -158,10 +156,5 @@ export type StrSearchAll<
       : Ret
     : StrSearchAll<Rest, Pattern, Tag, `${Forward}${F}`>
   : 'not all'
-} export default strutil
 
-
-
-
-
-
+export type * as StrUtil from './strutil'

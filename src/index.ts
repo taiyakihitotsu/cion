@@ -1,6 +1,6 @@
-import type Bit from './bit.ts'
-import type Compiler from './compiler'
-import type Util from './util'
+import type * as Bit from './bit.ts'
+import type * as Compiler from './compiler'
+import type * as Util from './util'
 import type { regex } from './regex'
 
 import type {LetVal,LetArg,LetForm,Each,Atom,TMap,Sexpr,TNil,Keyword,Sym,PrimString,PrimBoolean,PrimTestNumber,PrimNumber,Prim,Args,Fn,IFn,Vector,Var,Env,TNotMatch,IfForm} from './sexprtypes'

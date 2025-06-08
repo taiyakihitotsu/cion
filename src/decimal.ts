@@ -1,8 +1,6 @@
-import Bit from "./bit";
-import Peano from "./peano"
-import type Util from './util'
-
-namespace Decimal {
+import type * as Bit from "./bit";
+import type * as Peano from "./peano"
+import type * as Util from './util'
 
 type D10    = '0000000000001010'
 type D100   = '0000000001100100'
@@ -263,4 +261,4 @@ const isbitexpr_test_1: IsBitExpr<'00010a'> = false
 const isbitexpr_test_2: IsBitExpr<'a00010'> = false
 const isbitexpr_test_3: IsBitExpr<''> = false
 
-} export default Decimal
+export * as Decimal from './decimal'

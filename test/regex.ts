@@ -1,5 +1,5 @@
 import type regex from '../src/regex'
-import type Bit from '../src/bit'
+import type * as Bit from '../src/bit'
 import type { tZero, tOne, tTwo } from '../src/strutil'
 import { vZero, vOne, vTwo } from '../src/strutil'
 

@@ -1,7 +1,4 @@
-import type Peano from "./peano";
-
-namespace Bit {
-
+import type * as Peano from "./peano";
 
 // CONSTANTS.
 export type MAX = Peano.T16;
@@ -481,6 +478,4 @@ const testbitinc0: BitInc<"0000000000000000"> = "0000000000000001"
 const testbitinc1: BitInc<"1111111111111111"> = "0000000000000000"
 const testbitinc2: BitInc<"0000000000000011"> = "0000000000000100"
 
-}
-
-export default Bit
+export * as Bit from './bit'

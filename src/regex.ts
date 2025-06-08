@@ -1,6 +1,6 @@
-import type Bit from './bit'
-import type Decimal from './decimal'
-import type { strutil as str } from './strutil'
+import type * as Bit from './bit'
+import type * as Decimal from './decimal'
+import type { StrUtil as str } from './strutil'
 import type { tZero, tOne, tTwo } from './strutil'
 import { vZero, vOne, vTwo } from './strutil'
 

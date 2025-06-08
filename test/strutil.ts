@@ -1,4 +1,4 @@
-import type strutil from '../src/strutil'
+import type * as strutil from '../src/strutil'
 // test
 const test_strlen0: strutil.StrLen<'111'> = '0000000000000011'
 const test_strlen1: strutil.StrLen<''>    = '0000000000000000'

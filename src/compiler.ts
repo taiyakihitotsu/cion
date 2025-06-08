@@ -1,11 +1,9 @@
-import type Bit from './bit'
-import type Decimal from './decimal'
+import type * as Bit from './bit'
+import type * as Decimal from './decimal'
 
 // -------------------------------
 // -- Compiler
 // -------------------------------
-
-namespace Compiler {
 
 export type SPad<S extends string> = S extends ` ${infer SS}` ? SS  : ` ${S}`
 
@@ -267,5 +265,3 @@ export type _Unparse<
   : never
 
 export type Unparse<AST> = _Unparse<AST> extends infer r ? r extends '' ? 'nil' : r : never
-
-} export default Compiler
