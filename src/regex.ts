@@ -78,7 +78,8 @@ export type Comp<
 , tobeStack extends unknown[] = []
 , condition extends string = ''> =
   S extends ''
-    ? {condition: condition, tape: [...Stack, tobeStack]}
+    ? { condition: condition
+      , tape: [...Stack, tobeStack] }
   : S extends `${infer sFirst}${infer sRest}`
     ? sFirst extends '^' | '$'
       ? Comp<sRest, IsMerge, MergeString, MergeStack, Stack, tobeStack, `${condition}${sFirst}`>
@@ -172,8 +173,7 @@ export type MatchLoop<
 , MinTime extends string = tOne
 , Forward extends string = ''
 , i extends string = tZero
-, Result extends [] | SearchTimeResult = []
-> =
+, Result extends [] | SearchTimeResult = []> =
   Bit.BitGTE<i, MaxTime> extends true
     ? Result
   : Bit.BitGTE<str.StrLen<S>, str.StrLen<Pattern>> extends true
@@ -183,7 +183,7 @@ export type MatchLoop<
           ? str.StrSearchAll<S, Pattern, '^', `${Forward}${Matched}`> extends infer ssReturn
             ? ssReturn extends []
               ? []
-            : ssReturn extends SearchResult 
+            : ssReturn extends SearchResult
               ? [[`${Forward}${Matched}`, NextS], Bit.BitInc<i>]
             : never
           : never
@@ -357,7 +357,7 @@ export type TapeEvalLoop<
   S extends ''
     ? []
   : TapeEval<S, Tape> extends infer R
-    ? R extends [] 
+    ? R extends []
       ? S extends `${infer _f}${infer sRest}`
         ? TapeEvalLoop<sRest, Tape>
       : never

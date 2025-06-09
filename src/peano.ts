@@ -21,39 +21,51 @@ import type * as Util from './util'
   export const P32:T32 = [[[[[[[[[[[[[[[[P16]]]]]]]]]]]]]]]]
   export const P64:T64 = [[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[P32]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]
 
-  export type add<T, TT> = TT extends T0
+  export type add<
+  T
+, TT> =
+  TT extends T0
     ? T
-    : T extends T0
-      ? TT
-      : TT extends [infer U]
-        ? add<[T], U>
-        : never;
+  : T extends T0
+    ? TT
+  : TT extends [infer U]
+    ? add<[T], U>
+  : never
 
   export type inc<T> = [T];
 
   export type dec<T> = T extends [infer U] ? U : never;
 
-  export type min<T, TT> = TT extends T0
+  export type min<
+  T
+, TT> =
+  TT extends T0
     ? T
-    : TT extends [infer U]
-      ? min<dec<T>, U>
-      : never;
+  : TT extends [infer U]
+    ? min<dec<T>, U>
+  : never
 
-  export type mul<T, TT, I = T> = T extends T1
+  export type mul<
+  T
+, TT
+, I = T> =
+  T extends T1
     ? TT
-    : TT extends T1
-      ? T
-      : T extends T0
-        ? T0
-        : TT extends T0
-          ? T0
-          : TT extends [infer U]
-            ? mul<add<T, I>, U, I>
-            : never;
+  : TT extends T1
+    ? T
+  : T extends T0
+    ? T0
+  : TT extends T0
+    ? T0
+  : TT extends [infer U]
+    ? mul<add<T, I>, U, I>
+  : never
 
-  export type TELesserUnion<T> = T extends [infer U]
+  export type TELesserUnion<
+  T> =
+  T extends [infer U]
     ? T | TELesserUnion<U>
-    : never;
+  : never
   export type TLesserUnion<T> = T extends [infer U] ? T0 | TELesserUnion<U> : never;
 
   export type gthan<T, U> = U extends TLesserUnion<T> ? true : false;

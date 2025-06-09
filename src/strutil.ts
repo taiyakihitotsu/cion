@@ -99,16 +99,18 @@ export type SomeLen<
 export type StrTake<
   S extends string
 , N extends string
-, R extends string = ''> = 
-  (S extends '' ? true : false) & Bit.BitIsZero<N> extends true ? R
+, R extends string = ''> =
+  (S extends '' ? true : false) & Bit.BitIsZero<N> extends true
+    ? R
   : S extends `${infer f}${infer r}`
     ? StrTake<r, Bit.BitDec<N>, `${R}${f}`>
   : never
 
 export type StrDrop<
   S extends string
-, N extends string> = 
-  (S extends '' ? true : false) & Bit.BitIsZero<N> extends true ? S
+, N extends string> =
+  (S extends '' ? true : false) & Bit.BitIsZero<N> extends true
+    ? S
   : S extends `${infer _f}${infer r}`
     ? StrDrop<r, Bit.BitDec<N>>
   : never
@@ -128,15 +130,15 @@ export type StrSearchHead<
 , Complete extends string = ''
 , Forward extends string = ''> =
   S extends `${infer sf}${infer srest}`
-      ? (RegGet<Pattern,0> extends '.' ? true : false) | MatchChar<sf, RegGet<Pattern,0>> extends false
-        ? []
-      : RegGet<Pattern,1> extends ''
-        ? Complete extends 'complete'
-          ? sf extends ''
-            ? [`${Forward}${sf}`, srest]
-          : []
-        : [`${Forward}${sf}`, srest]
-      : StrSearchHead<srest, RegGet<Pattern,1>, Complete, `${Forward}${sf}`>
+    ? (RegGet<Pattern,0> extends '.' ? true : false) | MatchChar<sf, RegGet<Pattern,0>> extends false
+      ? []
+    : RegGet<Pattern,1> extends ''
+      ? Complete extends 'complete'
+        ? sf extends ''
+          ? [`${Forward}${sf}`, srest]
+        : []
+      : [`${Forward}${sf}`, srest]
+    : StrSearchHead<srest, RegGet<Pattern,1>, Complete, `${Forward}${sf}`>
   : never
 
 export type StrSearchAll<
