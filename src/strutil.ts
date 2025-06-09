@@ -21,6 +21,18 @@ export type NonWordChar = Exclude<ASCII, WordChar>
 export type NonLower = Exclude<ASCII, Upper>
 export type NonUpper = Exclude<ASCII, Upper>
 export type MetaChars = 'd' | 'w' | 'l' | 'u' | 'D' | 'W' | 'L' | 'U'
+type Quantifiers =
+'[' | ']' |
+  '(' | ')' |
+  '{' | '}' |
+  '.' |
+  '*' |
+  '+' |
+  '?' |
+  '^' |
+  '$' |
+  '|' |
+  '\\'
 
 export type CharAt<
   S extends string
@@ -120,7 +132,18 @@ export type StrDrop<
 // -- base of regexp
 // -------------------
 
-export type RegGet<S extends string, N extends 0|1> = S extends `${infer f}${infer rest}` ? f extends '\\' ? rest extends `${infer snd}${infer rrest}` ? [`${f}${snd}`, rrest][N] : never : [f, rest][N] : never
+export type RegFirstSplit<
+  S extends string
+, N extends 0|1> =
+  S extends `${infer f}${infer rest}`
+    ? S extends `\\${infer escapedFirst}${infer escapedRest}`
+      ? escapedFirst extends MetaChars
+        ? [`\\${escapedFirst}`, escapedRest][N]
+      : escapedFirst extends Quantifiers
+        ? [`${escapedFirst}`, escapedRest][N]
+      : never
+    : [f, rest][N]
+  : never
 
 // [note]
 // this works as ^.
@@ -130,15 +153,15 @@ export type StrSearchHead<
 , Complete extends string = ''
 , Forward extends string = ''> =
   S extends `${infer sf}${infer srest}`
-    ? (RegGet<Pattern,0> extends '.' ? true : false) | MatchChar<sf, RegGet<Pattern,0>> extends false
+    ? (RegFirstSplit<Pattern,0> extends '.' ? true : false) | MatchChar<sf, RegFirstSplit<Pattern,0>> extends false
       ? []
-    : RegGet<Pattern,1> extends ''
+    : RegFirstSplit<Pattern,1> extends ''
       ? Complete extends 'complete'
         ? sf extends ''
           ? [`${Forward}${sf}`, srest]
         : []
       : [`${Forward}${sf}`, srest]
-    : StrSearchHead<srest, RegGet<Pattern,1>, Complete, `${Forward}${sf}`>
+    : StrSearchHead<srest, RegFirstSplit<Pattern,1>, Complete, `${Forward}${sf}`>
   : never
 
 export type StrSearchAll<

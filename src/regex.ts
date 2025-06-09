@@ -104,9 +104,9 @@ export type Comp<
     : IsMerge extends '('
       ? sFirst extends '|'
         ? Comp<sRest, '(', '', [...MergeStack, MergeString], Stack, [], condition>
-      : Comp<sRest, '(', `${MergeString}${sFirst}`, MergeStack, Stack, [], condition>
+      : Comp<str.RegFirstSplit<S,1>, '(', `${MergeString}${str.RegFirstSplit<S,0>}`, MergeStack, Stack, [], condition>
     : IsMerge extends '['
-      ? Comp<str.RegGet<S,1>, '[', str.RegGet<S,0>, [...MergeStack, ...(MergeString extends '' ? [] : [MergeString])], Stack, [], condition>
+      ? Comp<str.RegFirstSplit<S,1>, '[', str.RegFirstSplit<S,0>, [...MergeStack, ...(MergeString extends '' ? [] : [MergeString])], Stack, [], condition>
     : IsMerge extends ''
       ? sFirst extends '\\'
         ? ReadEscape<S> extends [infer sFirst extends string, infer srestRest extends string]

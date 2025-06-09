@@ -221,6 +221,14 @@ const evaltesttms_comp0vbzf4: regex.RegexFind<'xszds', 's(z|d){0,2}s$'> = ['szds
 const evaltesttms_comp0vbzf4b: regex.RegexFind<'xszds', '^s(z|d){0,2}s'> = []
 const evaltesttms_comp0vbzf6: regex.RegexFind<'xszds', 's(z|d){0,2}s'> = ['szds', '']
 
+const evaltesttms_compdke0: regex.RegexFind<'xk?2', 'xk[d\\?]2'> = ['xk?2', '']
+const evaltesttms_compdke1: regex.RegexFind<'xk?2', 'x[k\\?]{0,2}2'> = ['xk?2', '']
+const evaltesttms_compdke2: regex.RegexFind<'xk?2', 'x(k\\?)2'> = ['xk?2', '']
+const evaltesttms_compdke3: regex.RegexFind<'ddd12d1d', 'ddd\\d\\dd\\dd'> = ['ddd12d1d', '']
+const evaltesttms_compdke4: regex.RegexFind<'xkd32', 'xk(d\\d){1,2}2'> = ['xkd32', '']
+const evaltesttms_compdke5: regex.RegexFind<'xkd32', 'xk(d|\\d)2'> = []
+const evaltesttms_compdke6: regex.RegexFind<'xkd345?2', 'xk(d|\\d){1,4}\\?2'> = ['xkd345?2', '']
+
 const evaltesttms_regg3x: regex.RegexFind<'sz1s', 'sz\\d'> = ['sz1', 's']
 const evaltesttms_comp0vbzfx0:  regex.RegexFind<'szds', 's(z|\\d){0,2}s'>  = []
 const evaltesttms_comp0vbzfx0a: regex.RegexFind<'szds', 's[z\\d]{0,2}s'>   = []
