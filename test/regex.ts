@@ -1,4 +1,4 @@
-import type regex from '../src/regex'
+import type { regex } from '../src/regex'
 import type * as Bit from '../src/bit'
 import type { tZero, tOne, tTwo } from '../src/strutil'
 import { vZero, vOne, vTwo } from '../src/strutil'
@@ -11,49 +11,49 @@ import { vZero, vOne, vTwo } from '../src/strutil'
 // const Two  = '0000000000000010'
 
 // test
-const xtest_mloop0: regex.MatchLoopVec<'xxxxx', ['xx'], 'char', tOne> = [['xx', 'xxx'], vOne]
-const xtest_mloop1: regex.MatchLoopVec<'xxxxx', ['xx'], 'pattern'> = [['xxxx', 'x'], vTwo]
-const xtest_mloop1a: regex.MatchLoopVec<'xxxxx', ['xx'], 'pattern', tOne> = [['xx', 'xxx'], vOne]
-const xtxest_mloop2: regex.MatchLoopVec<'xxxxx', ['x'], 'char'>  = [['xxxxx', ''], '0000000000000101']
-const xtest_mloop3: regex.MatchLoopVec<'xxxxxx', ['x'], 'char'> = [['xxxxxx', ''], '0000000000000110']
-const xtest_mloop2a: regex.MatchLoopVec<'xxxxx', ['x'], 'char', Bit.BitInc<tOne>, tOne> = [['xx', 'xxx'], vTwo]
-const xtest_mloop3a: regex.MatchLoopVec<'xxxxxx', ['x'], 'char', Bit.BitInc<Bit.BitInc<tOne>>, tOne> = [['xxx', 'xxx'], '0000000000000011']
-const xtest_mloop4: regex.MatchLoopVec<'xxxyxxx', ['x'], 'char'> = [['xxx', 'yxxx'], '0000000000000011']
-const xtest_mloop5: regex.MatchLoopVec<'xxxyxxx', ['x'], 'char', Bit.BitInc<tOne>> = [['xx', 'xyxxx'], vTwo]
+const xtest_mloop0: regex.MatchLoopForUnion<'xxxxx', ['xx'], 'char', tOne> = [['xx', 'xxx'], vOne]
+const xtest_mloop1: regex.MatchLoopForUnion<'xxxxx', ['xx'], 'pattern'> = [['xxxx', 'x'], vTwo]
+const xtest_mloop1a: regex.MatchLoopForUnion<'xxxxx', ['xx'], 'pattern', tOne> = [['xx', 'xxx'], vOne]
+const xtxest_mloop2: regex.MatchLoopForUnion<'xxxxx', ['x'], 'char'>  = [['xxxxx', ''], '0000000000000101']
+const xtest_mloop3: regex.MatchLoopForUnion<'xxxxxx', ['x'], 'char'> = [['xxxxxx', ''], '0000000000000110']
+const xtest_mloop2a: regex.MatchLoopForUnion<'xxxxx', ['x'], 'char', Bit.BitInc<tOne>, tOne> = [['xx', 'xxx'], vTwo]
+const xtest_mloop3a: regex.MatchLoopForUnion<'xxxxxx', ['x'], 'char', Bit.BitInc<Bit.BitInc<tOne>>, tOne> = [['xxx', 'xxx'], '0000000000000011']
+const xtest_mloop4: regex.MatchLoopForUnion<'xxxyxxx', ['x'], 'char'> = [['xxx', 'yxxx'], '0000000000000011']
+const xtest_mloop5: regex.MatchLoopForUnion<'xxxyxxx', ['x'], 'char', Bit.BitInc<tOne>> = [['xx', 'xyxxx'], vTwo]
 
 // ---------------
 
 // group
-const ytest_mloop0: regex.MatchLoopVec<'xxxxx', ['y','xx'], 'char', tOne>     = [['xx', 'xxx'], vOne]
-const ytest_mloop1: regex.MatchLoopVec<'xxxxx', ['y','xx'], 'pattern'>       = [['xxxx', 'x'], vTwo]
-const ytest_mloop1a: regex.MatchLoopVec<'xxxxx', ['y','xx'], 'pattern', tOne> = [['xx', 'xxx'], vOne]
-const ytest_mloop2: regex.MatchLoopVec<'xxxxx', ['y','x'], 'char'>  = [['xxxxx', ''], "0000000000000101"]
-const ytest_mloop3: regex.MatchLoopVec<'xxxxxx', ['y','x'], 'char'> = [['xxxxxx', ''], "0000000000000110"]
-const ytest_mloop2a: regex.MatchLoopVec<'xxxxx', ['y','x'], 'char', Bit.BitInc<tOne>, tOne> = [['xx', 'xxx'], vTwo]
-const ytest_mloop3a: regex.MatchLoopVec<'xxxxxx', ['y','x'], 'char', Bit.BitInc<Bit.BitInc<tOne>>, tOne> = [['xxx', 'xxx'], "0000000000000011"]
-const ytest_mloop4: regex.MatchLoopVec<'xxxyxxx', ['y', 'x'], 'char'> = [['xxx', 'yxxx'], "0000000000000011"]
-const ytest_mloop5: regex.MatchLoopVec<'xxxyxxx', ['y','x'], 'char', Bit.BitInc<tOne>> = [['xx', 'xyxxx'], vTwo]
+const ytest_mloop0: regex.MatchLoopForUnion<'xxxxx', ['y','xx'], 'char', tOne>     = [['xx', 'xxx'], vOne]
+const ytest_mloop1: regex.MatchLoopForUnion<'xxxxx', ['y','xx'], 'pattern'>       = [['xxxx', 'x'], vTwo]
+const ytest_mloop1a: regex.MatchLoopForUnion<'xxxxx', ['y','xx'], 'pattern', tOne> = [['xx', 'xxx'], vOne]
+const ytest_mloop2: regex.MatchLoopForUnion<'xxxxx', ['y','x'], 'char'>  = [['xxxxx', ''], "0000000000000101"]
+const ytest_mloop3: regex.MatchLoopForUnion<'xxxxxx', ['y','x'], 'char'> = [['xxxxxx', ''], "0000000000000110"]
+const ytest_mloop2a: regex.MatchLoopForUnion<'xxxxx', ['y','x'], 'char', Bit.BitInc<tOne>, tOne> = [['xx', 'xxx'], vTwo]
+const ytest_mloop3a: regex.MatchLoopForUnion<'xxxxxx', ['y','x'], 'char', Bit.BitInc<Bit.BitInc<tOne>>, tOne> = [['xxx', 'xxx'], "0000000000000011"]
+const ytest_mloop4: regex.MatchLoopForUnion<'xxxyxxx', ['y', 'x'], 'char'> = [['xxx', 'yxxx'], "0000000000000011"]
+const ytest_mloop5: regex.MatchLoopForUnion<'xxxyxxx', ['y','x'], 'char', Bit.BitInc<tOne>> = [['xx', 'xyxxx'], vTwo]
 
-const testmaxmin0a: regex.MatchLoopVec<'{n,m}rest', regex.MaxMinMatch, 'char'>[0]   = ['{n,m}', 'rest']
-const testmaxmin1a: regex.MatchLoopVec<'{n,mm}rest', regex.MaxMinMatch, 'char'>[0]  = ['{n,mm}', 'rest']
-const testmaxmin2a: regex.MatchLoopVec<'{nn,mm}rest', regex.MaxMinMatch, 'char'>[0] = ['{nn,mm}', 'rest']
+const testmaxmin0a: regex.MatchLoopForUnion<'{n,m}rest', regex.MaxMinMatch, 'char'>[0]   = ['{n,m}', 'rest']
+const testmaxmin1a: regex.MatchLoopForUnion<'{n,mm}rest', regex.MaxMinMatch, 'char'>[0]  = ['{n,mm}', 'rest']
+const testmaxmin2a: regex.MatchLoopForUnion<'{nn,mm}rest', regex.MaxMinMatch, 'char'>[0] = ['{nn,mm}', 'rest']
 // they are not used though.
-const testmaxmin0b: regex.MatchLoopVec<'{,m}rest', regex.MaxMinMatch, 'char'>[0]  = ['{,m}', 'rest']
-const testmaxmin1b: regex.MatchLoopVec<'{,mm}rest', regex.MaxMinMatch, 'char'>[0] = ['{,mm}', 'rest']
-const testmaxmin0c: regex.MatchLoopVec<'{n,}rest', regex.MaxMinMatch, 'char'>[0]  = ['{n,}', 'rest']
-const testmaxmin1c: regex.MatchLoopVec<'{nn,}rest', regex.MaxMinMatch, 'char'>[0] = ['{nn,}', 'rest']
-const testmaxmin0d: regex.MatchLoopVec<'{n}rest', regex.MaxMinMatch, 'char'>[0]   = ['{n}', 'rest']
-const testmaxmin1d: regex.MatchLoopVec<'{nn}rest', regex.MaxMinMatch, 'char'>[0]  = ['{nn}', 'rest']
+const testmaxmin0b: regex.MatchLoopForUnion<'{,m}rest', regex.MaxMinMatch, 'char'>[0]  = ['{,m}', 'rest']
+const testmaxmin1b: regex.MatchLoopForUnion<'{,mm}rest', regex.MaxMinMatch, 'char'>[0] = ['{,mm}', 'rest']
+const testmaxmin0c: regex.MatchLoopForUnion<'{n,}rest', regex.MaxMinMatch, 'char'>[0]  = ['{n,}', 'rest']
+const testmaxmin1c: regex.MatchLoopForUnion<'{nn,}rest', regex.MaxMinMatch, 'char'>[0] = ['{nn,}', 'rest']
+const testmaxmin0d: regex.MatchLoopForUnion<'{n}rest', regex.MaxMinMatch, 'char'>[0]   = ['{n}', 'rest']
+const testmaxmin1d: regex.MatchLoopForUnion<'{nn}rest', regex.MaxMinMatch, 'char'>[0]  = ['{nn}', 'rest']
 
 const testmaxminr0: regex.ReadMinMax<`{0,1}rest`> = [[['0000000000000000', '0000000000000001'], 'times'], 'rest']
 const testmaxminr1: regex.ReadMinMax<`{0,15}rest`> = [[['0000000000000000', '0000000000001111'], 'times'], 'rest']
 const testmaxminr2: regex.ReadMinMax<`{15,16}rest`> = [[['0000000000001111', '0000000000010000'], 'times'], 'rest']
 const testmaxminr3: regex.ReadMinMax<`{0,1rest`> = []
 
-const aaaa: regex.ClimaxMatchLoopVec<'xxsssssss', ['y', 'x'], '0000000000000010', '0000000000000001', ''> = [['xx', 'sssssss'], vTwo]
-const aaaab: regex.ClimaxMatchLoopVec<'xysssssss', ['y', 'x'], '0000000000000010', '0000000000000001', ''> = [['xy', 'sssssss'], vOne]
-const aaaabbbb: regex.ClimaxMatchLoopVec<'xsssssss', ['y', 'x'], '0000000000000010', '0000000000000001', ''> = [['x', 'sssssss'], vOne] 
-const aaaabbbbc: regex.ClimaxMatchLoopVec<'xsssssss', ['y', 'z'], '0000000000000010', '0000000000000001', ''> = [] 
+const aaaa: regex.ClimaxMatchLoopForUnion<'xxsssssss', ['y', 'x'], '0000000000000010', '0000000000000001', ''> = [['xx', 'sssssss'], vTwo]
+const aaaab: regex.ClimaxMatchLoopForUnion<'xysssssss', ['y', 'x'], '0000000000000010', '0000000000000001', ''> = [['xy', 'sssssss'], vOne]
+const aaaabbbb: regex.ClimaxMatchLoopForUnion<'xsssssss', ['y', 'x'], '0000000000000010', '0000000000000001', ''> = [['x', 'sssssss'], vOne] 
+const aaaabbbbc: regex.ClimaxMatchLoopForUnion<'xsssssss', ['y', 'z'], '0000000000000010', '0000000000000001', ''> = [] 
 
 // note : should test zero pattern.
 const test_mloop0: regex.MatchLoop<'xxxxx', 'xx', 'char', tOne>     = [['xx', 'xxx'], vOne]
@@ -90,7 +90,7 @@ const test_comp0yaaa: regex.Comp<'s(ss|x)+s'> = {condition: '', tape: [['s'], ['
 const test_comp0yb: regex.Comp<'s(s|x)s'> = {condition: '', tape: [['s'], ['s', 'x'], ['s']]}
 const test_comp0yxa: regex.Comp<'s[ss]s'> = {condition: '', tape: [['s'], ['s', 's'], ['s']]}
 const test_comp0yxb: regex.Comp<'s[sx]s'> = {condition: '', tape: [['s'], ['s', 'x'], ['s']]}
-const test_comp0yxba: regex.Comp<'s[sx]?s'> = {condition: '', tape: [['s'], [['s', 'x'], '?'], ['s']]}
+const test_comp0yxba: regex.Comp<'s[sx]?s'> = {condition: '', tape: [['s'], [['s', 'x'], [[vZero, vOne], 'times']], ['s']]}
 // -- ^
 const test_fcomp0yb:  regex.Comp<'^s(s|x)s'> = {condition: '^', tape: [['s'], ['s', 'x'], ['s']]}
 const test_fcomp0yxa: regex.Comp<'^s[ss]s'> = {condition: '^', tape: [['s'], ['s', 's'], ['s']]}

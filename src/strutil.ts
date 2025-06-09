@@ -20,6 +20,7 @@ export type NonDigit = Exclude<ASCII, Digit>
 export type NonWordChar = Exclude<ASCII, WordChar>
 export type NonLower = Exclude<ASCII, Upper>
 export type NonUpper = Exclude<ASCII, Upper>
+export type MetaChars = 'd' | 'w' | 'l' | 'u' | 'D' | 'W' | 'L' | 'U'
 
 export type CharAt<
   S extends string

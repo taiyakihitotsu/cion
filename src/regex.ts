@@ -4,35 +4,71 @@ import type { StrUtil as str } from './strutil'
 import type { tZero, tOne, tTwo } from './strutil'
 import { vZero, vOne, vTwo } from './strutil'
 
-export namespace regex {
-
 // -------------------------
 // -- Regex Compiler
 // -------------------------
 
+type DtoB<Bit extends string> = Decimal.DecimalToBit<Bit>
+
 export type MaxMinMatch = ['{.,.}', '{.,..}', '{..,..}', '{.,}', '{..,}', '{.}', '{..}', '{,.}','{,..}']
 
+// ReadMinMax
+//
+// This returns `[]` as failure,
+//   or [[BitStr, BitStr], 'times'] as success.
+//  
 export type ReadMinMax<
   S extends string> =
-  MatchLoopVec<S, ['{.,.}', '{.,..}', '{..,..}'], 'char'> extends [[infer Match, infer Next], infer _Times]
+  MatchLoopForUnion<S, ['{.,.}', '{.,..}', '{..,..}'], 'char'> extends [[infer Match, infer Next], infer _Times]
     ? Match extends `{${infer n},${infer m}}`
-      ? [[[Decimal.DecimalToBit<n>,Decimal.DecimalToBit<m>], 'times'], Next]
+      ? [[[DtoB<n>,DtoB<m>], 'times'], Next]
     : Match extends `{${infer na},${infer ma}${infer mb}}`
-      ? [[[Decimal.DecimalToBit<na>,Decimal.DecimalToBit<`${ma}${mb}`>], 'times'], Next]
+      ? [[[DtoB<na>,DtoB<`${ma}${mb}`>], 'times'], Next]
     : Match extends `{${infer nna}${infer nnb},${infer mma}${infer mmb}}`
-      ? [[[Decimal.DecimalToBit<`${nna}${nnb}`>, Decimal.DecimalToBit<`${mma}${mmb}`>], 'times'], Next]
+      ? [[[DtoB<`${nna}${nnb}`>, DtoB<`${mma}${mmb}`>], 'times'], Next]
     : Match extends `{${infer pa},}`
-      ? [[[Decimal.DecimalToBit<pa>,CMaxTime], 'times'], Next]
+      ? [[[DtoB<pa>,CMaxTime], 'times'], Next]
     : Match extends `{${infer pax}${infer pay},}`
-      ? [[[Decimal.DecimalToBit<`${pax}${pay}`>,CMaxTime], 'times'], Next]
+      ? [[[DtoB<`${pax}${pay}`>,CMaxTime], 'times'], Next]
     : Match extends `{${infer zz}}`
-      ? [[[Decimal.DecimalToBit<zz>,Decimal.DecimalToBit<`${zz}`>], 'times'], Next]
+      ? [[[DtoB<zz>,DtoB<`${zz}`>], 'times'], Next]
     : Match extends `{${infer zza}${infer zzb}}`
-      ? [[[Decimal.DecimalToBit<`${zza}${zzb}`>,Decimal.DecimalToBit<`${zza}${zzb}`>], 'times'], Next]
+      ? [[[DtoB<`${zza}${zzb}`>,DtoB<`${zza}${zzb}`>], 'times'], Next]
     : []
   : []
 
+type ReadEscape<S extends string> = S extends `\\${infer Escaped}${infer Rest}` ? Escaped extends str.MetaChars ? [`\\${Escaped}`, Rest] : [`${Escaped}`, Rest] : never
+
 type CompFailed = []
+
+// Compiler
+//
+// This function compiles a regex string into an array, which we call a `tape`.
+// The final result is a record containing both conditions and the tape.
+//
+// Here is how each element of the tape is translated from each part of the regex:
+//
+// - A single character like `c` is compiled into ['c'], a one-element array.
+// - A group like `(abc)` is compiled into ['abc'].
+// - A union group like `(a|b)` is compiled into ['a', 'b'].
+//   These are passed into a `MatchVecLoop`, where each element is read during matching.
+// - A character set like `[ab]` is treated the same as a union group: ['a', 'b'].
+//
+// When `*` or `+` appears, the preceding element is packed into a tuple:
+//   - The first item is the compiled array (e.g., ['abc', 'de'])
+//   - The second item is the operator string: `*`.
+//
+//   For example, `(abc|de)*` first becomes ['abc', 'de'], then `*` is read,
+//   so it becomes [['abc', 'de'], '*'] (example A).
+//
+//   If it's a `+`, another ['abc', 'de'] is appended the tape, before the tuple A is added to it.
+//   So the tape ends with: [...tape, ['abc', 'de'], ['abc', 'de'], '*'].
+//
+// For `{n,m}`, the structure is similar to `*` or `+`, but the second element is:
+//   [[n, m], 'times'] → See `ReadMinMax`.
+// `?` is handled the same way, represented as [[tZero, tOne], 'times'].
+//
+// `^` and `$` are compiled into condition flags.
 export type Comp<
   S extends string
 , IsMerge extends string = ''
@@ -56,8 +92,10 @@ export type Comp<
       ? Comp<sRest, '', '', [...MergeStack, MergeString], [...Stack], [], condition>
     : sFirst extends '+'
       ? Comp<sRest, '', '', [...(MergeStack extends [] ? [] : [MergeStack, '*'])], [...Stack, ...(MergeStack extends [] ? [] : [MergeStack]), ...(tobeStack extends [] ? [] : [tobeStack])], [...(tobeStack extends [] ? [] : [tobeStack, '*'])]>
-    : sFirst extends '*' | '?'
+    : sFirst extends '*'
       ? Comp<sRest, '', '', [...(MergeStack extends [] ? [] : [MergeStack, sFirst])], Stack, [...(tobeStack extends [] ? [] : [tobeStack, sFirst])], condition>
+    : sFirst extends '?'
+      ? Comp<sRest, '', '', [...(MergeStack extends [] ? [] : [MergeStack, [[tZero, tOne], 'times']])], Stack, [...(tobeStack extends [] ? [] : [tobeStack, [[tZero, tOne], 'times']])], condition>
     : sFirst extends '{'
       ? ReadMinMax<S> extends [infer FnPart, infer RestPart extends string]
         ? Comp<RestPart, '', '', [...(MergeStack extends [] ? [] : [MergeStack, FnPart])], Stack, [...(tobeStack extends [] ? [] : [tobeStack, FnPart])], condition>
@@ -70,8 +108,8 @@ export type Comp<
       ? Comp<str.RegGet<S,1>, '[', str.RegGet<S,0>, [...MergeStack, ...(MergeString extends '' ? [] : [MergeString])], Stack, [], condition>
     : IsMerge extends ''
       ? sFirst extends '\\'
-        ? sRest extends `${infer sSecond}${infer srestRest}`
-          ? Comp<srestRest, '', '', [], [...Stack, ...(tobeStack extends [] ? [] : [tobeStack]), ...(MergeStack extends [] ? [] : [MergeStack])], [`${sFirst}${sSecond}`], condition>
+        ? ReadEscape<S> extends [infer sFirst extends string, infer srestRest extends string]
+          ? Comp<srestRest, '', '', [], [...Stack, ...(tobeStack extends [] ? [] : [tobeStack]), ...(MergeStack extends [] ? [] : [MergeStack])], [sFirst], condition>
         : never
       : Comp<sRest, '', '', [], [...Stack, ...(tobeStack extends [] ? [] : [tobeStack]), ...(MergeStack extends [] ? [] : [MergeStack])], [sFirst], condition>
     : CompFailed
@@ -84,37 +122,48 @@ export type Comp<
 // ------------------------
 
 type RetStr<S, Ret = never> = S extends string ? S : Ret
-type InitEnv = {pattern: undefined, sign: undefined}
-
 type CMaxTime = '0000000000001111'
+type SearchResult = [string, string]
+type SearchTimeResult = [[string, string], string]
 
 // ---------------------
 // -- MatchLoop
 // ---------------------
 //
-// This is the bottom part of Cion regex reader.
-// Forward is a previous result of match string,
-//   so we should connect finally them one by one
-//   each time this called recurly.
-// Other parts in upper these fns call MatchLoop don't touch
-//   but just pass forward into this place.
+// This is the lower-level component of the Cion regex reader.
 //
-// tag: 
-//   If tag is pattern, matched parts are removed by each call, to match (abc)+ or so.
-//   tag is char, the head only is removed.
-//   this acts as suffix priority matching.
+// Forward:
+//   This represents a partially matched string passed from the calling function.
+//   Each time this function is called,
+//     `Forward` accumulates a matched part,
+//     eventually returning the complete matched result.
+//   `Forward` is passed in by the caller and accumulated here;
+//     it is not modified by the caller itself.
 //
-// MinTime: 
-//   Don't pass a number less than 1, especially 0.
+// tag:
+//   If `tag` is 'pattern',
+//     the matched part is removed entirely (e.g., for patterns like `(abc)+`).
+//   If `tag` is 'char',
+//     only the first character is removed.
+//   This enables suffix-priority matching.
+//
+// MaxTime / MinTime:
+//   These are used for `{n,m}` repetition patterns.
+//   Do not pass a value less than 1, especially not 0.
 //
 // i:
-//   Times info is returned as the 2nd.
-//     this says how many times a passed pattern is occured,
-//     even though tag is 'char'.
-//   This i should be the same of MaxTime
-//     only if you don't pass the union,
-//       which is expressed as a vector in actual.
-//     (see the test cases.)
+//   This represents how many times the pattern has been matched.
+//   This is returned as the 2nd elemement of return
+//     if this doesn't reach MaxTime, to restart with another pattern of union.
+//
+// Result:
+//   This returns either:
+//     - an empty array if matching fails
+//     - or [[matchedString, remainingString], i] if successful.
+//   In the success case:
+//     - the first element of the first pair is the matched substring,
+//     - the second is the remaining unmatched string,
+//     - and the second element is the number of matches.
 export type MatchLoop<
   S extends string
 , Pattern extends string
@@ -157,7 +206,15 @@ export type MatchLoop<
     : []
   : Result
 
-export type MatchLoopVec<
+// MatchLoopForUnion
+//
+// [note]
+//   The term `Union` here refers to a part of regex,
+//     not Union type in a type system.
+//
+// This function calls `MatchLoop` for each element of the tape.
+// It correspondeds to an union pattern in the regex, which has been compiled to ['a', 'b'] (-> see `comp` )
+export type MatchLoopForUnion<
   S extends string
 , Pat extends string[]
 , Tag extends 'pattern' | 'char' = 'pattern'
@@ -170,15 +227,20 @@ export type MatchLoopVec<
         ? Result
       : Rest extends []
         ? []
-      : MatchLoopVec<S, Rest,Tag,Max,Min, Forward>
+      : MatchLoopForUnion<S, Rest,Tag,Max,Min, Forward>
     : never
   : never
 
-type SearchResult = [string, string]
-type SearchTimeResult = [[string, string], string]
-
+// recClimaxMatchLoopForUnion
+//
+// This function reads tape elements against a given string.
+//
+// This function calls `MatchLoopForUnion`, which returns a `SearchTimeResult`.
+// If the match count does not reach `maxTime`, but satisfies `minTime`,
+//   the result's match count is passed as the next `minTime`
+//   to implement the `{n,m}` repetition pattern.
 type ClimaxFailed = []
-type recClimaxMatchLoopVec<
+type recClimaxMatchLoopForUnion<
   String extends string
 , groupTape extends string[]
 , maxTime extends string = CMaxTime
@@ -190,19 +252,23 @@ type recClimaxMatchLoopVec<
     ? Result
   : Bit.BitGTE<currentTime, maxTime> extends true
     ? Result
-  : MatchLoopVec<String, groupTape, 'pattern', maxTime, minTime, Forward> extends [[infer Matched extends string, infer NextString extends string], infer DoneTime extends string] & infer wholeResult extends SearchTimeResult
+  : MatchLoopForUnion<String, groupTape, 'pattern', maxTime, minTime, Forward> extends [[infer Matched extends string, infer NextString extends string], infer DoneTime extends string] & infer wholeResult extends SearchTimeResult
     ? Bit.BitAdd<DoneTime,currentTime> extends infer NextTime
       ? Bit.BitEq<maxTime,NextTime> extends true
         ? [[Matched, NextString], DoneTime]
-      : recClimaxMatchLoopVec<NextString, groupTape, maxTime, minTime, Matched, Bit.BitAdd<DoneTime,currentTime>, [[Matched, NextString], DoneTime]>
+      : recClimaxMatchLoopForUnion<NextString, groupTape, maxTime, minTime, Matched, Bit.BitAdd<DoneTime,currentTime>, [[Matched, NextString], DoneTime]>
     : never
   : Bit.BitLTE<minTime, currentTime> extends true
     ? Result
   : ClimaxFailed
- 
+
+// ClimaxMatchLoopForUnion
+//
+// This is a wrapper of `recClimaxMatchLoopForUnion`
+//
 // [Note]
 //   BitZero isn't accepted so we need to inc minTime if zero.
-export type ClimaxMatchLoopVec<
+export type ClimaxMatchLoopForUnion<
   String extends string
 , groupTape extends string[]
 , maxTime extends string
@@ -213,8 +279,8 @@ export type ClimaxMatchLoopVec<
   : Bit.BitLT<minTime, tZero> extends true
     ? never
   : Bit.BitIsZero<minTime> extends true
-    ? recClimaxMatchLoopVec<String, groupTape, maxTime, Bit.BitInc<minTime>, Forward>
-  : recClimaxMatchLoopVec<String, groupTape, maxTime, minTime, Forward>
+    ? recClimaxMatchLoopForUnion<String, groupTape, maxTime, Bit.BitInc<minTime>, Forward>
+  : recClimaxMatchLoopForUnion<String, groupTape, maxTime, minTime, Forward>
 
 type JustSymbolScene  = [string]
 type UnionSymbolScene = string[]
@@ -228,20 +294,20 @@ type SearchFailed = []
 
 // TapeEval
 //
-//   This reads a compiled regex.
+// This function evaluates a compiled regex tape against an input string.
 //
 // [note]
-//    plus is expanded to *, with comp.
+// This does not represent the full process of regex string matching.
+// If this function is called only once, it behaves like matching a regex with `^`.
 //
 // [note]
-//   ss*s should be merged to ss*, the same as (xyz)*xyz to (xyz)*
-//   I abandoned this task as I admit an greedy, so this regex has been illegal.
+// `+` is internally expanded into `*`, during compilation.
 //
-// [note]
-// This TapeEval works as all of tape has '^'.
-// see this case (in test/regex.ts):
-// // const evaltesttms_comp0vbz3e: regex.TapeEval<'esssyysssssss', regex.Comp<'s(z|d){0,2}s'>> = []
-
+// [Note]
+//   Patterns like `ss*s` should ideally be merged into `ss*`,  
+//   just like `(xyz)*xyz` should become `(xyz)*`.
+//   This optimization was abandoned to allow greedy behavior,
+//   so such patterns are considered illegal in this implementation.
 export type TapeEval<
   String extends string
 , Tape extends TapeType = []
@@ -254,22 +320,22 @@ export type TapeEval<
         ? TapeEval<Next, RTape<restTape>, Matched>
       : SearchFailed
     : firstTape extends UnionSymbolScene & infer Pats extends string[]
-      ? MatchLoopVec<String, Pats, 'pattern', tOne, tOne, Forward> extends [[infer Matched extends string, infer Next extends string], infer _Time]
+      ? MatchLoopForUnion<String, Pats, 'pattern', tOne, tOne, Forward> extends [[infer Matched extends string, infer Next extends string], infer _Time]
         ? TapeEval<Next, RTape<restTape>, Matched>
       : SearchFailed
     : firstTape extends [infer groupTape extends string[], infer Fn extends FnSigns]
       ? Fn extends '*'
-        ? MatchLoopVec<String, groupTape, 'pattern', CMaxTime, tOne, Forward> extends [[infer Matched extends string, infer Next extends string], infer _Time]
+        ? MatchLoopForUnion<String, groupTape, 'pattern', CMaxTime, tOne, Forward> extends [[infer Matched extends string, infer Next extends string], infer _Time]
           ? TapeEval<Next, RTape<restTape>, Matched>
         : TapeEval<String, RTape<restTape>, Forward>
       : Fn extends '?'
-        ? MatchLoopVec<String, groupTape, 'pattern', tOne, tOne, Forward> extends [[infer Matched extends string, infer Next extends string], infer _Time]
+        ? MatchLoopForUnion<String, groupTape, 'pattern', tOne, tOne, Forward> extends [[infer Matched extends string, infer Next extends string], infer _Time]
           ? TapeEval<Next, RTape<restTape>, Matched>
         : TapeEval<String, RTape<restTape>, Forward>
       : Fn extends FnTimesSign & [ [ infer minTime extends string
                                    , infer maxTime extends string]
                                  , 'times' ]
-        ? ClimaxMatchLoopVec<String, groupTape, maxTime, minTime, Forward> extends [[infer Matched extends string, infer Next extends string], infer _Time]
+        ? ClimaxMatchLoopForUnion<String, groupTape, maxTime, minTime, Forward> extends [[infer Matched extends string, infer Next extends string], infer _Time]
           ? TapeEval<Next, RTape<restTape>, Matched>
         : true extends Bit.BitIsZero<minTime>
           ? TapeEval<String, RTape<restTape>, Forward>
@@ -284,6 +350,7 @@ export type ReadTape<
   TapeEnv extends {condition: infer cond, tape: infer tape extends TapeType}
     ? TapeEval<String, tape>
   : []
+
 export type TapeEvalLoop<
   S extends string
 , Tape extends TapeType> =
@@ -313,4 +380,4 @@ export type RegexFind<
     : TapeEvalLoop<String, Tape>
   : never
 
-} export default regex
+export type * as regex from './regex'
