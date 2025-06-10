@@ -1,45 +1,55 @@
 import type * as Bit from './bit'
 import type * as Decimal from './decimal'
 import type { StrUtil as str } from './strutil'
+import type { VecUtil as vec } from './vecutil'
 import type { tZero, tOne, tTwo } from './strutil'
 import { vZero, vOne, vTwo } from './strutil'
+import type { regexConst } from './regex-const'
+
 
 // -------------------------
 // -- Regex Compiler
 // -------------------------
 
-type DtoB<Bit extends string> = Decimal.DecimalToBit<Bit>
+export type ExpandMinMax<
+  P extends string[]
+, min extends string
+, max extends string> =
+[...vec.Repeat<min, P>, ...(max extends '=' ? [] : max extends '<' ? [[P, '*']] : vec.Repeat<Bit.BitSub<max,min>, [P, '?']>)]
 
-export type MaxMinMatch = ['{.,.}', '{.,..}', '{..,..}', '{.,}', '{..,}', '{.}', '{..}', '{,.}','{,..}']
-
-// ReadMinMax
-//
-// This returns `[]` as failure,
-//   or [[BitStr, BitStr], 'times'] as success.
-//  
-export type ReadMinMax<
+export type CompMinMax<
   S extends string> =
-  MatchLoopForUnion<S, ['{.,.}', '{.,..}', '{..,..}'], 'char'> extends [[infer Match, infer Next], infer _Times]
-    ? Match extends `{${infer n},${infer m}}`
-      ? [[[DtoB<n>,DtoB<m>], 'times'], Next]
-    : Match extends `{${infer na},${infer ma}${infer mb}}`
-      ? [[[DtoB<na>,DtoB<`${ma}${mb}`>], 'times'], Next]
-    : Match extends `{${infer nna}${infer nnb},${infer mma}${infer mmb}}`
-      ? [[[DtoB<`${nna}${nnb}`>, DtoB<`${mma}${mmb}`>], 'times'], Next]
-    : Match extends `{${infer pa},}`
-      ? [[[DtoB<pa>,CMaxTime], 'times'], Next]
-    : Match extends `{${infer pax}${infer pay},}`
-      ? [[[DtoB<`${pax}${pay}`>,CMaxTime], 'times'], Next]
-    : Match extends `{${infer zz}}`
-      ? [[[DtoB<zz>,DtoB<`${zz}`>], 'times'], Next]
-    : Match extends `{${infer zza}${infer zzb}}`
-      ? [[[DtoB<`${zza}${zzb}`>,DtoB<`${zza}${zzb}`>], 'times'], Next]
-    : []
+  S extends `{${infer pa},}${infer Next}`
+    ? [Decimal.DtoB<pa>,'<', Next]
+  : S extends `{${infer pax}${infer pay},}${infer Next}`
+    ? [Decimal.DtoB<`${pax}${pay}`>,'<', Next]
+  : S extends `{${infer n},${infer m}}${infer Next}`
+    ? [Decimal.DtoB<n>,Decimal.DtoB<m>, Next]
+  : S extends `{${infer na},${infer ma}${infer mb}}${infer Next}`
+    ? [Decimal.DtoB<na>,Decimal.DtoB<`${ma}${mb}`>, Next]
+  : S extends `{${infer nna}${infer nnb},${infer mma}${infer mmb}}${infer Next}`
+    ? [Decimal.DtoB<`${nna}${nnb}`>, Decimal.DtoB<`${mma}${mmb}`>, Next]
+  : S extends `{${infer zz}}${infer Next}`
+    ? [Decimal.DtoB<zz>,'=', Next]
+  : S extends `{${infer zza}${infer zzb}}${infer Next}`
+    ? [Decimal.DtoB<`${zza}${zzb}`>,'=', Next]
   : []
 
-type ReadEscape<S extends string> = S extends `\\${infer Escaped}${infer Rest}` ? Escaped extends str.MetaChars ? [`\\${Escaped}`, Rest] : [`${Escaped}`, Rest] : never
+type ReadEscape<
+  S extends string> =
+  S extends `\\${infer Escaped}${infer Rest}`
+    ? Escaped extends str.MetaChars
+      ? [`\\${Escaped}`, Rest]
+    : [`${Escaped}`, Rest]
+  : never
 
 type CompFailed = []
+
+export type ReadInter<
+  S extends string> =
+  S extends `${infer f extends keyof regexConst.TransNumber}-${infer s extends keyof regexConst.TransNumber}${infer rest}`
+    ? [vec.Inter<regexConst.CharList, regexConst.TransNumber[f], regexConst.TransNumber[s]>, rest]
+  : never
 
 // Compiler
 //
@@ -51,7 +61,7 @@ type CompFailed = []
 // - A single character like `c` is compiled into ['c'], a one-element array.
 // - A group like `(abc)` is compiled into ['abc'].
 // - A union group like `(a|b)` is compiled into ['a', 'b'].
-//   These are passed into a `MatchVecLoop`, where each element is read during matching.
+//   These are passed into a `OrMatch`, where each element is read during matching.
 // - A character set like `[ab]` is treated the same as a union group: ['a', 'b'].
 //
 // When `*` or `+` appears, the preceding element is packed into a tuple:
@@ -64,249 +74,108 @@ type CompFailed = []
 //   If it's a `+`, another ['abc', 'de'] is appended the tape, before the tuple A is added to it.
 //   So the tape ends with: [...tape, ['abc', 'de'], ['abc', 'de'], '*'].
 //
-// For `{n,m}`, the structure is similar to `*` or `+`, but the second element is:
-//   [[n, m], 'times'] → See `ReadMinMax`.
-// `?` is handled the same way, represented as [[tZero, tOne], 'times'].
+// `{n,m}` is compiled in the same way as `+`.
+// - `(pat){2}` is expanded to `[['pat'], ['pat']]`
+// - `(pat){2,}` is expanded to `[['pat'], ['pat'], [['pat'], '*']]`
+// - `(pat){2,4}` is expanded to `[['pat'], ['pat'], [['pat'], '?'], [['pat'], '?']]`
 //
 // `^` and `$` are compiled into condition flags.
-export type Comp<
+type R<V, Type> = V extends Type ? V : never
+type RegF = [string[], ('*'|'?')]
+
+type _Comp<
   S extends string
-, IsMerge extends string = ''
-, MergeString extends string = ''
-, MergeStack extends unknown[] = []
-, Stack extends unknown[] = []
-, tobeStack extends unknown[] = []
-, condition extends string = ''> =
+, IsMerge extends string
+, MergeString extends string
+, MergeStack extends string[] | RegF
+, Stack extends unknown[]
+, tobeStack extends string[] | RegF
+, condition extends string> =
   S extends ''
     ? { condition: condition
       , tape: [...Stack, tobeStack] }
   : S extends `${infer sFirst}${infer sRest}`
     ? sFirst extends '^' | '$'
-      ? Comp<sRest, IsMerge, MergeString, MergeStack, Stack, tobeStack, `${condition}${sFirst}`>
+      ? _Comp<sRest, IsMerge, MergeString, MergeStack, Stack, tobeStack, `${condition}${sFirst}`>
     : sFirst extends '('
-      ? Comp<sRest, '(', '', MergeStack, [...Stack, tobeStack], [], condition>
+      ? _Comp<sRest, '(', '', MergeStack, [...Stack, tobeStack], [], condition>
     : sFirst extends ')'
-      ? Comp<sRest, '', '', [...MergeStack, MergeString], [...Stack], [], condition>
+      ? _Comp<sRest, '', '', [...R<MergeStack, string[]>, MergeString], [...Stack], [], condition>
     : sFirst extends '['
-      ? Comp<sRest, '[', '', MergeStack, [...Stack, tobeStack], [], condition>
+      ? _Comp<sRest, '[', '', MergeStack, [...Stack, tobeStack], [], condition>
     : sFirst extends ']'
-      ? Comp<sRest, '', '', [...MergeStack, MergeString], [...Stack], [], condition>
+      ? _Comp<sRest, '', '', [...R<MergeStack, string[]>, ...(MergeString extends '' ? [] : [MergeString])], [...Stack], [], condition>
     : sFirst extends '+'
-      ? Comp<sRest, '', '', [...(MergeStack extends [] ? [] : [MergeStack, '*'])], [...Stack, ...(MergeStack extends [] ? [] : [MergeStack]), ...(tobeStack extends [] ? [] : [tobeStack])], [...(tobeStack extends [] ? [] : [tobeStack, '*'])]>
+      ? _Comp<sRest, '', '', [...(MergeStack extends [] ? [] : [R<MergeStack, string[]>, '*'])], [...Stack, ...(MergeStack extends [] ? [] : [MergeStack]), ...(tobeStack extends [] ? [] : [tobeStack])], [...(tobeStack extends [] ? [] : [R<tobeStack, string[]>, '*'])], condition>
     : sFirst extends '*'
-      ? Comp<sRest, '', '', [...(MergeStack extends [] ? [] : [MergeStack, sFirst])], Stack, [...(tobeStack extends [] ? [] : [tobeStack, sFirst])], condition>
+      ? _Comp<sRest, '', '', [...(MergeStack extends [] ? [] : [R<MergeStack, string[]>, sFirst])], Stack, [...(tobeStack extends [] ? [] : [R<tobeStack, string[]>, sFirst])], condition>
     : sFirst extends '?'
-      ? Comp<sRest, '', '', [...(MergeStack extends [] ? [] : [MergeStack, [[tZero, tOne], 'times']])], Stack, [...(tobeStack extends [] ? [] : [tobeStack, [[tZero, tOne], 'times']])], condition>
+      ? _Comp<sRest, '', '', [...(MergeStack extends [] ? [] : [R<MergeStack, string[]>, '?'])], Stack, [...(tobeStack extends [] ? [] : [R<tobeStack, string[]>, '?'])], condition>
     : sFirst extends '{'
-      ? ReadMinMax<S> extends [infer FnPart, infer RestPart extends string]
-        ? Comp<RestPart, '', '', [...(MergeStack extends [] ? [] : [MergeStack, FnPart])], Stack, [...(tobeStack extends [] ? [] : [tobeStack, FnPart])], condition>
+      ? CompMinMax<S> extends [infer min extends string, infer max extends string, infer Next extends string]
+        ? _Comp<Next, '', '', [], [...Stack, ...ExpandMinMax<(MergeStack extends [] ? R<tobeStack, string[]> : R<MergeStack, string[]>), min, max>], [], condition>
       : CompFailed
     : IsMerge extends '('
       ? sFirst extends '|'
-        ? Comp<sRest, '(', '', [...MergeStack, MergeString], Stack, [], condition>
-      : Comp<str.RegFirstSplit<S,1>, '(', `${MergeString}${str.RegFirstSplit<S,0>}`, MergeStack, Stack, [], condition>
+        ? _Comp<sRest, '(', '', [...R<MergeStack, string[]>, MergeString], Stack, [], condition>
+      : str.RegCut<S> extends [infer rFirst extends string, infer rSecond extends string]
+        ? _Comp<rSecond, '(', `${MergeString}${rFirst}`, MergeStack, Stack, [], condition>
+      : never
     : IsMerge extends '['
-      ? Comp<str.RegFirstSplit<S,1>, '[', str.RegFirstSplit<S,0>, [...MergeStack, ...(MergeString extends '' ? [] : [MergeString])], Stack, [], condition>
+      ? S extends `${infer _a}-${infer _b}${infer _c}`
+        ? ReadInter<S> extends [infer a extends string[], infer b extends string]
+          ? _Comp<b, '[', '', [...R<MergeStack, string[]>, ...(MergeString extends '' ? [] : R<[MergeString], string[]>), ...a], Stack, [], condition>
+        : 'test'
+      : _Comp<str.RegFirstSplit<S,1>, '[', str.RegFirstSplit<S,0>, [...R<MergeStack, string[]>, ...(MergeString extends '' ? [] : [MergeString])], Stack, [], condition>
     : IsMerge extends ''
       ? sFirst extends '\\'
         ? ReadEscape<S> extends [infer sFirst extends string, infer srestRest extends string]
-          ? Comp<srestRest, '', '', [], [...Stack, ...(tobeStack extends [] ? [] : [tobeStack]), ...(MergeStack extends [] ? [] : [MergeStack])], [sFirst], condition>
+          ? _Comp<srestRest, '', '', [], [...Stack, ...(tobeStack extends [] ? [] : [tobeStack]), ...(MergeStack extends [] ? [] : [MergeStack])], [sFirst], condition>
         : never
-      : Comp<sRest, '', '', [], [...Stack, ...(tobeStack extends [] ? [] : [tobeStack]), ...(MergeStack extends [] ? [] : [MergeStack])], [sFirst], condition>
+      : _Comp<sRest, '', '', [], [...Stack, ...(tobeStack extends [] ? [] : [tobeStack]), ...(MergeStack extends [] ? [] : [MergeStack])], [sFirst], condition>
     : CompFailed
   : CompFailed
 
-
+export type Comp<Regex extends string> = _Comp<Regex, '', '', [], [], [], ''>
 
 // ------------------------
 // -- [main] eval regexp
 // ------------------------
 
-type RetStr<S, Ret = never> = S extends string ? S : Ret
-type CMaxTime = '0000000000001111'
-type SearchResult = [string, string]
-type SearchTimeResult = [[string, string], string]
-
-// ---------------------
-// -- MatchLoop
-// ---------------------
-//
-// This is the lower-level component of the Cion regex reader.
-//
-// Forward:
-//   This represents a partially matched string passed from the calling function.
-//   Each time this function is called,
-//     `Forward` accumulates a matched part,
-//     eventually returning the complete matched result.
-//   `Forward` is passed in by the caller and accumulated here;
-//     it is not modified by the caller itself.
-//
-// tag:
-//   If `tag` is 'pattern',
-//     the matched part is removed entirely (e.g., for patterns like `(abc)+`).
-//   If `tag` is 'char',
-//     only the first character is removed.
-//   This enables suffix-priority matching.
-//
-// MaxTime / MinTime:
-//   These are used for `{n,m}` repetition patterns.
-//   Do not pass a value less than 1, especially not 0.
-//
-// i:
-//   This represents how many times the pattern has been matched.
-//   This is returned as the 2nd elemement of return
-//     if this doesn't reach MaxTime, to restart with another pattern of union.
-//
-// Result:
-//   This returns either:
-//     - an empty array if matching fails
-//     - or [[matchedString, remainingString], i] if successful.
-//   In the success case:
-//     - the first element of the first pair is the matched substring,
-//     - the second is the remaining unmatched string,
-//     - and the second element is the number of matches.
-export type MatchLoop<
-  S extends string
-, Pattern extends string
-, Tag extends 'pattern' | 'char' = 'pattern'
-, MaxTime extends string = CMaxTime
-, MinTime extends string = tOne
-, Forward extends string = ''
-, i extends string = tZero
-, Result extends [] | SearchTimeResult = []> =
-  Bit.BitGTE<i, MaxTime> extends true
-    ? Result
-  : Bit.BitGTE<str.StrLen<S>, str.StrLen<Pattern>> extends true
-    ? str.StrSearchAll<S, Pattern, '^', Forward> extends [infer Matched extends string, infer NextS extends string]
-      ? S extends `${infer _SF}${infer SRest}`
-        ? SRest extends ''
-          ? str.StrSearchAll<S, Pattern, '^', `${Forward}${Matched}`> extends infer ssReturn
-            ? ssReturn extends []
-              ? []
-            : ssReturn extends SearchResult
-              ? [[`${Forward}${Matched}`, NextS], Bit.BitInc<i>]
-            : never
-          : never
-        : Bit.BitInc<i> extends infer j extends string
-          ? MatchLoop<
-            Tag extends 'pattern' ? RetStr<NextS> : SRest
-          , Pattern
-          , Tag
-          , MaxTime
-          , MinTime
-	  , `${Forward}${Matched}`
-          , j
-          , [[`${Forward}${Matched}`, NextS], j]>
-        : never
-      : never
-    : Bit.BitGTE<i, MinTime> extends true
-      ? Bit.BitIsZero<i> extends true
-        ? [[Forward, S], i]
-      : Result
-    : []
-  : Result
-
-// MatchLoopForUnion
-//
-// [note]
-//   The term `Union` here refers to a part of regex,
-//     not Union type in a type system.
-//
-// This function calls `MatchLoop` for each element of the tape.
-// It correspondeds to an union pattern in the regex, which has been compiled to ['a', 'b'] (-> see `comp` )
-export type MatchLoopForUnion<
+export type OrMatch<
   S extends string
 , Pat extends string[]
-, Tag extends 'pattern' | 'char' = 'pattern'
-, Max extends string = CMaxTime
-, Min extends string = tOne
 , Forward extends string = ''> =
-  Pat extends [infer First extends string, ...infer Rest extends string[]]
-    ? MatchLoop<S, First, Tag, Max, Min, Forward> extends infer Result
-      ? Result extends [[infer m extends string, infer r], infer t]
-        ? Result
-      : Rest extends []
-        ? []
-      : MatchLoopForUnion<S, Rest,Tag,Max,Min, Forward>
-    : never
-  : never
-
-// recClimaxMatchLoopForUnion
-//
-// This function reads tape elements against a given string.
-//
-// This function calls `MatchLoopForUnion`, which returns a `SearchTimeResult`.
-// If the match count does not reach `maxTime`, but satisfies `minTime`,
-//   the result's match count is passed as the next `minTime`
-//   to implement the `{n,m}` repetition pattern.
-type ClimaxFailed = []
-type recClimaxMatchLoopForUnion<
-  String extends string
-, groupTape extends string[]
-, maxTime extends string = CMaxTime
-, minTime extends string = tOne
-, Forward extends string = ''
-, currentTime extends string = tZero
-, Result extends [[string, string], string] | [] = []> =
-  String extends ''
-    ? Result
-  : Bit.BitGTE<currentTime, maxTime> extends true
-    ? Result
-  : MatchLoopForUnion<String, groupTape, 'pattern', maxTime, minTime, Forward> extends [[infer Matched extends string, infer NextString extends string], infer DoneTime extends string] & infer wholeResult extends SearchTimeResult
-    ? Bit.BitAdd<DoneTime,currentTime> extends infer NextTime
-      ? Bit.BitEq<maxTime,NextTime> extends true
-        ? [[Matched, NextString], DoneTime]
-      : recClimaxMatchLoopForUnion<NextString, groupTape, maxTime, minTime, Matched, Bit.BitAdd<DoneTime,currentTime>, [[Matched, NextString], DoneTime]>
-    : never
-  : Bit.BitLTE<minTime, currentTime> extends true
-    ? Result
-  : ClimaxFailed
-
-// ClimaxMatchLoopForUnion
-//
-// This is a wrapper of `recClimaxMatchLoopForUnion`
-//
-// [Note]
-//   BitZero isn't accepted so we need to inc minTime if zero.
-export type ClimaxMatchLoopForUnion<
-  String extends string
-, groupTape extends string[]
-, maxTime extends string
-, minTime extends string
-, Forward extends string = ''> =
-  Bit.BitLT<maxTime, minTime> extends true
-    ? never
-  : Bit.BitLT<minTime, tZero> extends true
-    ? never
-  : Bit.BitIsZero<minTime> extends true
-    ? recClimaxMatchLoopForUnion<String, groupTape, maxTime, Bit.BitInc<minTime>, Forward>
-  : recClimaxMatchLoopForUnion<String, groupTape, maxTime, minTime, Forward>
+  Pat extends []
+    ? []
+  : Pat extends [infer First extends string, ...infer Rest extends string[]]
+    ? str.StrSearchAll<S, First, '^', Forward> extends [infer M extends string, infer Re extends string]
+      ? [M, Re]
+    : OrMatch<S, Rest, Forward>
+  : []
 
 type JustSymbolScene  = [string]
 type UnionSymbolScene = string[]
-type FnTimesSign = [[string, string], 'times']
-type FnScene = [string[], (string | FnTimesSign)]
-type TapeType = (JustSymbolScene|UnionSymbolScene|FnScene|FnTimesSign)[] 
-type RTape<T> = T extends TapeType ? T : never
-type FnSigns = '*' | '?' | FnTimesSign
-type SearchFailed = []
-
+type FnScene = [string[], ('*'|'?')]
+type Scene = (JustSymbolScene|UnionSymbolScene|FnScene)
+type TapeType = Scene[] 
+type FnSigns = '*' | '?'
 
 // TapeEval
 //
 // This function evaluates a compiled regex tape against an input string.
 //
-// [note]
+// [Note]
 // This does not represent the full process of regex string matching.
 // If this function is called only once, it behaves like matching a regex with `^`.
 //
-// [note]
-// `+` is internally expanded into `*`, during compilation.
+// [Note]
+// The `+` operator is internally expanded into `*` during compilation.
 //
 // [Note]
-//   Patterns like `ss*s` should ideally be merged into `ss*`,  
-//   just like `(xyz)*xyz` should become `(xyz)*`.
-//   This optimization was abandoned to allow greedy behavior,
+//   Patterns like `ss*s` should ideally be merged into `ss*`,
+//   just as `(xyz)*xyz` could be reduced to `(xyz)*`.
+//   However, this optimization was abandoned to preserve greedy behavior,
 //   so such patterns are considered illegal in this implementation.
 export type TapeEval<
   String extends string
@@ -314,33 +183,15 @@ export type TapeEval<
 , Forward extends string = ''> =
   Tape extends []
     ? [Forward, String]
-  : Tape extends [infer firstTape, ...infer restTape]
-    ? firstTape extends JustSymbolScene & [infer Pat extends string]
-      ? MatchLoop<String, Pat, 'pattern', tOne, tOne, Forward> extends [[infer Matched extends string, infer Next extends string], infer _Time]
-        ? TapeEval<Next, RTape<restTape>, Matched>
-      : SearchFailed
-    : firstTape extends UnionSymbolScene & infer Pats extends string[]
-      ? MatchLoopForUnion<String, Pats, 'pattern', tOne, tOne, Forward> extends [[infer Matched extends string, infer Next extends string], infer _Time]
-        ? TapeEval<Next, RTape<restTape>, Matched>
-      : SearchFailed
+  : Tape extends [infer firstTape extends Scene, ...infer restTape extends TapeType]
+    ? firstTape extends infer Pats extends string[]
+      ? OrMatch<String, Pats, Forward> extends [infer Matched extends string, infer Next extends string]
+        ? TapeEval<Next, restTape, Matched>
+      : []
     : firstTape extends [infer groupTape extends string[], infer Fn extends FnSigns]
-      ? Fn extends '*'
-        ? MatchLoopForUnion<String, groupTape, 'pattern', CMaxTime, tOne, Forward> extends [[infer Matched extends string, infer Next extends string], infer _Time]
-          ? TapeEval<Next, RTape<restTape>, Matched>
-        : TapeEval<String, RTape<restTape>, Forward>
-      : Fn extends '?'
-        ? MatchLoopForUnion<String, groupTape, 'pattern', tOne, tOne, Forward> extends [[infer Matched extends string, infer Next extends string], infer _Time]
-          ? TapeEval<Next, RTape<restTape>, Matched>
-        : TapeEval<String, RTape<restTape>, Forward>
-      : Fn extends FnTimesSign & [ [ infer minTime extends string
-                                   , infer maxTime extends string]
-                                 , 'times' ]
-        ? ClimaxMatchLoopForUnion<String, groupTape, maxTime, minTime, Forward> extends [[infer Matched extends string, infer Next extends string], infer _Time]
-          ? TapeEval<Next, RTape<restTape>, Matched>
-        : true extends Bit.BitIsZero<minTime>
-          ? TapeEval<String, RTape<restTape>, Forward>
-        : SearchFailed
-      : never
+      ? OrMatch<String, groupTape, Forward> extends [infer Matched extends string, infer Next extends string]
+        ? TapeEval<Next, Fn extends '*' ? Tape : restTape, Matched>
+      : TapeEval<String, restTape, Forward>
     : never
   : never
 
