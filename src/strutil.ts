@@ -198,13 +198,13 @@ export type StrSearchAll<
     ? []
   : S extends `${infer F}${infer Rest}`
     ? Tag extends 'Head' | '^'
-      ? StrSearchHead<S, Pattern, '^'>
-    : StrSearchHead<S, Pattern, '^', Forward> extends infer Ret & [string, string]
+      ? StrSearchHead<S, Pattern, '^', Forward>
+    : StrSearchHead<S, Pattern, '^', Forward> extends [infer Matched extends string, infer Rest extends string]
       ? Tag extends 'Tail' | '$'
         ? StrLen<S> extends StrLen<Pattern>
-          ? Ret
+          ? [Matched, Rest]
         : StrSearchAll<Rest, Pattern, Tag, `${Forward}${F}`>
-      : Ret
+      : [Matched, Rest]
     : StrSearchAll<Rest, Pattern, Tag, `${Forward}${F}`>
   : 'not all'
 
