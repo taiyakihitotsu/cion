@@ -83,3 +83,7 @@ const test_hallsone0: strutil.StrSearchAll<'sssss', 's', '^'> = ['s', 'ssss']
 const test_hallsone1: strutil.StrSearchAll<'sssxx', 'xx', '^'> = []
 const test_hallsone2: strutil.StrSearchAll<'xxsss', 'xx', '^'> = ['xx', 'sss']
 const test_hallsone: strutil.StrSearchAll<'xxsss', 'd', '^'> = []
+
+const test_strinter0: strutil.StrInter<'0123456789', '0000000000000010', '0000000000000101'> = '2345'
+const test_strinter1: strutil.StrInter<'0123456789', '0000000000000000', '0000000000000101'> = '012345'
+const test_strinter2: strutil.StrInter<'0123456789', '0000000000000010', '0000000000001111'> = '23456789'

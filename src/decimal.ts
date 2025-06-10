@@ -288,4 +288,6 @@ const isbitexpr_test_1: IsBitExpr<'00010a'> = false
 const isbitexpr_test_2: IsBitExpr<'a00010'> = false
 const isbitexpr_test_3: IsBitExpr<''> = false
 
+export type DtoB<Bit extends string> = DecimalToBit<Bit>
+
 export * as Decimal from './decimal'

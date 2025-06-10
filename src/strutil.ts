@@ -127,10 +127,35 @@ export type StrDrop<
     ? StrDrop<r, Bit.BitDec<N>>
   : never
 
+export type StrInter<
+  S extends string
+, N extends string
+, M extends string> =
+StrDrop<StrTake<S,Bit.BitInc<M>>, N>
 
 // -------------------
 // -- base of regexp
 // -------------------
+
+export type RegCut<
+  S extends string> =
+  S extends `${infer f}${infer s}${infer rest}`
+    ? f extends '\\'
+      ? s extends MetaChars
+        ? [`\\${s}`, rest]
+      : s extends Quantifiers
+        ? [`${s}`, rest]
+      : never
+    : f extends `*`
+      ? s extends `?`
+        ? [`*?`, rest]
+      : [`*`, `${s}${rest}`]
+    : f extends `+`
+      ? s extends `?`
+        ? [`+?`, rest]
+      : [`+`, `${s}${rest}`]
+    : [f, `${s}${rest}`]
+  : never
 
 export type RegFirstSplit<
   S extends string
