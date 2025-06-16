@@ -203,9 +203,10 @@ export type StrSearchHead<
   S extends string
 , Pattern extends string
 , Complete extends string = ''
-, Forward extends string = ''> =
+, Forward extends string = ''
+, Flag extends '!wildcard' | 'wildcard' = 'wildcard'> =
   S extends `${infer sf}${infer srest}`
-    ? (RegFirstSplit<Pattern,0> extends '.' ? true : false) | MatchChar<sf, RegFirstSplit<Pattern,0>> extends false
+    ? ([RegFirstSplit<Pattern,0>, Flag] extends ['.', 'wildcard'] ? true : false) | MatchChar<sf, RegFirstSplit<Pattern,0>> extends false
       ? []
     : RegFirstSplit<Pattern,1> extends ''
       ? Complete extends 'complete'
@@ -213,26 +214,27 @@ export type StrSearchHead<
           ? [`${Forward}${sf}`, srest]
         : []
       : [`${Forward}${sf}`, srest]
-    : StrSearchHead<srest, RegFirstSplit<Pattern,1>, Complete, `${Forward}${sf}`>
+    : StrSearchHead<srest, RegFirstSplit<Pattern,1>, Complete, `${Forward}${sf}`, Flag>
   : never
 
 export type StrSearchAll<
   S extends string
 , Pattern extends string
 , Tag extends string = ''
-, Forward extends string = ''> =
+, Forward extends string = ''
+, Flag extends '!wildcard' | 'wildcard' = 'wildcard'> =
   S extends ''
     ? []
   : S extends `${infer F}${infer Rest}`
     ? Tag extends 'Head' | '^'
-      ? StrSearchHead<S, Pattern, '^', Forward>
-    : StrSearchHead<S, Pattern, '^', Forward> extends [infer Matched extends string, infer Rest extends string]
+      ? StrSearchHead<S, Pattern, '^', Forward, Flag>
+    : StrSearchHead<S, Pattern, '^', Forward, Flag> extends [infer Matched extends string, infer Rest extends string]
       ? Tag extends 'Tail' | '$'
         ? StrLen<S> extends StrLen<Pattern>
           ? [Matched, Rest]
-        : StrSearchAll<Rest, Pattern, Tag, `${Forward}${F}`>
+        : StrSearchAll<Rest, Pattern, Tag, `${Forward}${F}`, Flag>
       : [Matched, Rest]
-    : StrSearchAll<Rest, Pattern, Tag, `${Forward}${F}`>
+    : StrSearchAll<Rest, Pattern, Tag, `${Forward}${F}`, Flag>
   : 'not all'
 
 export type * as StrUtil from './strutil'
