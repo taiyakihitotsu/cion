@@ -5,4 +5,72 @@ export type Equal<
     ? true
   : false
 
+// ---------------
+// -- Record
+// ---------------
+
+export type DissocKeys<
+  R extends Record<PropertyKey, unknown>
+, Ks extends (keyof R)[]> =
+  Ks extends []
+    ? R
+  : Ks extends [infer fK extends keyof R, ...infer rK]
+    ? rK extends Exclude<keyof R, fK>[]
+      ? DissocKeys<Omit<R, fK>, rK>
+    : never
+  : never
+
+// [todo]
+// move to foxp
+export type UnionToIntersection<
+  U> =
+  (U extends any ? (k: U) => void : never) extends ((k: infer I) => void)
+    ? I
+  : never
+// [todo]
+export type UtoI<U> = UnionToIntersection<U>
+// [todo]
+export type LastOf<
+  T> =
+  UnionToIntersection<T extends any ? () => T : never> extends () => (infer R)
+    ? R
+  : never
+// [todo]
+export type UnionToTuple<
+  U
+, T extends any[] = []> =
+  [U] extends [never]
+    ? T
+  : UnionToTuple<Exclude<U, LastOf<U>>, [LastOf<U>, ...T]>
+// [todo]
+export type UtoT<U> = UnionToTuple<U>
+
+export type KeysTuple<R extends Record<PropertyKey, unknown>> = UtoT<keyof R>
+
+// -------------------------
+// -- about 2589 error
+// -------------------------
+
+type _rec<
+  T> =
+  T extends {r: never}
+    ? never
+  : T extends {r: {r: {r: {r: {r: {r: {r: {r: infer U}}}}}}}}
+    ? { r: _rec<U> }
+  : T extends {r: {r: {r: {r: infer U}}}}
+    ? { r: _rec<U> }
+  : T extends {r: {r: infer U}}
+    ? { r: _rec<U> }
+  : T extends {r: infer U}
+    ? U
+  : T
+
+export type Rec<
+  T> =
+  T extends {r: unknown}
+    ? Rec<_rec<T>>
+  : T
+
+
+
 export type * as Util from './util'
