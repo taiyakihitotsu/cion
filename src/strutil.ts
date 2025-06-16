@@ -21,6 +21,7 @@ export type NonWordChar = Exclude<ASCII, WordChar>
 export type NonLower = Exclude<ASCII, Upper>
 export type NonUpper = Exclude<ASCII, Upper>
 export type MetaChars = 'd' | 'w' | 'l' | 'u' | 'D' | 'W' | 'L' | 'U'
+
 type Quantifiers =
 '[' | ']' |
   '(' | ')' |
@@ -139,22 +140,48 @@ StrDrop<StrTake<S,Bit.BitInc<M>>, N>
 
 export type RegCut<
   S extends string> =
-  S extends `${infer f}${infer s}${infer rest}`
+  S extends `${infer f}${infer s}${infer th}${infer rest}`
     ? f extends '\\'
-      ? s extends MetaChars
-        ? [`\\${s}`, rest]
-      : s extends Quantifiers
-        ? [`${s}`, rest]
+      ? s extends MetaChars | Quantifiers
+        ? [`\\${s}`, `${th}${rest}`]
       : never
     : f extends `*`
       ? s extends `?`
-        ? [`*?`, rest]
+        ? [`*?`, `${th}${rest}`]
+      : [`*`, `${s}${th}${rest}`]
+    : f extends `+`
+      ? s extends `?`
+        ? [`+?`, `${th}${rest}`]
+      : [`+`, `${s}${th}${rest}`]
+    : s extends `-`
+      ? [`${f}-${th}`, rest]
+    : `${f}${s}` extends `[^`
+      ? ['[^', `${th}${rest}`]
+    : [f, `${s}${th}${rest}`]
+  : S extends `${infer f}${infer s}${infer rest}`
+    ? f extends '\\'
+      ? s extends MetaChars | Quantifiers
+        ? [`\\${s}`, `${rest}`]
+      : never
+    : f extends `*`
+      ? s extends `?`
+        ? [`*?`, `${rest}`]
       : [`*`, `${s}${rest}`]
     : f extends `+`
       ? s extends `?`
-        ? [`+?`, rest]
+        ? [`+?`, `${rest}`]
       : [`+`, `${s}${rest}`]
+    : `${f}${s}` extends `[^`
+      ? ['[^', rest]
+    : f extends '\\'
+      ? [`\\${s}`, rest]
     : [f, `${s}${rest}`]
+  : S extends `${infer f}${infer _rest}`
+    ? f extends `*`
+      ? [`*`, '']
+    : f extends `+`
+      ? [`+`, '']
+    : [f, '']
   : never
 
 export type RegFirstSplit<
