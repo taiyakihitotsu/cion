@@ -16,7 +16,6 @@ export type OrMatch<
     : OrMatch<S, Rest, Forward, Flag>
   : Unmatch
 
-
 export type OrGroupMatch<
   S extends string
 , Pat extends rc.CompTape[]
@@ -27,8 +26,8 @@ export type OrGroupMatch<
     ? _TapeEval<S, First, Forward, []> extends [infer M extends string, infer Re extends string, infer Tp extends rc.CompTape]
       ? [M, Re, Tp]
     : OrGroupMatch<S, Rest, Forward>
-  : Unmatch
-
+  : { error: 'orgroup'
+    , ast: [1] }
 
 export type AstaMatch<
   S extends string
@@ -59,7 +58,10 @@ type _TapeEval<
     ? firstTape extends string
       ? str.StrSearchAll<String, firstTape, '^', Forward> extends [infer Matched extends string, infer Next extends string]
         ? _TapeEval<Next, restTape, Matched, Stack>
-      : Unmatch
+      : { dumpString: String
+        , dumpForward: Forward
+        , dumpFirstTape: firstTape
+        , dumpRestTape: restTape }
     : firstTape extends [ infer tapeSig extends ('?' | '*')
                         , infer tapeArg extends rc.CompTape]
       ? tapeSig extends '*'
@@ -75,19 +77,31 @@ type _TapeEval<
                         , ...infer tapeArg extends rc.CompTape[]]
       ? OrGroupMatch<String, tapeArg, Forward> extends [infer Matched extends string, infer NextString extends string, infer _NextTape extends rc.CompTape]
         ? _TapeEval<NextString, restTape, Matched, Stack>
-      : Unmatch
-    : firstTape extends ['group', infer tapeArg extends rc.CompTape]
+      : { dumpString: String
+        , dumpForward: Forward
+        , dumpFirstTape: firstTape
+        , dumpRestTape: restTape }
+    : firstTape extends ['group', ...infer tapeArg extends rc.CompTape[]]
       ? OrGroupMatch<String, [tapeArg], Forward> extends [infer Matched extends string, infer NextString extends string, infer _NextTape extends rc.CompTape]
         ? _TapeEval<NextString, restTape, Matched, Stack>
-      : Unmatch
+      : { dumpString: String
+        , dumpForward: Forward
+        , dumpFirstTape: firstTape
+        , dumpRestTape: restTape }
     : firstTape extends ['chara-class', infer tapeArg extends string[]]
       ? OrMatch<String, tapeArg, Forward, '!wildcard'> extends [infer Matched extends string, infer Next extends string]
         ? _TapeEval<Next, restTape, Matched, Stack>
-      : Unmatch
+      : { dumpString: String
+        , dumpForward: Forward
+        , dumpFirstTape: firstTape
+        , dumpRestTape: restTape }
     : firstTape extends infer wraped extends rc.CompTape[]
       ? _TapeEval<String, [...wraped], Forward, Stack> extends [infer Matched extends string, infer NextString extends string, infer NextTape extends rc.CompTape[]]
         ? _TapeEval<NextString, [...NextTape, ...restTape], Matched, Stack>
-      : Unmatch
+      : { dumpString: String
+        , dumpForward: Forward
+        , dumpFirstTape: firstTape
+        , dumpRestTape: restTape }
     : { error: `'firstTape' doens't match.`
       , dump: { firstTape: firstTape } }
   : never
