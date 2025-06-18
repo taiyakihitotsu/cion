@@ -60,7 +60,11 @@ type _CompCharaClass<
     : regFirst extends keyof regexConst.MetaChars
       ? _CompCharaClass<regRest, Sig, [...R, ...regexConst.MetaChars[regFirst]]>
     : regFirst extends keyof regexConst.TransNumber
-      ? _CompCharaClass<regRest, Sig, [...R, regFirst]>
+      ? _CompCharaClass<regRest, Sig, Option, [...R, regFirst], IsReading>
+    : regFirst extends `${infer _fst}-${infer _trd}${infer _rest}`
+      ? ReadInter<regFirst> extends infer Range extends (keyof regexConst.TransNumber)[]
+        ? _CompCharaClass<regRest, Sig, Option, [...R, ...Range], IsReading>
+      : never
     : never
   : never
 
@@ -69,27 +73,83 @@ export type ExpandMinMax<
 , min extends string
 , max extends string> =
   max extends '='
-    ? vec.Repeat<min,P>
+    ? vec.Repeat<min,P> extends infer r
+      ? r extends CompFrame
+        ? r
+      : never
+    : never
   : max extends '<'
-    ? [...vec.Repeat<min,P>, ['*', P]]
-  : [...vec.Repeat<min,P>, ...vec.Repeat<Bit.BitSub<max,min>, ['?', P]>]
+    ? vec.Repeat<min,P> extends infer _Drp extends unknown[]
+      ? [...(_Drp), ['*', P]] extends infer r
+        ? r extends CompFrame
+          ? r
+        : never
+      : never
+    : never
+  : vec.Repeat<min,P> extends infer _Dfst extends unknown[]
+    ? Bit.BitSub<max,min> extends infer _Dsub extends string
+      ? vec.Repeat<_Dsub, ['?', P]> extends infer _Dsnd extends unknown[]
+        ? [..._Dfst, ..._Dsnd] extends infer r
+          ? r extends CompFrame
+            ? r
+          : never
+        : never
+      : never
+    : never
+  : never
 
-type CompMinMax<
+// export type CompMinMax<
+//   S extends string> =
+//   S extends `{${infer pax}${infer pay},}${infer Next}`
+//     ? [Decimal.DtoB<`${pax}${pay}`>,'<', Next]
+//   : S extends `{${infer pa},}${infer Next}`
+//     ? [Decimal.DtoB<pa>,'<', Next]
+//   : S extends `{${infer n},${infer m}}${infer Next}`
+//     ? [Decimal.DtoB<n>,Decimal.DtoB<m>, Next]
+//   : S extends `{${infer na},${infer ma}${infer mb}}${infer Next}`
+//     ? [Decimal.DtoB<na>,Decimal.DtoB<`${ma}${mb}`>, Next]
+//   : S extends `{${infer nna}${infer nnb},${infer mma}${infer mmb}}${infer Next}`
+//     ? [Decimal.DtoB<`${nna}${nnb}`>, Decimal.DtoB<`${mma}${mmb}`>, Next]
+//   : S extends `{${infer zz}}${infer Next}`
+//     ? [Decimal.DtoB<zz>,'=', Next]
+//   : S extends `{${infer zza}${infer zzb}}${infer Next}`
+//     ? [Decimal.DtoB<`${zza}${zzb}`>,'=', Next]
+//   : []
+
+export type CompMinMax<
   S extends string> =
-  S extends `{${infer pa},}${infer Next}`
-    ? [Decimal.DtoB<pa>,'<', Next]
-  : S extends `{${infer pax}${infer pay},}${infer Next}`
-    ? [Decimal.DtoB<`${pax}${pay}`>,'<', Next]
-  : S extends `{${infer n},${infer m}}${infer Next}`
-    ? [Decimal.DtoB<n>,Decimal.DtoB<m>, Next]
-  : S extends `{${infer na},${infer ma}${infer mb}}${infer Next}`
-    ? [Decimal.DtoB<na>,Decimal.DtoB<`${ma}${mb}`>, Next]
-  : S extends `{${infer nna}${infer nnb},${infer mma}${infer mmb}}${infer Next}`
-    ? [Decimal.DtoB<`${nna}${nnb}`>, Decimal.DtoB<`${mma}${mmb}`>, Next]
-  : S extends `{${infer zz}}${infer Next}`
-    ? [Decimal.DtoB<zz>,'=', Next]
-  : S extends `{${infer zza}${infer zzb}}${infer Next}`
-    ? [Decimal.DtoB<`${zza}${zzb}`>,'=', Next]
+  S extends `${infer s0}${infer s1}${infer s2}${infer Next}`
+    ? [s0, s2] extends ['{', '}']
+      ? [Decimal.DtoB<s1>, '=', Next]
+    : [s0, s2] extends ['{', ',']
+      ? Next extends `${infer s3}${infer nNext}`
+        ? s3 extends '}'
+          ? [Decimal.DtoB<s1>, '<', nNext]
+        : nNext extends `${infer s4}${infer nnNext}`
+          ? s4 extends '}'
+            ? [Decimal.DtoB<s1>, Decimal.DtoB<s3>, nnNext]
+          : nnNext extends `${infer s5}${infer FinNext}`
+            ? s5 extends '}'
+              ? [Decimal.DtoB<s1>, Decimal.DtoB<`${s3}${s4}`>, FinNext]
+            : []
+          : []
+        : []
+      : []
+    : Next extends `${infer s3}${infer nNext}`
+      ? s3 extends '}'
+        ? [Decimal.DtoB<`${s1}${s2}`>, '=', nNext]
+      : s3 extends ','
+        ? nNext extends `${infer s4}${infer nnNext}`
+          ? s4 extends '}'
+            ? [Decimal.DtoB<`${s1}${s2}`>, '<', nnNext]
+          : nnNext extends `${infer s5}${infer s6}${infer finNext}`
+            ? s6 extends '}'
+              ? [Decimal.DtoB<`${s1}${s2}`>, Decimal.DtoB<`${s4}${s5}`>, finNext]
+            : []
+          : []
+        : []
+      : []
+    : []
   : []
 
 type FrameToTape<

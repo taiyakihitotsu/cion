@@ -1,5 +1,6 @@
 import type * as Bit from './bit'
 import type * as Decimal from './decimal'
+import type * as regexConst from './regex-const'
 
 export type  tZero = '0000000000000000'
 export type  tOne  = '0000000000000001'
@@ -155,7 +156,7 @@ export type RegCut<
       ? s extends `?`
         ? [`+?`, `${th}${rest}`]
       : [`+`, `${s}${th}${rest}`]
-    : s extends `-`
+    : [f, s, th] extends [keyof regexConst.Words, '-', keyof regexConst.Words]
       ? [`${f}-${th}`, rest]
     : `${f}${s}` extends `[^`
       ? ['[^', `${th}${rest}`]
