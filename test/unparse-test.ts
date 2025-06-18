@@ -5,7 +5,7 @@ import type Cion from '../src/index'
 // ---------------------
 
 
-const unparse_maintest4: Cion.Lisp<"(let [a 'a'] (if (eq a 'a') 'this_is_true', 'this_is_false')"> = "'this_is_false'"
+const unparse_maintest4: Cion.Lisp<"(let [a 'a'] (if (eq a 'a') 'this_is_true' 'this_is_false'))"> = "'this_is_true'"
 const unparse_maintest5: Cion.Lisp<"(if true 1 2)"> = '1'
 const unparse_maintest6: Cion.Lisp<"(if true (let [a 'astr' b 'bstr'] (str a b)) 11)"> = `'astrbstr'`
 
