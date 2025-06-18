@@ -1,4 +1,6 @@
-export type TransNumber =
+export type TransNumber = Words & Signs
+
+export type Words =
 { '0': '0000000000000000'
     , '1': '0000000000000001'
     , '2': '0000000000000010'
@@ -60,8 +62,10 @@ export type TransNumber =
     , 'W': '0000000000111010'
     , 'X': '0000000000111011'
     , 'Y': '0000000000111100'
-    , 'Z': '0000000000111101'
-    , '[': '0000000000111110'
+    , 'Z': '0000000000111101' }
+
+export type Signs =
+{ '[': '0000000000111110'
     , '\\': '0000000000111111'
     , ']': '0000000001000000'
     , '^': '0000000001000001'
@@ -72,6 +76,7 @@ export type TransNumber =
     , '}': '0000000001000110'
     , '~': '0000000001000111'
     , ' ': '0000000001001000'
+    , '\\s': '0000000001001000'
     , '!': '0000000001001001'
     , '"': '0000000001001010'
     , '#': '0000000001001011'
@@ -101,27 +106,31 @@ export type MetaChars =
     , '\\w': WordList
     , '\\W': [...NumList, ...SigList] }
 
+export type RangeChars =
+{ 'a-z': WordLittleList
+    , 'A-Z': WordLargeList
+    , 'a-Z': WordList
+    , '1-9': NonZeroList
+    , '0-9': NumList }
+export type NonZeroList = ['1', '2', '3', '4', '5', '6', '7', '8', '9']
 export type NumList = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
+export type WordLittleList = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
+export type WordLargeList = [  'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
 
-export type WordList =
-[
-  'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
-  'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't',
-  'u', 'v', 'w', 'x', 'y', 'z',
-  'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
-  'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T',
-  'U', 'V', 'W', 'X', 'Y', 'Z'
-]
+export type WordList = [...WordLittleList, ...WordLargeList]
 
 export type SigList =
-['[', '\\', ']', '^', '_', '`', '{', '|', '}', '~',
+[ '[', '\\', ']', '^', '_', '`', '{', '|', '}', '~',
     ' ', '!', '"', '#', '$', '%', '&', '\'', '(', ')',
     '*', '+', ',', '-', '.', '/', ':', ';', '<', '=',
     '>', '?', '@']
 
+export type SigStr = "\\[\\]\\\\^_`{|}~ !\"#$%&'()*+,-./:;<=>?@"
 
 export type ASCII =
 [   ...NumList, ...WordList, ...SigList
 ]
+
+export type EmailRegex = '(([^<>()[\\].,;: @"]+(\\.[^<>()[\\].,;: @"]+)*)|(".+"))@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\])|(([a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,}))'
 
 export type * as regexConst from './regex-const'
