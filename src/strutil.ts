@@ -50,7 +50,11 @@ export type MatchChar<
   S extends string
 , T extends string> =
   S extends `${infer sF}${infer sRest}`
-    ? T extends `\\d`
+    ? T extends '\\.'
+      ? sF extends '.'
+        ? true
+      : false
+    : T extends `\\d`
       ? sF extends Digit
         ? true
       : false
@@ -141,10 +145,8 @@ StrDrop<StrTake<S,Bit.BitInc<M>>, N>
 export type RegCut<
   S extends string> =
   S extends `${infer f}${infer s}${infer th}${infer rest}`
-    ? f extends '\\'
-      ? s extends MetaChars | Quantifiers
-        ? [`\\${s}`, `${th}${rest}`]
-      : never
+    ? [f, s] extends ['\\', MetaChars | Quantifiers]
+      ? [`\\${s}`, `${th}${rest}`]
     : f extends `*`
       ? s extends `?`
         ? [`*?`, `${th}${rest}`]
@@ -189,7 +191,9 @@ export type RegFirstSplit<
 , N extends 0|1> =
   S extends `${infer f}${infer rest}`
     ? S extends `\\${infer escapedFirst}${infer escapedRest}`
-      ? escapedFirst extends MetaChars
+      ? escapedFirst extends '.'
+        ? [`\\.`, escapedRest][N]
+      : escapedFirst extends MetaChars
         ? [`\\${escapedFirst}`, escapedRest][N]
       : escapedFirst extends Quantifiers
         ? [`${escapedFirst}`, escapedRest][N]
@@ -199,6 +203,10 @@ export type RegFirstSplit<
 
 // [note]
 // this works as ^.
+//
+// [note]
+// This `StrSearchHead` matches `.` for any character.
+// Again, `MatchChar` doesn't matches it but the metacharacters such as `\\d`.
 export type StrSearchHead<
   S extends string
 , Pattern extends string
@@ -216,6 +224,24 @@ export type StrSearchHead<
       : [`${Forward}${sf}`, srest]
     : StrSearchHead<srest, RegFirstSplit<Pattern,1>, Complete, `${Forward}${sf}`, Flag>
   : never
+
+// export type StrSearchHead<
+//   S extends string
+// , Pattern extends string
+// , Complete extends string = ''
+// , Forward extends string = ''
+// , Flag extends '!wildcard' | 'wildcard' = 'wildcard'> =
+//   S extends `${infer sf}${infer srest}`
+//     ? ([RegFirstSplit<Pattern,0>, Flag] extends ['.', 'wildcard'] ? true : false) | MatchChar<sf, RegFirstSplit<Pattern,0>> extends false
+//       ? []
+//     : RegFirstSplit<Pattern,1> extends ''
+//       ? Complete extends 'complete'
+//         ? sf extends ''
+//           ? [`${Forward}${sf}`, srest]
+//         : []
+//       : [`${Forward}${sf}`, srest]
+//     : StrSearchHead<srest, RegFirstSplit<Pattern,1>, Complete, `${Forward}${sf}`, Flag>
+//   : never
 
 export type StrSearchAll<
   S extends string
