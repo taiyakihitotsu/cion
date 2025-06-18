@@ -1,5 +1,8 @@
 import type * as strutil from '../src/strutil'
-// test
+
+
+const test_regcut: strutil.RegCut<'{1,}))rest'> = ['{', '1,}))rest']
+
 const test_strlen0: strutil.StrLen<'111'> = '0000000000000011'
 const test_strlen1: strutil.StrLen<''>    = '0000000000000000'
 
@@ -11,6 +14,8 @@ const test_matchchar0: strutil.MatchChar<'s', 's'> = true
 const test_matchchar1: strutil.MatchChar<'', 's'> = false
 const test_matchchar2: strutil.MatchChar<'s', ''> = false
 const test_matchchar3: strutil.MatchChar<'s', 'ss'> = false
+const test_matchchar0x: strutil.MatchChar<'s', '.'> = false
+const test_matchchar3x: strutil.MatchChar<'s', '\\.'> = false
 
 const test_somelen0: strutil.SomeLen<'sss', 'xxa'> = true
 const test_somelen1: strutil.SomeLen<'sss', 'sxxa'> = false
@@ -30,6 +35,8 @@ const test_charsone0: strutil.StrSearchHead<'sssss', 's'> = ['s', 'ssss']
 const test_charsone1: strutil.StrSearchHead<'sssxx', 'xx'> = []
 const test_charsone2: strutil.StrSearchHead<'xxsss', 'xx'> = ['xx', 'sss']
 const test_charsone3: strutil.StrSearchHead<'xxsss', 'd'> = []
+const test_charsone2x: strutil.StrSearchHead<'xxsss', '.'> = ['x', 'xsss']
+const test_charsone3x: strutil.StrSearchHead<'xxsss', '\\.'> = []
 
 const test_charsoned0: strutil.MatchChar<'1', '\\d'> = true
 const test_charsoned1: strutil.MatchChar<'0', '\\d'> = true
@@ -72,6 +79,7 @@ const dot_test_charsone: strutil.StrSearchHead<'x🦊sss', 'x🦊s..'> = ['x🦊
 const test_allsone0: strutil.StrSearchAll<'sssss', 's'> =  ['s', 'ssss']
 const test_allsone1: strutil.StrSearchAll<'sssxx', 'xx'> = ['sssxx', '']
 const test_allsone2: strutil.StrSearchAll<'xxsss', 'xx'> = ['xx', 'sss']
+const test_allsone2a: strutil.StrSearchAll<'xxxsss', 'xx'> = ['xx', 'xsss']
 const test_allsone3: strutil.StrSearchAll<'ssxxsss', 'xx'> = ['ssxx', 'sss']
 const test_allsone: strutil.StrSearchAll<'xxsss', 'd'> = []
 const test_tallsone0: strutil.StrSearchAll<'sssss', 's', '$'> = ['sssss', '']
