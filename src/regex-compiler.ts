@@ -39,26 +39,38 @@ type ReturnCC<
     ? R
   : NegCharaClass<R>
 
-export type CompCharaClass<S extends string, Sig extends '[' | '[^'> = _CompCharaClass<S, Sig>
+type CompOption = {negExpand?: boolean}
+type InitCompOption = {negExpand: true}
+export type CompCharaClass<
+  S extends string
+, Sig extends '[' | '[^'
+, Option extends CompOption = InitCompOption> =
+_CompCharaClass<S, Sig, Option>
 
 type _CompCharaClass<
   S extends string
 , Sig extends '[' | '[^'
-, R extends (keyof regexConst.TransNumber)[] = []> =
+, Option extends CompOption = InitCompOption
+, R extends (keyof regexConst.TransNumber)[] = []
+, IsReading extends boolean = false> =
   S extends ''
-    ? [['chara-class', ReturnCC<Sig, R>], '']
+    ? [['chara-class', true extends (Option['negExpand']) ? ReturnCC<Sig, R> : R], '']
   : str.RegCut<S> extends [infer regFirst extends string
                           , infer regRest extends string]
     ? regFirst extends ']'
-      ? [['chara-class', ReturnCC<Sig, R>], regRest]
+      ? [['chara-class', true extends (Option['negExpand']) ? ReturnCC<Sig, R> : R], regRest]
     : regFirst extends '[' | '[^'
-      ? _CompCharaClass<regRest, Sig, R>
-    : regFirst extends `${infer _fst}-${infer _trd}`
-      ? ReadInter<regFirst> extends infer Range extends (keyof regexConst.TransNumber)[]
-        ? _CompCharaClass<regRest, Sig, [...R, ...Range]>
-      : never
+      ? IsReading extends false
+        ? _CompCharaClass<regRest, Sig, Option, R, true>
+      : _CompCharaClass<regRest, Sig, Option, [...R, ...(regFirst extends '[' ? ['['] : ['[', '^'])], true>
+    : regFirst extends `\\${infer Escaped}`
+      ? regFirst extends keyof regexConst.MetaChars
+        ? _CompCharaClass<regRest, Sig, Option, [...R, ...regexConst.MetaChars[regFirst]], IsReading>
+      : Escaped extends keyof regexConst.TransNumber
+        ? _CompCharaClass<regRest, Sig, Option, [...R, Escaped], IsReading>
+      : 'never6'
     : regFirst extends keyof regexConst.MetaChars
-      ? _CompCharaClass<regRest, Sig, [...R, ...regexConst.MetaChars[regFirst]]>
+      ? _CompCharaClass<regRest, Sig, Option, [...R, ...regexConst.MetaChars[regFirst]], IsReading>
     : regFirst extends keyof regexConst.TransNumber
       ? _CompCharaClass<regRest, Sig, Option, [...R, regFirst], IsReading>
     : regFirst extends `${infer _fst}-${infer _trd}${infer _rest}`
@@ -66,6 +78,13 @@ type _CompCharaClass<
         ? _CompCharaClass<regRest, Sig, Option, [...R, ...Range], IsReading>
       : never
     : never
+  : never
+
+export type UnrollRepeat<
+  Times extends string
+, P> =
+  Times extends "0000000000000010"
+    ? [P, P]
   : never
 
 export type ExpandMinMax<
@@ -222,6 +241,7 @@ type CompFraming<
 // ------------------------------------------------------
 export type recComp<
   S extends string
+, Option extends CompOption = InitCompOption
 , Stack extends CompEnv[] = InitStack
 , env extends CompEnv = InitCompEnv
 , Last extends CompFrame = InitLast
@@ -229,49 +249,53 @@ export type recComp<
   S extends ''
     ? Last extends ''
       ? { r: { condition: condition
-        , tapes: [...env['tapes'], ...env['frames']] } }
+             , tapes: [...env['tapes'], ...env['frames']] } } extends infer r
+        ? r
+      : never
     : { r: { condition: condition
-           , tapes: [...env['tapes'], ...[...env['frames'], Last]] } }
+           , tapes: [...env['tapes'], ...[...env['frames'], Last]] } } extends infer r
+      ? r
+    : never
   : env extends { state:  infer State extends CompState
                 , tapes:  infer Tapes extends CompTape[]
 		, frames: infer Frames extends CompFrame[]}
     ? str.RegCut<S> extends [ infer regFirst extends string
                             , infer regRest extends string]
       ? regFirst extends '^' | '$'
-        ? { r: recComp<regRest, Stack, env, Last, `${condition}${regFirst}`> }
+        ? { r: recComp<regRest, Option, Stack, env, Last, `${condition}${regFirst}`> }
       : regFirst extends '[' | '[^'
-        ? CompCharaClass<S, regFirst> extends [infer classComped extends FrameCharaClass, infer classRest extends string]
+        ? CompCharaClass<S, regFirst, Option> extends [infer classComped extends FrameCharaClass, infer classRest extends string]
           ? FrameToTape<CompFraming<env, Last>> extends infer FramedEnv extends CompEnv
-            ? {r: recComp<classRest, Stack, Last extends '' ? env : FramedEnv, classComped, condition>} extends infer a
+            ? {r: recComp<classRest, Option, Stack, Last extends '' ? env : FramedEnv, classComped, condition>} extends infer a
               ? a
             : never
           : never
         : never
       : regFirst extends '('
-        ? { r: recComp<regRest, [Last extends "" ? env : CompFraming<env, Last>, ...Stack], {state: 'group', tapes: [], frames: []}, InitLast, condition> }
+        ? { r: recComp<regRest, Option, [Last extends InitLast ? env : CompFraming<env, Last>, ...Stack], {state: 'group', tapes: [], frames: []}, InitLast, condition> }
       : regFirst extends ')'
         ? Stack extends [ infer stackFirst extends CompEnv
                         , ...infer stackRest extends CompEnv[]]
-          ? { r: recComp<regRest, stackRest, stackFirst, [State, ...Tapes, (Last extends "" ? Frames : [...Frames, Last])], condition> }
+          ? { r: recComp<regRest, Option, stackRest, stackFirst, [State, ...Tapes, ...(Last extends InitLast ? Frames : [[...Frames, Last]])], condition> }
         : never
       : regFirst extends '|'
-        ? { r: recComp<regRest, Stack, {state: 'or-group', tapes: [...Tapes, Last extends "" ? Frames : [...Frames, Last]], frames: []}, '', condition> }
+        ? { r: recComp<regRest, Option, Stack, {state: 'or-group', tapes: [...Tapes, Last extends InitLast ? Frames : [...Frames, Last]], frames: []}, '', condition> }
       : regFirst extends '?' | '*'
-        ? { r: recComp<regRest, Stack, CompFraming<FrameToTape<env>, [regFirst, Last]>, InitLast, condition> }
+        ? { r: recComp<regRest, Option, Stack, CompFraming<FrameToTape<env>, [regFirst, Last]>, InitLast, condition> }
       : regFirst extends '+'
-        ? { r: recComp<regRest, Stack, {state: State, tapes:[ ...Tapes, ...Frames, Last, ['*', Last]], frames: []}, InitLast, condition> }
+        ? { r: recComp<regRest, Option, Stack, {state: State, tapes:[ ...Tapes, ...Frames, Last, ['*', Last]], frames: []}, InitLast, condition> }
       : regFirst extends '{'
         ? CompMinMax<S> extends [infer Min extends string,
                                  infer Max extends string
                                 , infer Next extends string]
           ? ExpandMinMax<Last, Min, Max> extends infer _Delay extends CompFrame
-            ? { r: recComp<Next, Stack, env, _Delay, condition> }
+            ? { r: recComp<Next, Option, Stack, env, _Delay, condition> extends infer r?r:never }
           : never
         : never
-      : { r: recComp<regRest, Stack, Last extends "" ? env : CompFraming<env, Last>, regFirst, condition> }
+      : { r: recComp<regRest, Option, Stack, Last extends "" ? env : CompFraming<env, Last>, regFirst, condition> }
     : never
   : never
 
-export type Comp<S extends string> = u.Rec<recComp<S>>
+export type Comp<S extends string, Option extends CompOption = InitCompOption> = u.Rec<recComp<S, u.AssocWith<InitCompOption, Option>>>
 
 export type * as regexCompiler from './regex-compiler'
