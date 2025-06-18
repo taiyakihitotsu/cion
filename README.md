@@ -75,6 +75,15 @@ type test_in_doc_def6 = Cion.Lisp<`(${test_in_doc_def5} ${test_in_doc_def4})`>
 const test_in_doc_def7: test_in_doc_def6 = '10'
 ```
 
+### re-find
+```typescript
+const test_refind1 : Cion.Lisp<`(re-find '[a-z]*' 'aaa')`> = `'aaa'`
+type email = `'(([^<>()[\\].,;: @"]+(\\.[^<>()[\\].,;: @"]+)*)|(".+"))@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\])|(([a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,}))'`
+const test_refind : Cion.Lisp<`(re-find ${email} 'zzz.zzz@testmailreg.com')`> = `'zzz.zzz@testmailreg.com'`
+```
+- `#` of `#'regex'` is unnecessary.
+
+
 ## Builtins
  - if, fn, let, count, nil, ->, ->>
  - +, -, *, /, mod
