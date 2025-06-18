@@ -47,6 +47,19 @@ export type Repeat<
 , V> =
 _Repeat<N, V>
 
+type _recRepeat<
+  N extends string
+, V
+, R extends V[] = []> =
+  Bit.BitGTE<'0000000000000000',N> extends true
+    ? { r: R }
+  : { r: _recRepeat<Bit.BitDec<N>, V, [...R, V]> }
+
+export type recRepeat<
+  N extends string
+, V> =
+{ r: _recRepeat<N, V> }
+
 type _Last<
   V extends unknown[]
 , R extends unknown[] = []> =

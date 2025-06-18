@@ -47,6 +47,11 @@ export type UtoT<U> = UnionToTuple<U>
 
 export type KeysTuple<R extends Record<PropertyKey, unknown>> = UtoT<keyof R>
 
+export type AssocWith<
+  R extends Record<PropertyKey, unknown>
+, RR extends Record<PropertyKey, unknown>> =
+{ [K in keyof R]: RR[K] extends never ? R[K] : RR[K]}
+
 // -------------------------
 // -- about 2589 error
 // -------------------------
@@ -55,6 +60,8 @@ type _rec<
   T> =
   T extends {r: never}
     ? never
+  : T extends {r: {r: {r: {r: {r: {r: {r: {r: {r: {r: {r: {r: {r: {r: {r: {r: infer U}}}}}}}}}}}}}}}}
+    ? { r: _rec<U> }
   : T extends {r: {r: {r: {r: {r: {r: {r: {r: infer U}}}}}}}}
     ? { r: _rec<U> }
   : T extends {r: {r: {r: {r: infer U}}}}
@@ -70,7 +77,5 @@ export type Rec<
   T extends {r: unknown}
     ? Rec<_rec<T>>
   : T
-
-
 
 export type * as Util from './util'
