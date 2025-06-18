@@ -67,9 +67,10 @@ export type Rec<
   : T
 
 export type ReadString<
-  S extends string> =
-  S extends `"${infer P}"${infer R}`
-    ? [`"${P}"`, ` ${R}`]
+  S extends string
+, ident extends `"` | `'`> =
+  S extends `${ident}${infer P}${ident}${infer R}`
+    ? [`${ident}${P}${ident}`, ` ${R}`]
   : never
 
 export type recp<
@@ -84,7 +85,9 @@ export type recp<
   : Sexpr extends ` [${infer U}`
     ? { r: recp<` ${U}`, [...R, '[']> }
   : Sexpr extends ` "${infer U}`
-    ? { r: recp<ReadString<`"${U}`>[1], [...R, ReadString<`"${U}`>[0]]> }
+    ? { r: recp<ReadString<`"${U}`, `"`>[1], [...R, ReadString<`"${U}`, `"`>[0]]> }
+  : Sexpr extends ` '${infer U}`
+    ? { r: recp<ReadString<`'${U}`, `'`>[1], [...R, ReadString<`'${U}`, `'`>[0]]> }
   : Sexpr extends ` ${infer fU} ${infer Next}`
     ? fU extends `${infer ffU}}`
       ? ffU extends ''

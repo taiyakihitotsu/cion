@@ -203,7 +203,7 @@ export type LispRefind<
     ? regex.RegexFind<searched, regex> extends [infer match extends string, infer _]
       ? ['prim', `'${match}'`]
     : ['prim', `''`]
-  : LispRefindError0
+  : S // LispRefindError0
 
 
 

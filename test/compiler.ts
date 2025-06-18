@@ -17,9 +17,17 @@ const recparseeeeee: Compiler.Rec<Compiler.recp<' (let [a 1 b 2] (if true t f))'
 // const recparsestrtest0: Compiler.Rec<Compiler.recp<' (let [a "test is this"] (str "a b" a))'>> = ['(', 'let', '[', 'a', '"', 'test', 'is', 'this','"', ']', '(', 'str', '"', 'a', 'b', '"', 'a', ')', ')']
 const recparsestrtest0: Compiler.Rec<Compiler.recp<` (let [a "test is this"] (str "a b" a))`>> = ['(', 'let', '[', 'a', '"test is this"', ']', '(', 'str', '"a b"', 'a', ')', ')']
 
+// -------------------------------
 // --- hash map ---
+// -------------------------------
 const recparsehashtest0: Compiler.Rec<Compiler.recp<' (let [a {:a 1 :b 2}] (> (:a a) (:b a)))'>> = ['(', 'let', '[', 'a', '{', ':a', '1', ':b', '2', '}', ']', '(', '>', '(', ':a', 'a', ')', '(', ':b', 'a', ')', ')', ')']
 const recparsehashtest1: Compiler.Rec<Compiler.recp<' (let [a {:a -1 :b 2}] (> (:a a) (:b a)))'>> = ['(', 'let', '[', 'a', '{', ':a', '-1', ':b', '2', '}', ']', '(', '>', '(', ':a', 'a', ')', '(', ':b', 'a', ')', ')', ')']
+
+// -------------------------
+// -- Regex
+// -------------------------
+type email = `'(([^<>()[\\].,;: @"]+(\\.[^<>()[\\].,;: @"]+)*)|(".+"))@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\])|(([a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,}))'`
+const recparteregextest : Compiler.Rec<Compiler.recp<` ${email}`>> = [`'(([^<>()[\\].,;: @"]+(\\.[^<>()[\\].,;: @"]+)*)|(".+"))@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\])|(([a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,}))'`]
 
 // NOTE (A) : they spit a 2589 error with LegacyCompiler.SParser.
 type crossX = '(fn [m0 m1] (>= (+ (:x m0) (:w m0)) (:x m1)))'
