@@ -378,7 +378,7 @@ export type LispRelation<
   : ErrorCase<LispRelationError1, "", S>
 
 export type Eq<L, R> = Util.Equal<L,R>
-type If<A, B, C> = A extends [`prim`, true] ? B : C;
+type If<A, B, C> = A extends [`prim`, false] | TNil ? C : B;
 
 // const eqtest1: Eq<"a", "a"> = true;
 // const eqtest2: Eq<"a", ""> = false;
@@ -1112,6 +1112,7 @@ export type Reverse<
   : V extends []
     ? []
   : { error: [ReverseError0] }
+
 type LispReverse<S> = S extends [Vector] & [['vec', ...infer V]] ? Reverse<V> extends infer RV ? RV extends unknown[] ? ['vec', ...RV] : ErrorCase<ReverseError1, 'reverse error', RV> : never : ErrorCase<ReverseError3, 'reverse should have 1 vector.', S>
 
 // note : for threading macros: insertsecond, insertlast, vecwrap
