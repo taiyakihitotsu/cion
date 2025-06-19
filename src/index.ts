@@ -1130,6 +1130,9 @@ type InsertSecond<
 const insert2ndtest0: InsertSecond<[0,1,2,3], 'x'> = [0,'x',1,2,3]
 const insert2ndtest1: InsertSecond<[0], 'x'> = [0,'x']
 const insert2ndtest2: InsertSecond<[], 'x'> = ['x']
+const insert2ndtest3: InsertSecond<[], ['a', 'x']> = [['a', 'x']]
+const insert2ndtest4: InsertSecond<['b', 'y'], ['a', 'x']> = ['b', ['a', 'x'], 'y']
+const insert2ndtest5: InsertSecond<[['b', 'y']], ['a', 'x']> = [['b', 'y'], ['a', 'x']]
 
 type InsertLastError0 = 'InsertLastError0'
 type InsertLast<
@@ -1203,12 +1206,62 @@ export type LispThreadLast<
     : ThreadLast<H,T>
   : ErrorCase<LispThreadLastError0, '->> should have 1 elem', S>
 
+type SomeThreadFirstError0 = 'SomeThreadFirstError0'
+type SomeThreadFirstError1 = 'SomeThreadFirstError1'
+type SomeThreadFirstError2 = 'SomeThreadFirstError2'
+type SomeThreadFirstError3 = 'SomeThreadFirstError3'
+type TmpGensym = ['sym', 'cmt78dh2my9vaf']
+type SomeLetWrap<
+  T> =
+['let', [TmpGensym, T], ['if', TmpGensym, TmpGensym, TNil]]
+export type SomeThreadGeneral<
+  Fst
+, V extends unknown[]
+, InsertP extends 'second' | 'last'> =
+  V['length'] extends 0
+    ? Fst
+  : V extends [infer Head, ...infer Tail extends unknown[]]
+    ? Tail['length'] extends 0
+      ? InsertP extends 'second'
+        ? SomeLetWrap<InsertSecond<VecWrap<Head>, Fst>>
+      : SomeLetWrap<InsertLast<VecWrap<Head>, Fst>>
+    : ( InsertP extends 'second'
+          ? ThreadFirst<SomeThreadGeneral<Fst, Tail, InsertP>, [Head]>
+        : ThreadLast<SomeThreadGeneral<Fst, Tail, InsertP>, [Head]>) extends infer ThreadWrap
+      ? SomeLetWrap<ThreadWrap>
+    : ErrorCase<SomeThreadFirstError2, 'insert error', [InsertSecond<VecWrap<Head>, Fst>, V]>
+  : ErrorCase<SomeThreadFirstError1, '', [Fst, V]>
+
+
+type LispSomeThreadGeneralError0 = 'LispSomeThreadGeneralError0'
+type LispSomeThreadGeneralError1 = 'LispSomeThreadGeneralError1'
+export type LispSomeThreadGeneral<
+  S
+, Flag extends 'second' | 'last'> =
+  S extends [infer H, ...infer T extends unknown[]]
+    ? T['length'] extends 0
+      ? S
+    : Reverse<T> extends infer Rev
+      ? Rev extends unknown[]
+        ? SomeThreadGeneral<H, Rev, Flag>
+      : ErrorCase<LispSomeThreadGeneralError1, 'reverse error', Rev>
+    : never
+  : ErrorCase<LispSomeThreadGeneralError0, '-> should have 1 elem', S>
+
+type LispSomeThreadFirstError0 = 'LispSomeThreadFirstError0'
+type LispSomeThreadFirstError1 = 'LispSomeThreadFirstError1'
+type LispSomeThreadLastError0 = 'LispSomeThreadLastError0'
+type LispSomeThreadLastError1 = 'LispSomeThreadLastError1'
+export type LispSomeThreadFirst<S> = LispSomeThreadGeneral<S, 'second'>
+export type LispSomeThreadLast<S> = LispSomeThreadGeneral<S, 'last'>
+
+
 // ---------------------------------------
 // -- Eval
 // ---------------------------------------
 
 export type BuiltinsUnion =
-'->' | '->>' | 'str' | 'vector' | 'map' | 'filter' | 'remove' | 'reduce' | 'count' | 'concat' | 'conj' | 'first' | 'second' | 'last' | 'rest' | 'butlast' | 'reverse' | 'interleave' | 'take' | 'drop' | 'assoc-in' | 'update-in' | 'assoc' | 'update' | 'get' | 'eq' | '=' | 'not' | 'and' | 'or' | '+' | '-' | '*' | '/' | '%' | 'mod' | '>' | '<' | '>=' | '<=' | 'number?' | 'string?' | 'vector?' | 'map?' | 'fn?' | 'keyword?' | 'ifn?' | 'pos-int?' | 'neg-int?' | 'odd?' | 'even?' | 'zero?' | 'symbol?' | 'empty?' | 'every?' | 'some' | 'nil?' | 'some?' | 're-find'
+'->' | '->>' | 'some->' | 'some->>' | 'str' | 'vector' | 'map' | 'filter' | 'remove' | 'reduce' | 'count' | 'concat' | 'conj' | 'first' | 'second' | 'last' | 'rest' | 'butlast' | 'reverse' | 'interleave' | 'take' | 'drop' | 'assoc-in' | 'update-in' | 'assoc' | 'update' | 'get' | 'eq' | '=' | 'not' | 'and' | 'or' | '+' | '-' | '*' | '/' | '%' | 'mod' | '>' | '<' | '>=' | '<=' | 'number?' | 'string?' | 'vector?' | 'map?' | 'fn?' | 'keyword?' | 'ifn?' | 'pos-int?' | 'neg-int?' | 'odd?' | 'even?' | 'zero?' | 'symbol?' | 'empty?' | 'every?' | 'some' | 'nil?' | 'some?' | 're-find'
 
 type Builtins<
   U
@@ -1219,6 +1272,10 @@ type Builtins<
     ? Eval<LispThreadFirst<OPR>, env, [[prev]]>
   : U extends '->>'
     ? Eval<LispThreadLast<OPR>, env, [[prev]]>
+  : U extends 'some->'
+    ? Eval<LispSomeThreadFirst<OPR>, env, [[prev]]>
+  : U extends 'some->>'
+    ? Eval<LispSomeThreadLast<OPR>, env, [[prev]]>
   : U extends `str`
     ? Str<Reading<OPR, env, [[prev]]>>
   : U extends `re-find`
