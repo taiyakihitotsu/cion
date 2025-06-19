@@ -85,7 +85,7 @@ const test_refind : Cion.Lisp<`(re-find ${email} 'zzz.zzz@testmailreg.com')`> = 
 
 
 ## Builtins
- - if, fn, let, count, nil, ->, ->>
+ - if, fn, let, count, nil, ->, ->>, some->, some->>
  - +, -, *, /, mod
  - str, re-find
  - and, or, not, >, <, =, eq, >=, <=
