@@ -1,5 +1,6 @@
 import type * as Bit from './bit'
 import type * as Decimal from './decimal'
+import type * as ratio from './ratio'
 
 // -------------------------------
 // -- Compiler
@@ -243,6 +244,17 @@ export type _Unparse<
           ? Decimal.BitToDecimal<r0>
         : `${r0}`
       : `${r0}`
+    : H extends ['prim', [string, string]]
+      ? ratio.ForceNat<H[1]> extends infer D extends string
+        ? D extends 'nil'
+          ? 'nil'
+        : ratio.LCD<H[1]> extends [ infer f extends string
+                                  , infer s extends string]
+          ? s extends '0000000000000001'
+            ? Decimal.BitToDecimal<f>
+          : `${Decimal.BitToDecimal<f>}/${Decimal.BitToDecimal<s>}`
+        : 'nil'
+      : 'never2'
     : H extends ['vec', ...infer r]
       ? r extends []
         ? '[]'

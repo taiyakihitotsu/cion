@@ -491,6 +491,8 @@ const testbitdiv5: BitDiv<'0000000000000110', '1111111111111110'> = '11111111111
 const testbitdiv6: BitDiv<'1111111111111010', '00000000000000010'> = '1111111111111101'
 const testbitdiv7: BitDiv<'1111111111111010', '1111111111111110'> = '0000000000000011'
 
+export type BitAbs<B extends string> = BitLT<B, Zero> extends true ? BitMul<B, '1111111111111111'> : B
+
 export type _BitMod<
   B extends string
 , C extends string
@@ -504,13 +506,18 @@ export type BitMod<
 , C extends string> =
   BitIsZero<C> extends true
     ? Nil
-  : BitFill<_BitMod<B,C>, MAX>
+  : [BitLT<B, Zero>, BitLT<C, Zero>] extends [true, false]
+    ? _BitMod<BitSub<C, _BitMod<BitRevSign<B>, C>>, C>
+  : [BitLT<B, Zero>, BitLT<C, Zero>] extends [false, true]
+    ? BitMul<_BitMod<B, BitRevSign<C>>, '1111111111111111'>
+  : BitFill<_BitMod<BitAbs<B>, BitAbs<C>>, MAX>
 
 const testbitmod0: BitMod<"00001001", "00000001"> =  `${CurPad}00000000`
 const testbitmod1: BitMod<"00001001", "00000011"> =  `${CurPad}00000000`
 const testbitmod2: BitMod<"00001001", "00000010"> =  `${CurPad}00000001`
 const testbitmod3: BitMod<"00001001", "00000000"> = nil
 const testbitmod4: BitMod<"00000010", "00001010"> =  `${CurPad}00000010`
+const testbitmod5: BitMod<"1111111111111110", "1111111111111010"> =  `${CurPad}00000010`
 
 export type BitDec<B extends string> = BitSub<B, "0000000000000001">
 export type BitInc<B extends string> = BitAdd<B, "0000000000000001">

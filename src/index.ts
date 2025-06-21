@@ -2,8 +2,9 @@ import type * as Bit from './bit.ts'
 import type * as Compiler from './compiler'
 import type * as Util from './util'
 import type { regex } from './regex'
+import type * as ratio from './ratio'
 
-import type {LetVal,LetArg,LetForm,Each,Atom,TMap,Sexpr,TNil,Keyword,Sym,PrimString,PrimBoolean,PrimTestNumber,PrimNumber,Prim,Args,Fn,IFn,Vector,Var,Env,TNotMatch,IfForm} from './sexprtypes'
+import type {LetVal,LetArg,LetForm,Each,Atom,TMap,Sexpr,TNil,Keyword,Sym,PrimString,PrimBoolean,PrimTestNumber,PrimNumber,BitString,RatioString,NumString,Prim,Args,Fn,IFn,Vector,Var,Env,TNotMatch,IfForm} from './sexprtypes'
 import {VNil,VNotMatch} from './sexprtypes'
 
 // -----------------
@@ -276,121 +277,110 @@ type LispAddError0 = 'LispAddError0'
 type LispAddError1 = 'LispAddError1'
 export type LispAdd<
   S
-, R extends string = "00000000"> =
+, R extends NumString = "00000000"> =
   S extends []
-    ? [`prim`, R]
+    ? [`prim`, ratio.ForceRatio<R>]
   : S extends [infer Fst, ...infer Rest]
-    ? Fst extends [`prim`, infer FstP extends string]
-      ? LispAdd<Rest, Bit.BitAdd<R, FstP>>
+    ? Fst extends [`prim`, infer FstP extends NumString]
+      ? LispAdd<Rest, ratio.Add<ratio.ForceRatio<R>, ratio.ForceRatio<FstP>>>
     : ErrorCase<LispAddError0, "", S>
   : ErrorCase<LispAddError1, "", S>
 
 type LispSubError0 = 'LispSubError0'
 export type LispSub<
   S
-, R extends string = "00000000"
+, R extends NumString = "00000000"
 , Init extends boolean = true> =
   S extends []
-    ? [`prim`, R]
-  : S extends [[`prim`, infer Fst extends string], ...infer Rest extends string[][]]
+    ? [`prim`, ratio.ForceRatio<R>]
+  : S extends [[`prim`, infer Fst extends NumString], ...infer Rest extends ['prim', NumString][]]
     ? Init extends true
       ? LispSub<Rest, Fst, false>
-    : LispSub<Rest, Bit.BitSub<R,Fst>, false>
+    : LispSub<Rest, ratio.Sub<ratio.ForceRatio<R>, ratio.ForceRatio<Fst>>, false>
   : ErrorCase<LispSubError0, "", S>
 
 type LispMulError0 = 'LispMulError0'
 export type LispMul<
   S
-, R extends string = "00000000"
+, R extends NumString = "00000000"
 , Init extends boolean = true> =
   S extends []
-    ? [`prim`, R]
-  : S extends [[`prim`, infer Fst extends string], ...infer Rest extends string[][]]
+    ? [`prim`, ratio.ForceRatio<R>]
+  : S extends [[`prim`, infer Fst extends NumString], ...infer Rest extends ['prim', NumString][]]
     ? Init extends true
       ? LispMul<Rest, Fst, false>
-    : LispMul<Rest, Bit.BitMul<R,Fst>, false>
+    : LispMul<Rest, ratio.Mul<ratio.ForceRatio<R>, ratio.ForceRatio<Fst>>, false>
   : ErrorCase<LispMulError0, "", S>
 
 type LispDivError0 = 'LispDivError0'
 type LispDivError1 = 'LispDivError1'
 export type LispDiv<
   S
-, R extends string = "00000001"
+, R extends NumString = "00000001"
 , Init extends boolean = true> =
   S extends []
-    ? [`prim`, R]
-  : S extends [[`prim`, infer Fst extends string], ...infer Rest extends string[][]]
+    ? [`prim`, ratio.ForceRatio<R>]
+  : S extends [[`prim`, infer Fst extends NumString], ...infer Rest extends ['prim', NumString][]]
     ? Init extends true
       ? LispDiv<Rest, Fst, false>
-    : Bit.BitDiv<R,Fst> extends Bit.Nil | string & infer Div
-      ? Div extends string
+    : ratio.Div<ratio.ForceRatio<R>, ratio.ForceRatio<Fst>> extends infer Div
+      ? Div extends 'nil'
+        ? Bit.Nil
+      : Div extends NumString
         ? LispDiv<Rest, Div, false>
-      : Bit.Nil
+      : never
     : ErrorCase<LispDivError0, "", S>
   : ErrorCase<LispDivError1, "", S>
+
+
 
 type LispModError0 = 'LispModError0'
 type LispModError1 = 'LispModError1'
 export type LispMod<
   S
-, R extends string = "0000000000000000"
+, R extends NumString = "0000000000000000"
 , Init extends boolean = true> =
   S extends []
     ? [`prim`, R]
-  : S extends [[`prim`, infer Fst extends string], ...infer Rest extends string[][]]
+  : S extends [ [`prim`, infer Fst extends NumString]
+              , ...infer Rest extends ['prim', NumString][]]
     ? Init extends true
-      ? Bit.BitGTE<Fst, '0000000000000000'> extends true
+      ? Bit.BitGTE<ratio.ForceNat<Fst> extends infer f extends string?f:never, '0000000000000000'> extends true
         ? LispMod<Rest, Fst, false>
-      : Rest extends [['prim', infer Snd extends string]]
-        ? LispMod<[['prim', Bit.BitSub<Snd, Bit.BitRevSign<Fst>>], ['prim', Snd]]>
+      : Rest extends [['prim', infer Snd extends NumString]]
+        ? ratio.Scaling<ratio.ForceRatio<Fst>, ratio.ForceRatio<Snd>> extends [[infer rfst extends BitString, infer _rfstm], [infer rsnd extends BitString, infer _rsndm]]
+          ? LispMod<[['prim', Bit.BitSub<rsnd, Bit.BitRevSign<rfst>>], ['prim', Snd]]>
+        : never
       : never
-    : Bit.BitMod<R,Fst> extends Bit.Nil | string & infer Mod
-      ? Mod extends string
-        ? LispMod<Rest, Mod, false>
-      : Bit.Nil
+    : ratio.Scaling<ratio.ForceRatio<Fst>, ratio.ForceRatio<R>> extends [[infer rfst extends BitString, infer _rfstm], [infer rsnd extends BitString, infer _rsndm]]
+      ? Bit.BitMod<rsnd,rfst> extends Bit.Nil | string & infer Mod
+        ? Mod extends string
+          ? LispMod<Rest, Mod, false>
+        : Bit.Nil
+      : never
     : ErrorCase<LispModError0, '', S>
   : ErrorCase<LispModError1, '', S>
 
 type LispRelationError0 = 'LispRelationError0'
 type LispRelationError1 = 'LispRelationError1'
 export type LispRelation<
-  Name extends string
+  Name extends '>' | '<' | '>=' | '<=' | '='
 , S
-, R extends string = "00000000"
+, R extends NumString = "00000000"
 , Init extends boolean = true
 , Next extends boolean = true> =
   S extends []
     ? [`prim`, Next]
-  : S extends [[`prim`, infer Fst extends string], ...infer Rest extends string[][]]
+  : S extends [[`prim`, infer Fst extends NumString], ...infer Rest extends ['prim', NumString][]]
     ? Init extends true
       ? LispRelation<Name, Rest, Fst, false, Next>
     : Next extends true
-      ? Name extends '>'
-        ? LispRelation<Name, Rest, Fst, false, Bit.BitGT<R,Fst>>
-      : Name extends '<'
-        ? LispRelation<Name, Rest, Fst, false, Bit.BitLT<R,Fst>>
-      : Name extends '>='
-        ? LispRelation<Name, Rest, Fst, false, Bit.BitGTE<R,Fst>>
-      : Name extends '<='
-        ? LispRelation<Name, Rest, Fst, false, Bit.BitLTE<R,Fst>>
-      : ErrorCase<LispRelationError0, "", S>
+      ? LispRelation<Name, Rest, Fst, false, ratio.Relation<ratio.ForceRatio<R>, ratio.ForceRatio<Fst>, Name>>
     : [`prim`, false]
   : ErrorCase<LispRelationError1, "", S>
 
 export type Eq<L, R> = Util.Equal<L,R>
 type If<A, B, C> = A extends [`prim`, false] | TNil ? C : B;
-
-// const eqtest1: Eq<"a", "a"> = true;
-// const eqtest2: Eq<"a", ""> = false;
-// const eqtest3: Eq<null, []> = false;
-// const eqtest4: Eq<undefined, null> = false;
-// const eqtest5: Eq<undefined, undefined> = true;
-// const eqtest6: Eq<{}, null> = false;
-// const eqtest7: Eq<1, "1"> = false;
-// const eqtest8: Eq<["a"], ["a", ""]> = false;
-// const eqtest9: Eq<[""], ["a"]> = false;
-// const eqtest10: Eq<["a"], ["a"]> = true;
-// const eqtest11: Eq<[""], [""]> = true;
 
 // predicate
 // - number?, string?, vector?, map?, fn?, ifn?, pos-int?, neg-int?, odd?, even?, zero?, symbol?, keyword?,  empty? 
@@ -433,10 +423,16 @@ type IsEven<
 // number?
 export type LispIsNumber<
   S> =
-  S extends [['prim', infer N extends string]]
+  S extends [['prim', infer N extends BitString]]
     ? N extends `1${infer rN}`
       ? ['prim', IsNumber<rN>]
     : ['prim', IsNumber<N>]
+  : S extends [['prim', infer N extends RatioString]]
+    ? ratio.ForceNat<N> extends infer D
+      ? D extends 'nil'
+        ? ['prim', false]
+      : ['prim', true]
+    : never
   : ['prim', false]
 
 // string?
@@ -486,26 +482,48 @@ export type LispIsIfn<
 // pos-int?
 export type LispIsPosInt<
   S> =
-  S extends [['prim', infer N extends string]]
+  S extends [['prim', infer N extends BitString]]
     ? N extends `1${infer _}`
       ? ['prim', false]
     : LispIsNumber<S>
+  : S extends [['prim', infer N extends RatioString]]
+    ? ratio.ForceNat<N> extends infer D extends BitString
+      ? D extends 'nil'
+        ? ['prim', false]
+      : D extends `1${infer _}`
+        ? ['prim', false]
+      : LispIsNumber<[['prim', D]]>
+    : never
   : ['prim', false]
 
 // neg-int?
 export type LispIsNegInt<
   S> =
-  S extends [['prim', infer N extends string]]
+  S extends [['prim', infer N extends BitString]]
     ? N extends `1${infer _}`
       ? LispIsNumber<S>
     : ['prim', false]
+  : S extends [['prim', infer N extends RatioString]]
+    ? ratio.ForceNat<N> extends infer D extends BitString
+      ? D extends 'nil'
+        ? ['prim', false]
+      : D extends `1${infer _}`
+        ? LispIsNumber<[['prim', D]]>
+      : ['prim', false]
+    : never
   : ['prim', false]
 
 // odd?
 export type LispIsOdd<
   S> =
-  S extends [['prim', infer N extends string]]
+  S extends [['prim', infer N extends BitString]]
     ? ['prim', IsOdd<N>]
+  : S extends [['prim', infer N extends RatioString]]
+    ? ratio.ForceNat<N> extends infer D extends string
+      ? D extends 'nil'
+        ? ['prim', false]
+      : ['prim', IsOdd<D>]
+    : never
   : ['prim', false]
 
 // even?
@@ -513,6 +531,12 @@ export type LispIsEven<
   S> =
   S extends [['prim', infer N extends string]]
     ? ['prim', IsEven<N>]
+  : S extends [['prim', infer N extends RatioString]]
+    ? ratio.ForceNat<N> extends infer D extends string
+      ? D extends 'nil'
+        ? ['prim', false]
+      : ['prim', IsEven<D>]
+    : never
   : ['prim', false]
 
 // zero?
@@ -524,6 +548,14 @@ export type LispIsZero<
         ? ['prim', false]
       : ['prim', true]
     : ['prim', false]
+  : S extends [['prim', infer N extends RatioString]]
+    ? ratio.ForceNat<N> extends infer D extends string
+      ? D extends 'nil'
+        ? ['prim', false]
+      : Bit.BitIsZero<D> extends true
+        ? ['prim', true]
+      : ['prim', false]
+    : never
   : ['prim', false]
 
 // symbol?
@@ -661,8 +693,14 @@ export type LispGet<
   S> =
   S extends [infer Map extends TMap, infer Key extends Keyword]
     ? Get<Key, Map>
-  : S extends [infer Vec extends Vector, infer Idx extends ['prim', string]]
+  : S extends [infer Vec extends Vector, infer Idx extends ['prim', BitString]]
     ? Get<Idx, Vec>
+  : S extends [infer Vec extends Vector, infer Idx extends ['prim', NumString]]
+    ? ratio.ForceNat<Idx[1]> extends infer D extends string
+      ? D extends 'nil'
+        ? TNil
+      : Get<D extends PrimNumber ? D : never, Vec>
+    : never
   : ErrorCase<LispGetError0, "this is not map and key or vector and idx-num.", S>
 
 type LispSecondError0 = "LispSecondError0"
@@ -731,37 +769,49 @@ type _rAssocIn<
       ? _AssocIn<Next, ['vec', ...Kt], V, Type> extends infer Recur
         ? Recur extends Atom
           ? _Assoc<M, Kh, Recur>
-        : ErrorCase<AssocInError7, `The value of key (${Kt[0][1]}) is not vector nor map.`, M>
+        : ErrorCase<AssocInError7, `The value of key (${Kt[0][1] extends RatioString ? `${Kt[0][1][0]}/${Kt[0][1][1]}` : Kt[0][1] extends string ? Kt[0][1] : never}) is not vector nor map.`, M>
       : ErrorCase<AssocInError3, '', M>
     : ErrorCase<AssocInError8, "Keys rests but its value is not vector nor map.", M>
   : ErrorCase<AssocInError4, "", M>
  
 export type _AssocIn<
   M extends Vector | TMap
-, Ks extends ['vec', ...unknown[]]
+, Ks extends ['vec', ...(Keyword | PrimNumber | ['prim', RatioString])[]]
 , V extends Atom
 , Type extends 'update' | 'assoc' = 'assoc'> =
   M extends Vector
     ? M extends ['vec']
       ? M
-    : Ks extends ['vec', infer Kh extends PrimNumber, ...infer Kt extends (Keyword | PrimNumber)[]]
+    : Ks extends ['vec', infer Kh extends ['prim', RatioString], ...infer Kt extends (Keyword | PrimNumber | ['prim', RatioString])[]]
+      ? ratio.ForceNat<Kh[0]> extends infer D extends string
+        ? D extends 'nil'
+          ? TNil
+        : _rAssocIn<M, ['prim', D], Kt, V, Type>
+      : never
+    : Ks extends ['vec', infer Kh extends PrimNumber, ...infer Kt extends (Keyword | PrimNumber | ['prim', RatioString])[]]
       ? _rAssocIn<M, Kh, Kt, V, Type>
     : AssocInError0
   : M extends TMap
-    ? Ks extends ['vec', infer Kh extends Keyword, ...infer Kt extends (Keyword | PrimNumber)[]]
+    ? Ks extends ['vec', infer Kh extends Keyword, ...infer Kt extends (Keyword | PrimNumber | ['prim', RatioString])[]]
       ? _rAssocIn<M, Kh, Kt, V, Type>
     : AssocInError5
   : AssocInError6
 
 export type _Update<
   M
-, K extends Keyword | PrimNumber
+, K extends Keyword | PrimNumber | ['prim', RatioString]
 , F extends Fn> =
-_Assoc<M, K, F, 'update'>
+  K extends ['prim', RatioString]
+    ? ratio.ForceNat<K[0]> extends infer D extends string
+      ? D extends 'nil'
+        ? TNil
+      : _Assoc<M, ['prim', D], F, 'update'>
+    : never
+  : _Assoc<M, K, F, 'update'>
 
 export type _UpdateIn<
   M extends Vector | TMap
-, K extends ['vec', ...unknown[]]
+, K extends ['vec', ...(Keyword | PrimNumber | ['prim', RatioString])[]]
 , F extends Fn> =
 _AssocIn<M, K, F, 'update'>
 
@@ -770,23 +820,33 @@ type LispAUErrorMsg  = '1st or 2nd is not proper form.'
 export type LispAssoc<
   S> =
   S extends [ infer M extends Vector | TMap
-  , infer K extends Keyword | PrimNumber
+  , infer K
   , infer V extends Atom]
-    ? _Assoc<M,K,V>
+    ? K extends ['prim', RatioString]
+      ? ratio.ForceNat<K[0]> extends infer D extends string
+        ? D extends 'nil'
+          ? TNil
+        : _Assoc<M,['prim', D],V>
+      : never
+    : K extends Keyword | PrimNumber
+      ? _Assoc<M,K,V>
+    : never
   : ErrorCase<LispAssocError0, LispAUErrorMsg, S>
+
 type LispAssocInError0 = 'LispAssocInError0'
 export type LispAssocIn<
   S> =
   S extends [ infer M extends Vector | TMap
-  , infer Ks extends ['vec', ...(Keyword | PrimNumber)[]]
+  , infer Ks extends ['vec', ...(Keyword | PrimNumber | ['prim', RatioString])[]]
   , infer V extends Atom]
     ? _AssocIn<M,Ks,V>
   : ErrorCase<LispAssocInError0, LispAUErrorMsg, S>
+
 type LispUpdateError0 = 'LispUpdateError0'
 export type LispUpdate<
   S> =
   S extends [ infer M extends Vector | TMap
-  , infer K extends Keyword | PrimNumber
+  , infer K extends Keyword | PrimNumber | ['prim', RatioString]
   , infer V extends Fn]
     ? _Update<M,K,V>
   : ErrorCase<LispUpdateError0, LispAUErrorMsg, S>
@@ -794,7 +854,7 @@ type LispUpdateInError0 = 'LispUpdateInError0'
 export type LispUpdateIn<
   S> =
   S extends [ infer M extends Vector | TMap
-  , infer Ks extends ['vec', ...(Keyword | PrimNumber)[]]
+  , infer Ks extends ['vec', ...(Keyword | PrimNumber | ['prim', RatioString])[]]
   , infer V extends Fn]
     ? _UpdateIn<M,Ks,V>
   : ErrorCase<LispUpdateInError0, LispAUErrorMsg, S>
@@ -917,19 +977,28 @@ type TakeError1 = "TakeError1"
 type TakeError2 = "TakeError2"
 type TakeError3 = "TakeError3"
 export type Take<
-  N extends string
+  N extends NumString
 , V extends unknown[]
 , R extends unknown[] = []> =
-  V extends []
-    ? R
-  : Bit.BitGTE<"0", N> extends true
-    ? R
-  : V extends [infer F, ...infer T]
-    ? Take<Bit.BitSub<N, "1">, T, [...R, F]>
-  : ErrorCase<TakeError0, '2nd should be an array.', [N,V,R]>
+  N extends string
+    ? V extends []
+      ? R
+    : Bit.BitGTE<"0", N> extends true
+      ? R
+    : V extends [infer F, ...infer T]
+      ? Take<Bit.BitSub<N, "1">, T, [...R, F]>
+    : ErrorCase<TakeError0, '2nd should be an array.', [N,V,R]>
+  : N extends RatioString
+    ? ratio.ForceNat<N> extends infer D extends string
+      ? D extends 'nil'
+        ? TNil
+      : Take<D, V, R>
+    : never
+  : never
+
 type LispTake<
   S> =
-  S extends [['prim', infer N extends string], ['vec', ...infer V]]
+  S extends [['prim', infer N extends NumString], ['vec', ...infer V]]
     ? Take<N,V> extends infer RV
       ? RV extends unknown[]
         ? ['vec', ...RV]
@@ -942,19 +1011,28 @@ type DropError1 = "DropError1"
 type DropError2 = "DropError2"
 type DropError3 = "DropError3"
 export type Drop<
-  N extends string
+  N extends NumString
 , V extends unknown[]
 , R extends unknown[] = []> =
-  V extends []
-    ? R
-  : V extends [infer _, ...infer T]
-    ? Bit.BitGTE<"0", N> extends true
-      ? V
-    : Drop<Bit.BitSub<N, "1">, T>
-  : ErrorCase<DropError0, '2nd should be vector', [N,V]>
+  N extends string
+    ? V extends []
+      ? R
+    : V extends [infer _, ...infer T]
+      ? Bit.BitGTE<"0", N> extends true
+        ? V
+      : Drop<Bit.BitSub<N, "1">, T>
+    : ErrorCase<DropError0, '2nd should be vector', [N,V]>
+  : N extends RatioString
+    ? ratio.ForceNat<N> extends infer D extends string
+      ? D extends 'nil'
+        ? TNil
+      : Drop<D, V, R>
+    : never
+  : never
+
 type LispDrop<
   S> =
-  S extends [['prim', infer N extends string], ['vec', ...infer V]]
+  S extends [['prim', infer N extends NumString], ['vec', ...infer V]]
     ? Drop<N,V> extends infer RV
       ? RV extends unknown[]
         ? ['vec', ...RV]
