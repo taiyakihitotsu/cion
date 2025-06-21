@@ -18,12 +18,11 @@ const test_in_doc3: Cion.Lisp<`(let [c {:status 'in' :message 'message1'} cc {:s
 ### Arithmetic
 ```clojure
 const test_in_doc_a0: Cion.Lisp<`(+ 2 3)`> = '5'
-const test_in_doc_a1: Cion.Lisp<`(/ 2 3)`> = '0'
+const test_in_doc_a1: Cion.Lisp<`(/ 2 3)`> = '2/3'
 const test_in_doc_a2: Cion.Lisp<`(/ 2 0)`> = 'nil'
 const test_in_doc_a3: Cion.Lisp<`(+ 2 (- 1 4))`> = '-1'
 ```
 
-- R\Z is not implemented in current.
 - Division by zero is not allowed, to return nil.
 - The value range is from -32767 to 32767. Decimal numbers is converted to 16bit number internally though, the minimum, -32768, is excluded for convenience. 
 
