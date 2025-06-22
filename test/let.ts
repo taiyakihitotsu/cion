@@ -3,7 +3,8 @@ import type { Eval } from '../src/index'
 import type {LetVal,LetArg,LetForm,Each,Atom,TMap,Sexpr,TNil,Keyword,Sym,PrimString,PrimBoolean,PrimTestNumber,PrimNumber,Prim,Args,Fn,Vector,Var,Env,TNotMatch,IfForm} from '../src/sexprtypes'
 
 // test let
-const evallettest: Eval<[`let`, [[`sym`, `t`], `'test'`], [`sym`, `t`]]> = {error: "EvalError7", message: '', sexpr: ["let", [["sym", "t"], "'test'"], ["sym", "t"]], env: [[]]}// {
+const evallettest: Eval<[`let`, [[`sym`, `t`], `'test'`], [`sym`, `t`]]> = {error: 'EvalError7', message: '', sexpr: `'test'`, env: [[]]}
+const evallettest_true: Eval<[`let`, [[`sym`, `t`], ['prim', `'test'`]], [`sym`, `t`]]> = ['prim', `'test'`]
 
 // recursive test[let]
 type InnerLetTest = [
@@ -122,3 +123,19 @@ const maintest_letmap_1d: Cion.RawLisp<`(let [c {:status 'in' :message 'message1
 const maintest_letmap_1ce: Cion.RawLisp<`(let [v 'in'] [(:status {:status 'in' :message 'message1'}) ((fn [] (:a {:a 'in'})))])`> = ['vec', ['prim', "'in'"], ['prim', "'in'"]]
 const maintest_aflet_0: Cion.RawLisp<`(+ 1 (let [x 1 y 2] (- x y)))`> = ['prim', ['0000000000000000', '0000000000000001']]
 const maintest_aflet_1: Cion.RawLisp<`[1 (let [x 1 y 2] (- x y))]`> = ['vec', ['prim', '0000000000000001'], ['prim', ['1111111111111111', '0000000000000001']]]
+
+
+// [note]
+// see `some-thread-first.ts` too.
+const testsometh5a: Cion.Lisp<`(some-> 1 boolean? string? ((fn [n] (if (= n false) 2 -2))) pos-int?)`> = 'true'
+const testsomet60: Cion.Lisp<`((fn [n] (some-> n number?)) 1)`> = 'true'
+const testsometh00: Cion.Lisp<`((fn [n] (some-> n inc)) 1)`> = '2'
+
+const _testsometh00: Cion.Lisp<`(let [m (inc n)] (if m m nil))`>['ast']['error'] = 'EvalError12'
+const _testsometh01: Cion.Lisp<`(let [m (inc 1)] (if m m nil))`> = '2'
+const _testsometh02: Cion.Lisp<`(let [m (inc n)] m)`>['ast']['error'] = 'EvalError12'
+const _testsometh03: Cion.Lisp<`(let [m (inc 1)] m)`> = '2'
+const _testsometh03a: Cion.Lisp<`(let [m (fn [n] (inc n))] m)`> = '(fn [n] (inc n))'
+const _testsometh03b: Cion.Lisp<`(let [m ((fn [n] (inc n)) 1)] m)`> = '2' // m
+const _testsometh05: Cion.Lisp<`(let [m 1] m)`> = '1'
+

@@ -155,7 +155,7 @@ type Reading<
         ? Reading<T, EnvLifo, prev, [...R, H]>
       : H extends Atom
         ? Reading<T, EnvLifo, prev, [...R, ReadAtom<H, EnvLifo, prev>]>
-      : H extends Sexpr | LetForm
+      : H extends Sexpr | LetForm | IfForm
         ? Reading<T, EnvLifo, prev, [...R, Eval<H, EnvLifo, prev>]>
       : ErrorCase<ReadingError1, "", AS>
     : R
@@ -298,6 +298,20 @@ export type LispSub<
       ? LispSub<Rest, Fst, false>
     : LispSub<Rest, ratio.Sub<ratio.ForceRatio<R>, ratio.ForceRatio<Fst>>, false>
   : ErrorCase<LispSubError0, "", S>
+
+type LispIncError0 = 'LispIncError0'
+export type LispInc<
+  S> =
+  S extends [['prim', infer Fst extends NumString]]
+    ? LispAdd<[...S, ['prim', '0000000000000001']]>
+  : ErrorCase<LispIncError0, "", S>
+
+type LispDecError0 = 'LispDecError0'
+export type LispDec<
+  S> =
+  S extends [['prim', infer Fst extends NumString]]
+    ? LispSub<[...S, ['prim', '0000000000000001']]>
+  : ErrorCase<LispDecError0, "", S>
 
 type LispMulError0 = 'LispMulError0'
 export type LispMul<
@@ -1288,10 +1302,12 @@ type SomeThreadFirstError0 = 'SomeThreadFirstError0'
 type SomeThreadFirstError1 = 'SomeThreadFirstError1'
 type SomeThreadFirstError2 = 'SomeThreadFirstError2'
 type SomeThreadFirstError3 = 'SomeThreadFirstError3'
-type TmpGensym = ['sym', 'cmt78dh2my9vaf']
+type TmpGensym = ['sym', 'm']
+
 type SomeLetWrap<
   T> =
-['let', [TmpGensym, T], ['if', TmpGensym, TmpGensym, TNil]]
+['if', T, T, TNil]
+
 export type SomeThreadGeneral<
   Fst
 , V extends unknown[]
@@ -1301,15 +1317,14 @@ export type SomeThreadGeneral<
   : V extends [infer Head, ...infer Tail extends unknown[]]
     ? Tail['length'] extends 0
       ? InsertP extends 'second'
-        ? SomeLetWrap<InsertSecond<VecWrap<Head>, Fst>>
+        ? ['if', InsertSecond<VecWrap<Head>, Fst>, InsertSecond<VecWrap<Head>, Fst>, ['prim', 'false']]
       : SomeLetWrap<InsertLast<VecWrap<Head>, Fst>>
     : ( InsertP extends 'second'
           ? ThreadFirst<SomeThreadGeneral<Fst, Tail, InsertP>, [Head]>
         : ThreadLast<SomeThreadGeneral<Fst, Tail, InsertP>, [Head]>) extends infer ThreadWrap
-      ? SomeLetWrap<ThreadWrap>
+      ? ['if', ThreadWrap, ThreadWrap, TNil]
     : ErrorCase<SomeThreadFirstError2, 'insert error', [InsertSecond<VecWrap<Head>, Fst>, V]>
   : ErrorCase<SomeThreadFirstError1, '', [Fst, V]>
-
 
 type LispSomeThreadGeneralError0 = 'LispSomeThreadGeneralError0'
 type LispSomeThreadGeneralError1 = 'LispSomeThreadGeneralError1'
@@ -1339,7 +1354,7 @@ export type LispSomeThreadLast<S> = LispSomeThreadGeneral<S, 'last'>
 // ---------------------------------------
 
 export type BuiltinsUnion =
-'->' | '->>' | 'some->' | 'some->>' | 'str' | 'vector' | 'map' | 'filter' | 'remove' | 'reduce' | 'count' | 'concat' | 'conj' | 'first' | 'second' | 'last' | 'rest' | 'butlast' | 'reverse' | 'interleave' | 'take' | 'drop' | 'assoc-in' | 'update-in' | 'assoc' | 'update' | 'get' | 'eq' | '=' | 'not' | 'and' | 'or' | '+' | '-' | '*' | '/' | '%' | 'mod' | '>' | '<' | '>=' | '<=' | 'number?' | 'string?' | 'vector?' | 'map?' | 'fn?' | 'keyword?' | 'ifn?' | 'pos-int?' | 'neg-int?' | 'odd?' | 'even?' | 'zero?' | 'symbol?' | 'empty?' | 'every?' | 'some' | 'nil?' | 'some?' | 're-find'
+'->' | '->>' | 'some->' | 'some->>' | 'str' | 'vector' | 'map' | 'filter' | 'remove' | 'reduce' | 'count' | 'concat' | 'conj' | 'first' | 'second' | 'last' | 'rest' | 'butlast' | 'reverse' | 'interleave' | 'take' | 'drop' | 'assoc-in' | 'update-in' | 'assoc' | 'update' | 'get' | 'eq' | '=' | 'not' | 'and' | 'or' | 'inc' | 'dec' | '+' | '-' | '*' | '/' | '%' | 'mod' | '>' | '<' | '>=' | '<=' | 'number?' | 'string?' | 'vector?' | 'map?' | 'fn?' | 'keyword?' | 'ifn?' | 'pos-int?' | 'neg-int?' | 'odd?' | 'even?' | 'zero?' | 'symbol?' | 'empty?' | 'every?' | 'some' | 'nil?' | 'some?' | 're-find'
 
 type Builtins<
   U
@@ -1410,6 +1425,10 @@ type Builtins<
     ? LispAnd<Reading<OPR, env, [[prev]]>>
   : U extends `or`
     ? LispOr<Reading<OPR, env, [[prev]]>>
+  : U extends `inc`
+    ? LispInc<Reading<OPR, env, [[prev]]>>
+  : U extends `dec`
+    ? LispDec<Reading<OPR, env, [[prev]]>>
   : U extends `+`
     ? LispAdd<Reading<OPR, env, [[prev]]>>
   : U extends `-`
@@ -1559,8 +1578,16 @@ export type Eval<
       : LV extends Fn
         ? Eval<LC, Let<LN, LV, env>, [prev]>
       : LV extends Sexpr | Atom
-        ? Eval<LC, Let<LN, Eval<LV, env, [[prev]]>, env>, [prev]>
-      : ErrorCase<EvalError7, '', A, env>
+        ? Eval<LV, env, [[prev]]> extends infer ValueEvaluated
+          ? ValueEvaluated extends {error: string}
+            ? { sexpr: ValueEvaluated
+              , message: 'Invalid binding in let form.'
+              , error: EvalError12 }
+          : Eval<LC, Let<LN, ValueEvaluated, env>, [prev]>
+        : never
+      : LV extends IfForm
+        ? Eval<LC, Eval<LV, env, [[prev]]>, [prev]>
+      : ErrorCase<EvalError7, '', LV, env>
     : A extends ['let', [], infer Sexpr]
       ? Eval<Sexpr, env, [prev]>
     : ErrorCase<EvalError8, 'this is not proper let-form.', A, env>
