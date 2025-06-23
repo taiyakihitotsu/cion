@@ -750,6 +750,18 @@ export type LispGet<
     : never
   : ErrorCase<LispGetError0, "this is not map and key or vector and idx-num.", S>
 
+type LispGetInError0 = 'LispGetInError0'
+type LispGetInError1 = 'LispGetInError1'
+export type LispGetIn<
+  S> =
+  S extends [infer f, infer s]
+    ? s extends ['vec', infer j, ...infer k]
+      ? k extends []
+        ? LispGet<[f, j]>
+      : LispGetIn<[LispGet<[f, j]>, ['vec', ...k]]>
+    : ErrorCase<LispGetInError1, 'the second should be a vector.', S>
+  : ErrorCase<LispGetInError0, '', S>
+
 type LispSecondError0 = "LispSecondError0"
 export type LispSecond<
   S> =
@@ -1387,7 +1399,7 @@ export type LispSomeThreadLast<S> = LispSomeThreadGeneral<S, 'last'>
 // ---------------------------------------
 
 export type BuiltinsUnion =
-'->' | '->>' | 'some->' | 'some->>' | 'str' | 'vector' | 'map' | 'filter' | 'remove' | 'reduce' | 'count' | 'concat' | 'conj' | 'first' | 'second' | 'last' | 'rest' | 'butlast' | 'reverse' | 'interleave' | 'take' | 'drop' | 'assoc-in' | 'update-in' | 'assoc' | 'update' | 'get' | 'eq' | '=' | 'not' | 'and' | 'or' | 'inc' | 'dec' | '+' | '-' | '*' | '/' | '%' | 'mod' | '>' | '<' | '>=' | '<=' | 'number?' | 'string?' | 'vector?' | 'map?' | 'fn?' | 'keyword?' | 'ifn?' | 'pos-int?' | 'neg-int?' | 'odd?' | 'even?' | 'zero?' | 'symbol?' | 'empty?' | 'every?' | 'some' | 'nil?' | 'some?' | 'boolean?' | 'type' | 're-find'
+'->' | '->>' | 'some->' | 'some->>' | 'str' | 'vector' | 'map' | 'filter' | 'remove' | 'reduce' | 'count' | 'concat' | 'conj' | 'first' | 'second' | 'last' | 'rest' | 'butlast' | 'reverse' | 'interleave' | 'take' | 'drop' | 'assoc-in' | 'update-in' | 'assoc' | 'update' | 'get' | 'get-in' | 'eq' | '=' | 'not' | 'and' | 'or' | 'inc' | 'dec' | '+' | '-' | '*' | '/' | '%' | 'mod' | '>' | '<' | '>=' | '<=' | 'number?' | 'string?' | 'vector?' | 'map?' | 'fn?' | 'keyword?' | 'ifn?' | 'pos-int?' | 'neg-int?' | 'odd?' | 'even?' | 'zero?' | 'symbol?' | 'empty?' | 'every?' | 'some' | 'nil?' | 'some?' | 'boolean?' | 'type' | 're-find'
 
 type Builtins<
   U
@@ -1450,6 +1462,8 @@ type Builtins<
     ? LispUpdate<Reading<OPR, env, [[prev]]>>
   : U extends `get`
     ? LispGet<Reading<OPR, env, [[prev]]>>
+  : U extends `get-in`
+    ? LispGetIn<Reading<OPR, env, [[prev]]>>
   : U extends `eq` | `=`
     ? LispEq<Reading<OPR, env, [[prev]]>>
   : U extends `not`

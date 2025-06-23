@@ -1,0 +1,10 @@
+import type Cion from '../src/index'
+
+const testgetin1: Cion.Lisp<`(get-in [[2]] [0])`> = '[2]'
+const testgetin2: Cion.Lisp<`(get-in [[2]] [0 0])`> = '2'
+const testgetin3: Cion.Lisp<`(get-in [0 [2]] [1 0])`> = '2'
+const testgetin1a: Cion.Lisp<`(get-in {:a {:b 2}} [:a :b])`> = '2'
+const testgetin2a: Cion.Lisp<`(get-in {:a {:b 2}} [:a])`> = '{:b 2}'
+const testgetin2ac: Cion.Lisp<`(get-in {:a {:b 2}} [:c])`> = 'nil'
+const testgetin2ad: Cion.Lisp<`(get-in {:a [2]} [:a 0])`> = '2'
+const testgetin2ae: Cion.Lisp<`(get-in [9 {:a [2]}] [1 :a 0])`> = '2'

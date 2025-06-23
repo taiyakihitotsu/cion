@@ -92,7 +92,7 @@ const test_refind : Cion.Lisp<`(re-find ${email} 'zzz.zzz@testmailreg.com')`> = 
  - map, filter, remove, reduce
  - conj, concat, interleave, reverse
  - assoc, assoc-in, update, update-in
- - first, second, last, rest, butlast, get
+ - first, second, last, rest, butlast, get, get-in
  - ... and vector ```[0 1 2]``` & map ```{:x 0 :y 1 :z 2}``` syntax.
 
 
