@@ -588,6 +588,11 @@ export type LispIsEmpty<
     : ['prim', false]
   : ['prim', false]
 
+export type LispIsBoolean<
+  S> =
+  S extends [['prim', true]] | [['prim', false]]
+    ? ['prim', true]
+  : ['prim', false]
 type ConcatError0 = "ConcatError0"
 type ConcatError1 = "ConcatError1"
 type ConcatError2 = "ConcatError2"
@@ -1475,6 +1480,8 @@ type Builtins<
     ? LispSome<Reading<OPR, env, [[prev]]>>
   : U extends `nil?`
     ? LispIsNil<Reading<OPR, env, [[prev]]>>
+  : U extends `boolean?`
+    ? LispIsBoolean<Reading<OPR, env, [[prev]]>>
   : U extends `some?`
     ? LispIsSome<Reading<OPR, env, [[prev]]>>
   : Eval<[ReadLet<U, env>, OPR[0]], env, [prev]>
