@@ -475,8 +475,10 @@ export type LispIsMap<
 // fn?
 export type LispIsFn<
   S> =
-  S extends [['fn', ...infer _]]
-    ? ['prim', true]
+  S extends [infer A]
+    ? A extends ['fn', ...infer _] | ['sym', BuiltinsFn]
+      ? ['prim', true]
+    : ['prim', false]
   : ['prim', false]
 
 // keyword?
@@ -611,7 +613,7 @@ export type LispType<
   : LispIsKeyword<S> extends ['prim', true]
     ? ['prim', `'key'`]
   : LispIsSymbol<S> extends ['prim', true]
-    ? S extends [['sym', Exclude<BuiltinsUnion, 'if' | 'let' | 'fn' | '->' | '->>' | 'some->' | 'some->>'>]]
+    ? S extends [['sym', BuiltinsFn]]
       ? ['prim', `'fn'`]
     : ['prim', `'symbol'`]
   : ['prim', `'nil'`]
@@ -1400,6 +1402,7 @@ export type LispSomeThreadLast<S> = LispSomeThreadGeneral<S, 'last'>
 
 export type BuiltinsUnion =
 '->' | '->>' | 'some->' | 'some->>' | 'str' | 'vector' | 'map' | 'filter' | 'remove' | 'reduce' | 'count' | 'concat' | 'conj' | 'first' | 'second' | 'last' | 'rest' | 'butlast' | 'reverse' | 'interleave' | 'take' | 'drop' | 'assoc-in' | 'update-in' | 'assoc' | 'update' | 'get' | 'get-in' | 'eq' | '=' | 'not' | 'and' | 'or' | 'inc' | 'dec' | '+' | '-' | '*' | '/' | '%' | 'mod' | '>' | '<' | '>=' | '<=' | 'number?' | 'string?' | 'vector?' | 'map?' | 'fn?' | 'keyword?' | 'ifn?' | 'pos-int?' | 'neg-int?' | 'odd?' | 'even?' | 'zero?' | 'symbol?' | 'empty?' | 'every?' | 'some' | 'nil?' | 'some?' | 'boolean?' | 'type' | 're-find'
+export type BuiltinsFn = Exclude<BuiltinsUnion, 'if' | 'let' | 'fn' | '->' | '->>' | 'some->' | 'some->>'>
 
 type Builtins<
   U
