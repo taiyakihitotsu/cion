@@ -861,7 +861,7 @@ export type _AssocIn<
 export type _Update<
   M
 , K extends Keyword | PrimNumber | ['prim', RatioString]
-, F extends Fn> =
+, F extends Fn | ['sym', BuiltinsFn]> =
   K extends ['prim', RatioString]
     ? ratio.ForceNat<K[0]> extends infer D extends string
       ? D extends 'nil'
@@ -873,7 +873,7 @@ export type _Update<
 export type _UpdateIn<
   M extends Vector | TMap
 , K extends ['vec', ...(Keyword | PrimNumber | ['prim', RatioString])[]]
-, F extends Fn> =
+, F extends Fn | ['sym', BuiltinsFn]> =
 _AssocIn<M, K, F, 'update'>
 
 type LispAssocError0 = 'LispAssocError0'
@@ -908,7 +908,7 @@ export type LispUpdate<
   S> =
   S extends [ infer M extends Vector | TMap
   , infer K extends Keyword | PrimNumber | ['prim', RatioString]
-  , infer V extends Fn]
+  , infer V extends Fn | ['sym', BuiltinsFn]]
     ? _Update<M,K,V>
   : ErrorCase<LispUpdateError0, LispAUErrorMsg, S>
 type LispUpdateInError0 = 'LispUpdateInError0'
