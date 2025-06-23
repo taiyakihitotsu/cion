@@ -39,7 +39,7 @@ type ReturnCC<
     ? R
   : NegCharaClass<R>
 
-type CompOption = {negExpand?: boolean}
+type CompOption = {negExpand: boolean}
 type InitCompOption = {negExpand: true}
 export type CompCharaClass<
   S extends string

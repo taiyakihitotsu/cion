@@ -7,8 +7,16 @@
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
     "skipLibCheck": true,
-    "declaration": true
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "exactOptionalPropertyTypes": true,
+    "noUncheckedIndexedAccess": true,
+    "noPropertyAccessFromIndexSignature": true
   },
   "include": ["./src/**/*.ts"]
 }
