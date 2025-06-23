@@ -88,7 +88,7 @@ const test_refind : Cion.Lisp<`(re-find ${email} 'zzz.zzz@testmailreg.com')`> = 
  - +, -, *, /, mod, inc, dec
  - str, re-find
  - and, or, not, >, <, =, eq, >=, <=
- - number?, string?, vector?, map?, fn?, ifn?, nat-int?, pos-int?, neg-int?, odd?, even?, zero?, keyword?, empty?, every?, some, nil?, some?
+ - number?, string?, vector?, map?, fn?, ifn?, nat-int?, pos-int?, neg-int?, odd?, even?, zero?, keyword?, empty?, boolean?, type, every?, some, nil?, some?
  - map, filter, remove, reduce
  - conj, concat, interleave, reverse
  - assoc, assoc-in, update, update-in
