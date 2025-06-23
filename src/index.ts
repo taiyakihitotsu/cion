@@ -20,8 +20,6 @@ type ErrorCase<
 , Env = []> =
 {error: Case, message: Msg, sexpr: S} & (Env extends [] ? {} : {env: Env})
 
-
-
 // ---------------
 // -- Inner Env
 // ---------------
@@ -835,6 +833,8 @@ type _rAssocIn<
     : ErrorCase<AssocInError8, "Keys rests but its value is not vector nor map.", M>
   : ErrorCase<AssocInError4, "", M>
  
+// [note]
+// - This accepts only a keyword if the element is map, Clojure can take it though.
 export type _AssocIn<
   M extends Vector | TMap
 , Ks extends ['vec', ...(Keyword | PrimNumber | ['prim', RatioString])[]]
@@ -916,7 +916,7 @@ export type LispUpdateIn<
   S> =
   S extends [ infer M extends Vector | TMap
   , infer Ks extends ['vec', ...(Keyword | PrimNumber | ['prim', RatioString])[]]
-  , infer V extends Fn]
+  , infer V extends Fn | ['sym', BuiltinsFn]]
     ? _UpdateIn<M,Ks,V>
   : ErrorCase<LispUpdateInError0, LispAUErrorMsg, S>
 
