@@ -593,6 +593,34 @@ export type LispIsBoolean<
   S extends [['prim', true]] | [['prim', false]]
     ? ['prim', true]
   : ['prim', false]
+
+export type LispType<
+  S> =
+  LispIsNumber<S> extends ['prim', true]
+    ? ['prim', `'number'`]
+  : LispIsString<S> extends ['prim', true]
+    ? ['prim', `'string'`]
+  : LispIsMap<S> extends ['prim', true]
+    ? ['prim', `'map'`]
+  : LispIsVector<S> extends ['prim', true]
+    ? ['prim', `'vector'`]
+  : LispIsFn<S> extends ['prim', true]
+    ? ['prim', `'fn'`]
+  : LispIsBoolean<S> extends ['prim', true]
+    ? ['prim', `'boolean'`]
+  : LispIsKeyword<S> extends ['prim', true]
+    ? ['prim', `'key'`]
+  : LispIsSymbol<S> extends ['prim', true]
+    ? S extends [['sym', Exclude<BuiltinsUnion, 'if' | 'let' | 'fn' | '->' | '->>' | 'some->' | 'some->>'>]]
+      ? ['prim', `'fn'`]
+    : ['prim', `'symbol'`]
+  : ['prim', `'nil'`]
+
+
+// ----------------------
+// -- collection mod
+// ----------------------
+
 type ConcatError0 = "ConcatError0"
 type ConcatError1 = "ConcatError1"
 type ConcatError2 = "ConcatError2"
@@ -1359,7 +1387,7 @@ export type LispSomeThreadLast<S> = LispSomeThreadGeneral<S, 'last'>
 // ---------------------------------------
 
 export type BuiltinsUnion =
-'->' | '->>' | 'some->' | 'some->>' | 'str' | 'vector' | 'map' | 'filter' | 'remove' | 'reduce' | 'count' | 'concat' | 'conj' | 'first' | 'second' | 'last' | 'rest' | 'butlast' | 'reverse' | 'interleave' | 'take' | 'drop' | 'assoc-in' | 'update-in' | 'assoc' | 'update' | 'get' | 'eq' | '=' | 'not' | 'and' | 'or' | 'inc' | 'dec' | '+' | '-' | '*' | '/' | '%' | 'mod' | '>' | '<' | '>=' | '<=' | 'number?' | 'string?' | 'vector?' | 'map?' | 'fn?' | 'keyword?' | 'ifn?' | 'pos-int?' | 'neg-int?' | 'odd?' | 'even?' | 'zero?' | 'symbol?' | 'empty?' | 'every?' | 'some' | 'nil?' | 'some?' | 're-find'
+'->' | '->>' | 'some->' | 'some->>' | 'str' | 'vector' | 'map' | 'filter' | 'remove' | 'reduce' | 'count' | 'concat' | 'conj' | 'first' | 'second' | 'last' | 'rest' | 'butlast' | 'reverse' | 'interleave' | 'take' | 'drop' | 'assoc-in' | 'update-in' | 'assoc' | 'update' | 'get' | 'eq' | '=' | 'not' | 'and' | 'or' | 'inc' | 'dec' | '+' | '-' | '*' | '/' | '%' | 'mod' | '>' | '<' | '>=' | '<=' | 'number?' | 'string?' | 'vector?' | 'map?' | 'fn?' | 'keyword?' | 'ifn?' | 'pos-int?' | 'neg-int?' | 'odd?' | 'even?' | 'zero?' | 'symbol?' | 'empty?' | 'every?' | 'some' | 'nil?' | 'some?' | 'boolean?' | 'type' | 're-find'
 
 type Builtins<
   U
@@ -1482,6 +1510,8 @@ type Builtins<
     ? LispIsNil<Reading<OPR, env, [[prev]]>>
   : U extends `boolean?`
     ? LispIsBoolean<Reading<OPR, env, [[prev]]>>
+  : U extends `type`
+    ? LispType<Reading<OPR, env, [[prev]]>>
   : U extends `some?`
     ? LispIsSome<Reading<OPR, env, [[prev]]>>
   : Eval<[ReadLet<U, env>, OPR[0]], env, [prev]>
