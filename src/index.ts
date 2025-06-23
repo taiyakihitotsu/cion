@@ -748,6 +748,10 @@ export type LispGet<
         ? TNil
       : Get<D extends PrimNumber ? D : never, Vec>
     : never
+  : S extends [infer Map extends TMap, infer Idx extends PrimNumber]
+    ? TNil
+  : S extends [infer MNil extends TNil | ['vec'] | ['map'], infer _]
+    ? TNil
   : ErrorCase<LispGetError0, "this is not map and key or vector and idx-num.", S>
 
 type LispGetInError0 = 'LispGetInError0'
@@ -912,13 +916,22 @@ export type LispUpdate<
     ? _Update<M,K,V>
   : ErrorCase<LispUpdateError0, LispAUErrorMsg, S>
 type LispUpdateInError0 = 'LispUpdateInError0'
+type LispUpdateInError1 = 'LispUpdateInError1'
+type LispUpdateInError2 = 'LispUpdateInError2'
+type LispUpdateInError3 = 'LispUpdateInError3'
 export type LispUpdateIn<
   S> =
   S extends [ infer M extends Vector | TMap
   , infer Ks extends ['vec', ...(Keyword | PrimNumber | ['prim', RatioString])[]]
   , infer V extends Fn | ['sym', BuiltinsFn]]
     ? _UpdateIn<M,Ks,V>
-  : ErrorCase<LispUpdateInError0, LispAUErrorMsg, S>
+  : S extends [infer M, infer Ks, infer _V]
+    ? M extends Vector | TMap
+      ? Ks extends ['vec', ...(Keyword | PrimNumber | ['prim', RatioString])[]]
+        ? ErrorCase<LispUpdateInError3, "The 3rd must be fn.", S>
+      : ErrorCase<LispUpdateInError2, "The 2st must be key vec.", S>
+    : ErrorCase<LispUpdateInError1, "The 1st must be vec or map.", S>
+  : ErrorCase<LispUpdateInError0, "", S>
 
 type LispVectorError0 = "LispVectorError0"
 export type LispVector<S> = S extends unknown[] ? ['vec', ...S] : ErrorCase<LispVectorError0, `Sexpr's inner expression is not array.`, S>
@@ -1573,8 +1586,8 @@ export type Eval<
             ? Builtins<U,OPR,env,prev>
           : ReadLet<U, env> extends Fn | Keyword | TMap & infer UU
             ? Eval<[UU, ...OPR], env, [prev]>
-          : ReadLet<U, env> extends BuiltinsUnion & infer UU
-            ? Eval<[['sym', UU], ...OPR], env, [prev]>
+          : ReadLet<U, env> extends ['sym', BuiltinsUnion] & infer UU
+            ? Eval<[UU, ...OPR], env, [prev]>
           : ErrorCase<EvalError3, `1st arg should be fn/keyword/map.`, A, env>
         : IsKeyMapSexpr<ReadLetRecur<A, env>, env> extends true
           ? IsKeyword<OPC> extends true
@@ -1625,7 +1638,7 @@ export type Eval<
         ? Eval<LC, Let<LN, LV, env>, [prev]>
       : LV extends Sym & [`sym`, infer LP]
         ? LP extends BuiltinsUnion
-          ? Eval<LC, Let<LN, LP, env>, [prev]>
+          ? Eval<LC, Let<LN, LV, env>, [prev]>
         : Eval<LC, Let<LN, ReadLet<LP, env>, env>, [prev]>
       : LV extends LetForm
         ? Eval<[`let`, [[`sym`, LN], Eval<LV, env, [prev]>], LC], env, [prev]>

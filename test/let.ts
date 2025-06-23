@@ -139,3 +139,13 @@ const _testsometh03a: Cion.Lisp<`(let [m (fn [n] (inc n))] m)`> = '(fn [n] (inc 
 const _testsometh03b: Cion.Lisp<`(let [m ((fn [n] (inc n)) 1)] m)`> = '2' // m
 const _testsometh05: Cion.Lisp<`(let [m 1] m)`> = '1'
 
+// fn -> let
+const ___testsometh06: Cion.Lisp<`(let [r (update-in [0 1 [2]] [2 0] inc)] r)`> = '[0 1 [3]]'
+const ___testsometh06x: Cion.Lisp<`((fn [m] (let [r [0 1 [(m 2)]]] r)) inc)`> = '[0 1 [3]]'
+const _testsmeth06: Cion.Lisp<`((fn [m] (let [r (update-in [0] [0] m)] r)) inc)`> = '[1]'
+
+
+
+
+
+
