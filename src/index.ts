@@ -1370,15 +1370,17 @@ type SomeLetWrap<
 
 export type SomeThreadGeneral<
   Fst
-, V extends unknown[]
+, V extends (Sexpr|Each)[]
 , InsertP extends 'second' | 'last'> =
   V['length'] extends 0
     ? Fst
-  : V extends [infer Head, ...infer Tail extends unknown[]]
+  : V extends [infer Head extends (Sexpr|Each), ...infer Tail extends (Sexpr|Each)[]]
     ? Tail['length'] extends 0
-      ? InsertP extends 'second'
-        ? ['if', InsertSecond<VecWrap<Head>, Fst>, InsertSecond<VecWrap<Head>, Fst>, ['prim', 'false']]
-      : SomeLetWrap<InsertLast<VecWrap<Head>, Fst>>
+      ? [InsertSecond<VecWrap<Head>, Fst>, InsertP] extends [infer C extends (Sexpr|Each), 'second']
+        ? ['if', C, C, ['prim', 'false']]
+      : [InsertLast<VecWrap<Head>, Fst>] extends [infer C]
+        ? SomeLetWrap<C>
+      : never
     : ( InsertP extends 'second'
           ? ThreadFirst<SomeThreadGeneral<Fst, Tail, InsertP>, [Head]>
         : ThreadLast<SomeThreadGeneral<Fst, Tail, InsertP>, [Head]>) extends infer ThreadWrap
@@ -1391,10 +1393,10 @@ type LispSomeThreadGeneralError1 = 'LispSomeThreadGeneralError1'
 export type LispSomeThreadGeneral<
   S
 , Flag extends 'second' | 'last'> =
-  S extends [infer H, ...infer T extends unknown[]]
+  S extends [infer H extends (Sexpr|Each), ...infer T extends (Sexpr|Each)[]]
     ? T['length'] extends 0
       ? S
-    : Reverse<T> extends infer Rev
+    : Reverse<T> extends infer Rev extends (Sexpr|Each)[]
       ? Rev extends unknown[]
         ? SomeThreadGeneral<H, Rev, Flag>
       : ErrorCase<LispSomeThreadGeneralError1, 'reverse error', Rev>
