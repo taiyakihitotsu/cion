@@ -17,6 +17,13 @@ const recparseeeeee: Compiler.Rec<Compiler.recp<' (let [a 1 b 2] (if true t f))'
 // const recparsestrtest0: Compiler.Rec<Compiler.recp<' (let [a "test is this"] (str "a b" a))'>> = ['(', 'let', '[', 'a', '"', 'test', 'is', 'this','"', ']', '(', 'str', '"', 'a', 'b', '"', 'a', ')', ')']
 const recparsestrtest0: Compiler.Rec<Compiler.recp<` (let [a "test is this"] (str "a b" a))`>> = ['(', 'let', '[', 'a', '"test is this"', ']', '(', 'str', '"a b"', 'a', ')', ')']
 
+// -- Rational
+const recparsestrtest1: Compiler.Rec<Compiler.recp<` 30`>> = ['30']
+const recparsestrtest2: Compiler.Rec<Compiler.recp<` [30]`>> = ['[', '30', ']']
+const recparsestrtest3: Compiler.Rec<Compiler.recp<`     [3/2]`>> = ['[', '3/2', ']']
+const recparsestrtest4: Compiler.Rec<Compiler.recp<`  
+   [3/2]`>> = ['[', '3/2', ']']
+
 // -------------------------------
 // --- hash map ---
 // -------------------------------

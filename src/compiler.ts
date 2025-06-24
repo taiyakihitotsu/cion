@@ -77,7 +77,7 @@ export type ReadString<
 export type recp<
   Sexpr
 , R extends string[] = []> =
-  Sexpr extends `  ${infer U}`
+  Sexpr extends `  ${infer U}` | ` \n${infer U}`
     ? { r: recp<` ${U}`, R> }
   : Sexpr extends ` (${infer U}`
     ? { r: recp<` ${U}`, [...R, '(']> }
@@ -111,7 +111,10 @@ export type recp<
     ? { r: recp<` ${U} } `, R> }
   : Sexpr extends ` ${infer U}]`
     ? { r: recp<` ${U} ] `, R> }
+  : Sexpr extends ` ${infer U}`
+    ? { r: [...R, ...(U extends '' ? [] : [U])] }
   : { r: R }
+
 
 export type SParser<Sexpr extends string> = Rec<recp<Sexpr>>
 
