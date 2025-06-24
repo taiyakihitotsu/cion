@@ -122,12 +122,17 @@ const maintest_letmap_1cd: Cion.RawLisp<`(let [v 'in'] [(:status {:status 'in' :
 const maintest_letmap_1d: Cion.RawLisp<`(let [c {:status 'in' :message 'message1'} cc {:status 'out' :message 'message2'} cv [c cc cc] msg 'in' f (fn [a b c] (= c (b a)))] [msg])`> = ['vec', ['prim', "'in'"]]
 const maintest_letmap_1ce: Cion.RawLisp<`(let [v 'in'] [(:status {:status 'in' :message 'message1'}) ((fn [] (:a {:a 'in'})))])`> = ['vec', ['prim', "'in'"], ['prim', "'in'"]]
 const maintest_aflet_0: Cion.RawLisp<`(+ 1 (let [x 1 y 2] (- x y)))`> = ['prim', ['0000000000000000', '0000000000000001']]
+
+const testsometh5aaa: Cion.Lisp<`(some-> 1 boolean? string? ((fn [n] (if (= n false) 2 -2))) neg-int?)`> = 'nil'
+const testsometh5a: Cion.Lisp<`(some-> 1 boolean? string? ((fn [n] (if (= n false) 2 -2))) pos-int?)`> = 'true'
+const testsometh5aa: Cion.Lisp<`(some-> 1 boolean? string? ((fn [n] (if (= n false) 2 -2))) inc)`> = '3'
+
 const maintest_aflet_1: Cion.RawLisp<`[1 (let [x 1 y 2] (- x y))]`> = ['vec', ['prim', '0000000000000001'], ['prim', ['1111111111111111', '0000000000000001']]]
 
 
 // [note]
 // see `some-thread-first.ts` too.
-const testsometh5a: Cion.Lisp<`(some-> 1 boolean? string? ((fn [n] (if (= n false) 2 -2))) pos-int?)`> = 'true'
+const testsometh5ab: Cion.Lisp<`(some-> 1 boolean? string? ((fn [n] (if (= n false) 2 -2))) inc pos-int?)`> = 'true'
 const testsomet60: Cion.Lisp<`((fn [n] (some-> n number?)) 1)`> = 'true'
 const testsometh00: Cion.Lisp<`((fn [n] (some-> n inc)) 1)`> = '2'
 
@@ -143,9 +148,36 @@ const _testsometh05: Cion.Lisp<`(let [m 1] m)`> = '1'
 const ___testsometh06: Cion.Lisp<`(let [r (update-in [0 1 [2]] [2 0] inc)] r)`> = '[0 1 [3]]'
 const ___testsometh06x: Cion.Lisp<`((fn [m] (let [r [0 1 [(m 2)]]] r)) inc)`> = '[0 1 [3]]'
 const _testsmeth06: Cion.Lisp<`((fn [m] (let [r (update-in [0] [0] m)] r)) inc)`> = '[1]'
-
-
-
-
-
-
+const _testsmeth07: Cion.Lisp<`((fn [m] (let [r (update-in (get m 0) (get m 1) (get m 2))] r)) [{:b 2 :a 1} [:a] inc])`> = `{:b 2 :a 2}`
+// const _testsmeth08: Cion.Lisp<`(fn [m] (let [r (update-in (get m 0) (get m 1) (get m 2))] r))`>['ast']['sexpr'] = ['fn', [['sym', 'm']], ['let',[['sym', 'r'], [['sym', 'update-in'], [['sym', 'get'], ['sym', 'm'], ['prim', '0000000000000000']], [['sym', 'get'], ['sym', 'm'], ['prim', '0000000000000001']], [['sym', 'get'], ['sym', 'm'], ['prim', '0000000000000010']]]],['sym','r']]]
+// const _testsmeth08: Eval<['fn', [['sym', 'm']], ['let',[['sym', 'r'], [['sym', 'update-in'], [['sym', 'get'], ['sym', 'm'], ['prim', '0000000000000000']], [['sym', 'get'], ['sym', 'm'], ['prim', '0000000000000001']], [['sym', 'get'], ['sym', 'm'], ['prim', '0000000000000010']]]], ['sym','r']]]> = ''
+const _testsmeth08_err0: Eval<['fn', [['sym', 'm']], ['let', [], [['sym', 'get'], ['sym', 'm'], ['prim', '0000000000000010']]]]> = ['fn', [['sym', 'm']], ['let', [], [['sym', 'get'], ['sym', 'm'], ['prim', '0000000000000010']]]]
+const _testsmeth08_err1: Eval<['fn', [['sym', 'm']], ['let', [['sym', 'r'], [['sym', 'get'], ['sym', 'm'], ['prim', '0000000000000010']]], ['sym', 'inc']]]> = ['fn', [['sym', 'm']], ['let', [['sym', 'r'], [['sym', 'get'], ['sym', 'm'], ['prim', '0000000000000010']]], ['sym', 'inc']]]
+const _testsmeth08_err2: Eval<['fn', [['sym', 'm']], ['let', [['sym', 'r'], [['sym', 'get'], ['sym', 'm'], ['prim', '0000000000000010']]]]]>['sexpr'] = ['fn', [['sym', 'm']], ['let', [['sym', 'r'], [['sym', 'get'], ['sym', 'm'], ['prim', '0000000000000010']]]]]
+// const _testsmeth08_err0d: ['fn', [['sym', 'm']], ['let', [], [['sym', 'get'], ['sym', 'm'], ['prim', '0000000000000010']]]]
+// const _testsmeth08_err1d: ['fn', [['sym', 'm']], ['let', [['sym', 'r'], [['sym', 'get'], ['sym', 'm'], ['prim', '0000000000000010']]], ['sym', 'inc']]]
+const _testsmeth08_err2d: ['fn', [['sym', 'm']], ['let',[['sym', 'r'], [['sym', 'update-in'], [['sym', 'get'], ['sym', 'm'], ['prim', '0000000000000000']], [['sym', 'get'], ['sym', 'm'], ['prim', '0000000000000001']], [['sym', 'get'], ['sym', 'm'], ['prim', '0000000000000010']]]], ['sym','r']]][2] extends LetForm ? true : false = true
+const _testmeth00_err3d:
+   [ ['sym', 'r']
+   , [ ['sym', 'update-in']
+     , [ ['sym', 'get']
+       , ['sym', 'm']
+       , ['prim', '0000000000000000']]
+     , [ ['sym', 'get']
+       , ['sym', 'm']
+       , ['prim', '0000000000000001']]
+     , [ ['sym', 'get']
+       , ['sym', 'm']
+       , ['prim', '0000000000000010']]]] extends LetArg ? true : false = true
+// const _testmeth00_err3d:
+//    [ ['sym', 'r']
+//    , [ ['sym', 'update-in']
+//      , [ ['sym', 'get']
+//        , ['sym', 'm']
+//        , ['prim', '0000000000000000']]
+//      , [ ['sym', 'get']
+//        , ['sym', 'm']
+//        , ['prim', '0000000000000001']]
+//      , [ ['sym', 'get']
+//        , ['sym', 'm']
+//        , ['prim', '0000000000000010']]]] extends [Sym, Sexpr | Each] | [] ? true : false = true

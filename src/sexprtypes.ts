@@ -2,11 +2,21 @@
 // import {VNil,VNotMatch} from './sexprtypes.ts'
 
 export type LetVal = string | Each | Each[];
-export type LetArg = [Sym, LetVal];
-// todo : too ugly.
-export type LetForm = [`let`, (Sym | LetVal)[] | [Sym[], LetVal[]], Each | Each[] | Sexpr];
+
+export type EvenTuple<
+  Type extends unknown[]
+, Tape extends string = '----/----/'
+, R extends unknown[] = []> =
+  Tape extends ''
+    ? R
+  : Tape extends `${infer _}${infer Next}`
+    ? R | EvenTuple<Type, Next, [...R, ...Type]>
+  : never
+// [note] `Sym[]` is for destruction.
+export type LetArg = EvenTuple<[Sym | Sym[], Sexpr|LetVal]>
+export type LetForm = [`let`, LetArg, Each | Each[] | Sexpr];
 // test let
-export const larttest: LetArg = [[`sym`, `t`], `test`];
+// export const larttest: LetArg = [[`sym`, `t`], `test`];
 
 export type Each = LetForm | IfForm | Atom
 export type Atom = ['map', Atom[]] | Sym | Prim | Fn | Vector | Keyword | TNil
