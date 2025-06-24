@@ -13,4 +13,7 @@ const maintest4_div: Cion.RawLisp<"(/ 4 2)"> = ['prim', ["0000000000000100", '00
 const maintest5_div: Cion.RawLisp<"(/ 4 (- 0 2))"> = ['prim', ['0000000000000100', "1111111111111110"]]
 const maintest6_div: Cion.RawLisp<"(/ (- 2 6) (- 0 2))"> = ['prim', ["1111111111111100", "1111111111111110"]]
 const maintest7_div: Cion.RawLisp<"(/ (- 2 6) -2)"> = ['prim', ["1111111111111100", "1111111111111110"]]
-// const maintest8_div: Cion.RawLisp<"(/ 2/3 -2)"> = ['prim', ["1111111111111100", "1111111111111110"]]
+
+const maintest8_div: Cion.RawLisp<"(/ 2/3 -2)"> = ['prim', ["0000000000000010", "1111111111111010"]]
+const maintest9_div: Cion.RawLisp<"(/ -2/3 -2)"> = ['prim', ["1111111111111110", "1111111111111010"]]
+const maintest10_div: Cion.RawLisp<"(/ 1/9 (/ 2/3 3))"> = ['prim', ["0000000000001001", "0000000000010010"]]

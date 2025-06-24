@@ -118,6 +118,8 @@ export type recp<
 
 export type SParser<Sexpr extends string> = Rec<recp<Sexpr>>
 
+type NumUnion = '0'|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'
+
 export type SIsNum<
   S
 , Top extends boolean = true> =
@@ -135,15 +137,42 @@ export type SIsNum<
     : false
   : false
 
+type ReadRationalFail = []
+// [note]
+//   It's easy to write with `SIsNum` to get rid of `->` or so from the numbers.
+export type ReadRational<
+  S extends string
+, Ret extends string[] = []
+, SS extends string = ''> =
+  S extends ''
+    ? SS extends ''
+      ? ReadRationalFail
+    : SIsNum<SS> extends true
+      ? [...Ret, SS]
+    : ReadRationalFail
+  : S extends `${infer H}${infer R}`
+    ? H extends NumUnion | '-'
+      ? ReadRational<R, Ret, `${SS}${H}`>
+    : H extends '/'
+      ? SIsNum<SS> extends true
+        ? ReadRational<R, [...Ret, SS], ''>
+      : ReadRationalFail
+    : ReadRationalFail
+  : never
+
 export type SSymlator<
   MSym> =
   MSym extends `${infer H}${infer R}`
     ? H extends "'" | '"'
       ? [`prim`, MSym]
-    : SIsNum<MSym> extends true
-      ? H extends '-'
-        ? ['prim', Bit.BitRevSign<Decimal.DecimalToBit<R>>]
-      : ['prim', Decimal.DecimalToBit<MSym>]
+    : ReadRational<MSym> extends [`${infer F}${infer Fs}`, ...infer rD extends string[]]
+      ? rD extends [`${infer _D}${infer _Ds}`]
+        ? F extends '-'
+          ? ['prim', [Bit.BitRevSign<Decimal.DecimalToBit<Fs>>, Decimal.DecimalToBit<`${_D}${_Ds}`>]]
+        : ['prim', [Decimal.DecimalToBit<`${F}${Fs}`>, Decimal.DecimalToBit<`${_D}${_Ds}`>]]
+      : F extends '-'
+        ? ['prim', Bit.BitRevSign<Decimal.DecimalToBit<Fs>>]
+      : ['prim', Decimal.DecimalToBit<`${F}${Fs}`>]
     : MSym extends 'if' | 'let' | 'fn'
       ? MSym
     : MSym extends 'true'
@@ -171,6 +200,8 @@ export type SCompiler<
         ? [`prim`, H]
       : H extends "}"
         ? ['map', Current]
+      : Current extends []
+        ? SSymlator<H>
       : Current
     : H extends ')' | ']'
       ? SCompiler<

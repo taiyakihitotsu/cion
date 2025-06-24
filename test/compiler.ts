@@ -63,12 +63,38 @@ const parsestrtest0: Compiler.SParser<' (let [a "test is this"] (str "a b" a))'>
 const parsehashtest0: Compiler.SParser<' (let [a {:a 1 :b 2}] (> (:a a) (:b a)))'> = ['(', 'let', '[', 'a', '{', ':a', '1', ':b', '2', '}', ']', '(', '>', '(', ':a', 'a', ')', '(', ':b', 'a', ')', ')', ')']
 const parsehashtest1: Compiler.SParser<' (let [a {:a -1 :b 2}] (> (:a a) (:b a)))'> = ['(', 'let', '[', 'a', '{', ':a', '-1', ':b', '2', '}', ']', '(', '>', '(', ':a', 'a', ')', '(', ':b', 'a', ')', ')', ')']
 
-const testsisnum0: Compiler.SIsNum<'-1102'> = true
-const testsisnum1: Compiler.SIsNum<'-1102-'> = false
-const testsisnum2: Compiler.SIsNum<'--1102'> = false
-const testsisnum3: Compiler.SIsNum<'1102'> = true
-const testsisnum4: Compiler.SIsNum<'001102'> = true
-const testsisnum5: Compiler.SIsNum<'0011-0-2'> = false
+// ---------------
+// -- Rational
+// ---------------
+
+export type SIsNum<
+  S
+, Top extends boolean = true> =
+  S extends `${infer H}${infer R}`
+    ? H extends '-'
+      ? Top extends true
+        ? SIsNum<R, false> extends true
+          ? true
+        : false
+      : false
+    : H extends '0'|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'
+      ? R extends ''
+        ? true
+      : SIsNum<R, false>
+    : false
+  : false
+
+const testreadr0: Compiler.ReadRational<`3/2`> = ['3', '2']
+const testreadr1: Compiler.ReadRational<`-3/2`> = ['-3', '2']
+const testreadr2: Compiler.ReadRational<`-3`> = ['-3']
+const testreadr3: Compiler.ReadRational<`str`> = []
+const testreadr4: Compiler.ReadRational<`2str`> = []
+const testreadr5: Compiler.ReadRational<`3  /2`> = []
+
+const compilerrrt0: Compiler.SCompiler<['2']> = ['prim', '0000000000000010']
+const compilerrrt1: Compiler.SCompiler<['2/3']> = ['prim', ['0000000000000010', '0000000000000011']]
+const compilerrrt2: Compiler.SCompiler<['(', '+', '2', '2/3', ')']> = [['sym', '+'], ['prim', '0000000000000010'], ['prim', ['0000000000000010', '0000000000000011']]]
+const compilerrrt3: Compiler.SCompiler<['(', '+', '2', '-2/3', ')']> = [['sym', '+'], ['prim', '0000000000000010'], ['prim', ['1111111111111110', '0000000000000011']]]
 
 
 const compileraaaa: Compiler.SCompiler<['(', '+', '0', '(', 'inc', '1', ')', ')']> = [['sym', '+'], ['prim', '0000000000000000'], [['sym', 'inc'], ['prim', '0000000000000001']]]
@@ -139,6 +165,10 @@ const lisptest_let_0: Compiler.SCompiler<Compiler.SParser<Compiler.SPad<"(let [x
 
 
 
+// -- -----------
+// -- Unparser
+// -- -----------
+
 const unparsetest_prim_0: Compiler.Unparse<['prim', '0']> = '0'
 const unparsetest_prim_1: Compiler.Unparse<['prim', "'str'"]> = "'str'"
 const unparsetest_sym_0: Compiler.Unparse<['sym', 'x']> = 'x'
@@ -165,4 +195,3 @@ const unparsetest_vec_5: Compiler.Unparse<['vec', ['vec'], ['vec']]> = '[[] []]'
 const unparsetest_map_0: Compiler.Unparse<['map', [['key', ':a'], ['prim', '0']]]> = '{:a 0}'
 const unparsetest_map_1: Compiler.Unparse<['map', [['key', ':a'], ['prim', '0'], ['key', ':b'], ['prim', '1']]]> = '{:a 0 :b 1}'
 const unparsetest_map_2: Compiler.Unparse<['map', [['key', ':a'], ['prim', '0'], ['key', ':b'], ['prim', '1'], ['key', ':c'], ['map', [['key', ':d'], ['prim', '10']]]]]> = '{:a 0 :b 1 :c {:d 2}}'
-
