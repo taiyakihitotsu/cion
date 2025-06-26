@@ -6,7 +6,6 @@ Cion has a common grammer of [clojure](https://clojure.org/guides/learn/clojure)
 
 **NOTE**
  - list, set is not supported. Use vector instead.
- - Line break is not supported.
 
 (If you want to do a type-check of this doc, see [test/test-in-doc.ts](https://github.com/taiyakihitotsu/cion/blob/main/test/test-in-doc.ts))
 
