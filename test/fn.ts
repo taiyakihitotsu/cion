@@ -44,3 +44,9 @@ const maintest_fn1: Cion.Lisp<'(let [b (fn [m] (+ 1 m))] ((fn [n] (n 1)) b))'> =
 const maintest_fn2: Cion.Lisp<'(((fn [n] (fn [m] (+ n m 1))) 1) ((fn [] 1)))'> = '3'
 const maintest_fn3: Cion.Lisp<'(((fn [n] (fn [m] (+ n m 1))) 1) 1)'> = '3'
 const maintest_fn4: Cion.Lisp<'(((fn [n] (fn [m] (/ n m 1))) 3) 2)'> = '3/2'
+
+const maintest_fn_args0: Cion.Lisp<'((fn [n m] (+ n m)) 1 2)'> = '3'
+const maintest_fn_args: Cion.Lisp<'((fn [f n m] (f n m)) + 1 2)'> = '3'
+
+
+
