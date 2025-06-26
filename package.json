@@ -1,15 +1,22 @@
 {
-  "name": "cion",
+  "name": "@taiyakihitotsu/cion",
   "version": "0.1.0",
-  "private": true,
-  "description": "Clojure implemented on type-level with TypeScript.",
-  "main": "index.ts",
+  "private": false,
+  "description": "Clojure implemented on TypeScript at the type-level.",
+  "main": "index.d.ts",
   "types": "dist/index.d.ts",
+  "publishConfig": {
+    "access": "restricted"
+  },
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "npx tsc --emitDeclarationOnly",
     "build:watch": "npx tsc --watch",
     "check": "npx tsc --noEmit",
     "check:test": "npx tsc --noEmit --project tsconfig.test.json",
+    "check:smith": "sh ./scripts/sandbox-smith.sh && sh ./scripts/check-smith.sh",
     "format:smith": "npm --prefix submodules/condsmith run format:smith ../../src",
     "run": "npx ts-node src/index.ts",
     "precommit": "sh scripts/precommit.sh",
@@ -17,7 +24,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/taiyakihitotsu/cion"
+    "url": "git+https://github.com/taiyakihitotsu/cion.git"
   },
   "devDependencies": {
     "@types/node": "^18.19.22",

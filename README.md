@@ -1,7 +1,19 @@
 # Cion
 Clojure Implemented on TypeScript, at the type level.
 
+## Install
+```terminal
+npm install @taiyakihitotsu/cion
+```
+
 ## How to Use
+```typescript
+import type Cion from '@taiyakihitotsu/cion'
+
+const test: Cion.Lisp<`(inc 3)`> = '4'
+```
+
+## Overview
 Cion has a common grammer of [clojure](https://clojure.org/guides/learn/clojure). You can pick some of [builtins](#builtins), vector ```[]```, and map ```{}```.
 
 **NOTE**

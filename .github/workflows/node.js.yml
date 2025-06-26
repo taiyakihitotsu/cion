@@ -2,11 +2,9 @@ name: Node.js CI
 
 on:
   push:
-    branches:
-      - main
+    branches: ["**"]
   pull_request:
-    branches:
-      - main
+    branches: ["**"]
 
 jobs:
   build:
@@ -15,6 +13,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: true
 
       - name: Use Node.js
         uses: actions/setup-node@v3
@@ -24,6 +24,10 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Init submodules and dependencies
+        run: sh scripts/init.sh
+
+
       - name: Check TypeScript version
         run: npx tsc -v
 
@@ -32,6 +36,9 @@ jobs:
 
       - name: Run check:test
         run: npm run check:test
+
+      - name: Run check:smith
+        run: npm run check:smith
 
       - name: Build
         run: npm run build --if-present
