@@ -1,6 +1,7 @@
 import type * as Bit from './bit.ts'
 import type * as Compiler from './compiler'
 import type * as Util from './util'
+import type * as Decimal from './decimal'
 import type { regex } from './regex'
 import type * as ratio from './ratio'
 
@@ -189,10 +190,12 @@ type StrError0 = "StrError0"
 export type Str<
   S
 , R extends string = ""> =
-  S extends [[`prim`, `${infer HS}`], ...infer T]
-    ? HS extends `'${infer hs}'` | `'${infer hs}'`
-      ? Str<T, `${R}${hs}`>
-    : Str<T, `${R}${HS}`>
+  S extends [infer HS, ...infer T]
+    ? Compiler.Unparse<HS> extends infer s extends string
+      ? s extends `'${infer inner}'`
+        ? Str<T, `${R}${inner}`>
+      : Str<T, `${R}${s}`>
+    : never
   : [`prim`, `'${R}'`]
 
 type LispRefindError0 = "LispRefindError0"
@@ -202,8 +205,26 @@ export type LispRefind<
     ? regex.RegexFind<searched, regex> extends [infer _, infer match extends string, infer _]
       ? ['prim', `'${match}'`]
     : ['prim', `''`]
-  : S // LispRefindError0
+  : S
 
+type SplitError0 = "SplitError0"
+export type Split<
+  Regex extends string
+, String extends string> =
+  regex.RegexFind<String, Regex> extends [infer prev extends string, infer _match, infer next extends string]
+    ? prev extends ''
+      ? [...Split<Regex, next>]
+    : [['prim', `'${prev}'`], ...Split<Regex, next>]
+  : String extends ''
+    ? []
+  : [['prim', `'${String}'`]]
+   
+type LispSplitError0 = "LispSplitError0"
+export type LispSplit<
+  S> =
+  S extends [[`prim`, `'${infer searched}'`], [`prim`, `'${infer regex}'`]]
+    ? ['vec', ...Split<regex, searched>]
+  : LispSplitError0
 
 
 // --------------------------------------------
@@ -1416,7 +1437,7 @@ export type LispSomeThreadLast<S> = LispSomeThreadGeneral<S, 'last'>
 // ---------------------------------------
 
 export type BuiltinsUnion =
-'->' | '->>' | 'some->' | 'some->>' | 'str' | 'vector' | 'map' | 'filter' | 'remove' | 'reduce' | 'count' | 'concat' | 'conj' | 'first' | 'second' | 'last' | 'rest' | 'butlast' | 'reverse' | 'interleave' | 'take' | 'drop' | 'assoc-in' | 'update-in' | 'assoc' | 'update' | 'get' | 'get-in' | 'eq' | '=' | 'not' | 'and' | 'or' | 'inc' | 'dec' | '+' | '-' | '*' | '/' | '%' | 'mod' | '>' | '<' | '>=' | '<=' | 'number?' | 'string?' | 'vector?' | 'map?' | 'fn?' | 'keyword?' | 'ifn?' | 'pos-int?' | 'neg-int?' | 'odd?' | 'even?' | 'zero?' | 'symbol?' | 'empty?' | 'every?' | 'some' | 'nil?' | 'some?' | 'boolean?' | 'type' | 're-find'
+'->' | '->>' | 'some->' | 'some->>' | 'str' | 'vector' | 'map' | 'filter' | 'remove' | 'reduce' | 'count' | 'concat' | 'conj' | 'first' | 'second' | 'last' | 'rest' | 'butlast' | 'reverse' | 'interleave' | 'take' | 'drop' | 'assoc-in' | 'update-in' | 'assoc' | 'update' | 'get' | 'get-in' | 'eq' | '=' | 'not' | 'and' | 'or' | 'inc' | 'dec' | '+' | '-' | '*' | '/' | '%' | 'mod' | '>' | '<' | '>=' | '<=' | 'number?' | 'string?' | 'vector?' | 'map?' | 'fn?' | 'keyword?' | 'ifn?' | 'pos-int?' | 'neg-int?' | 'odd?' | 'even?' | 'zero?' | 'symbol?' | 'empty?' | 'every?' | 'some' | 'nil?' | 'some?' | 'boolean?' | 'type' | 're-find' | 'split'
 export type BuiltinsFn = Exclude<BuiltinsUnion, 'if' | 'let' | 'fn' | '->' | '->>' | 'some->' | 'some->>'>
 
 type Builtins<
@@ -1436,6 +1457,8 @@ type Builtins<
     ? Str<Reading<OPR, env, [[prev]]>>
   : U extends `re-find`
     ? LispRefind<Reading<OPR, env, [[prev]]>>
+  : U extends `split`
+    ? LispSplit<Reading<OPR, env, [[prev]]>>
   : U extends `vector`
     ? LispVector<Reading<OPR, env, [[prev]]>>
   : U extends `map`

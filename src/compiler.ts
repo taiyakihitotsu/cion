@@ -234,6 +234,20 @@ type CloseBracket<
     ? `(${S})`
   : S
 
+export type SNumberString<
+  S extends ['prim', [string, string]]> =
+  ratio.ForceNat<S[1]> extends infer D extends string
+    ? D extends 'nil'
+      ? 'nil'
+    : ratio.LCD<S[1]> extends [ infer f extends string
+                              , infer s extends string]
+      ? s extends '0000000000000001'
+        ? Decimal.BitToDecimal<f>
+      : `${Decimal.BitToDecimal<f>}/${Decimal.BitToDecimal<s>}`
+    : 'nil'
+  : never
+
+
 export type SEncoder<
   V extends unknown[]
 , Bracket extends 'map' | 'vec' | 'list' | 'unroll' = 'unroll'> =
@@ -279,16 +293,7 @@ export type _Unparse<
         : `${r0}`
       : `${r0}`
     : H extends ['prim', [string, string]]
-      ? ratio.ForceNat<H[1]> extends infer D extends string
-        ? D extends 'nil'
-          ? 'nil'
-        : ratio.LCD<H[1]> extends [ infer f extends string
-                                  , infer s extends string]
-          ? s extends '0000000000000001'
-            ? Decimal.BitToDecimal<f>
-          : `${Decimal.BitToDecimal<f>}/${Decimal.BitToDecimal<s>}`
-        : 'nil'
-      : 'never2'
+      ? SNumberString<H>
     : H extends ['vec', ...infer r]
       ? r extends []
         ? '[]'
