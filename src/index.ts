@@ -199,7 +199,7 @@ type LispRefindError0 = "LispRefindError0"
 export type LispRefind<
   S> =
   S extends [[`prim`, `'${infer regex}'`], [`prim`, `'${infer searched}'`]]
-    ? regex.RegexFind<searched, regex> extends [infer match extends string, infer _]
+    ? regex.RegexFind<searched, regex> extends [infer _, infer match extends string, infer _]
       ? ['prim', `'${match}'`]
     : ['prim', `''`]
   : S // LispRefindError0

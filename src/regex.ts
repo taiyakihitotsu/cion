@@ -16,13 +16,14 @@ export type ReadTape<
 
 export type TapeEvalLoop<
   S extends string
-, Tape extends TapeType> =
+, Tape extends TapeType
+, Consumed extends string = ''> =
   S extends ''
     ? re.Unmatch
   : re.TapeEval<S, Tape> extends [infer M extends string, infer Rest extends string, infer _List extends string[]]
-    ? [M, Rest]
-  : S extends `${infer _f}${infer sRest}`
-    ? TapeEvalLoop<sRest, Tape>
+    ? [Consumed, M, Rest]
+  : S extends `${infer sFirst}${infer sRest}`
+    ? TapeEvalLoop<sRest, Tape, `${Consumed}${sFirst}`>
   : never
 
 export type RegexFind<
@@ -31,18 +32,19 @@ export type RegexFind<
   rc.Comp<Regex> extends { condition: infer Condition extends string
     , tapes: infer Tape extends TapeType}
     ? Condition extends '^' | '^$'
-      ? re.TapeEval<String, Tape> extends [infer M extends string, infer Result extends string, infer _ extends string[]]
-        ? (Result extends '' ? true : false) | (Condition extends '^$' ? false : true) extends false
-          ? [M, Result]
-        : re.Unmatch
+      ? re.TapeEval<String, Tape> extends [infer M extends string, infer Rest extends string, infer _ extends string[]]
+        ? [Condition, Rest & ''] extends ['^$', never]
+          ? re.Unmatch
+        : ['', M, Rest]
       : re.Unmatch
     : Condition extends '$' | '^$'
-      ? TapeEvalLoop<String, Tape> extends [infer M extends string, infer Result extends string]
-        ? Result extends ''
-          ? [M, Result]
+      ? TapeEvalLoop<String, Tape> extends [infer Consumed extends string, infer M extends string, infer Rest extends string]
+        ? Rest extends ''
+          ? [Consumed, M, Rest]
         : re.Unmatch
       : re.Unmatch
     : TapeEvalLoop<String, Tape>
   : never
 
 export type * as regex from './regex'
+ 
