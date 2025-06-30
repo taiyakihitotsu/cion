@@ -226,6 +226,45 @@ export type LispSplit<
     ? ['vec', ...Split<regex, searched>]
   : LispSplitError0
 
+// [todo] refactoring
+type StrWrap<S extends string> = ['prim', `'${S}'`]
+// [todo] refactoring
+type StrUnwrap<S extends ['prim', string]> = S extends ['prim', `'${infer s}'`] ? s : never
+
+export type LiteralReplaceError0 = 'LiteralReplaceError0'
+export type LiteralReplaceError1 = 'LiteralReplaceError1'
+export type LiteralReplaceError2 = 'LiteralReplaceError2'
+export type LiteralReplaceError3 = 'LiteralReplaceError3'
+export type LiteralReplace<
+  String extends string
+, Regex extends string
+, Replace extends Fn | BuiltinsUnion | ['prim', string]> =
+  regex.RegexFind<String, Regex> extends [infer prev extends string, infer match extends string, infer next extends string]
+    ? Replace extends (Fn | BuiltinsUnion)
+      ? Eval<[Replace, StrWrap<prev>, StrWrap<match>, StrWrap<next>]> extends ['prim', `'${infer EvalR}'`]
+        ? LiteralReplace<next, Regex, Replace> extends infer rpl extends string
+          ? `${prev}${EvalR}${rpl}`
+        : ErrorCase<LiteralReplaceError2, '', [String, Regex, Replace]>
+      : [Replace, StrWrap<prev>, StrWrap<match>, StrWrap<next>]
+    : Replace extends ['prim', string]
+      ? LiteralReplace<next, Regex, Replace> extends infer rpl extends string
+        ? `${prev}${StrUnwrap<Replace>}${rpl}`
+      : ErrorCase<LiteralReplaceError3, '', [String, Regex, Replace]>
+    : ErrorCase<LiteralReplaceError0, '', [String, Regex, Replace]>
+  : String
+
+export type LispReplaceError0 = 'LispReplaceError0'
+export type LispReplace<
+  S> =
+  S extends [infer S extends ['prim', string], infer R extends ['prim', string], infer ForS extends (Fn | BuiltinsUnion | ['prim', string])]
+    ? LiteralReplace<StrUnwrap<S>, StrUnwrap<R>, ForS> extends infer R
+      ? R extends {error: unknown}
+        ? R
+      : ['prim', R]
+    : never
+  : ErrorCase<LispReplaceError0, '', S>
+
+
 
 // --------------------------------------------
 // -- Logical Operators
@@ -1459,6 +1498,8 @@ type Builtins<
     ? LispRefind<Reading<OPR, env, [[prev]]>>
   : U extends `split`
     ? LispSplit<Reading<OPR, env, [[prev]]>>
+  : U extends `replace`
+    ? LispReplace<Reading<OPR, env, [[prev]]>>
   : U extends `vector`
     ? LispVector<Reading<OPR, env, [[prev]]>>
   : U extends `map`
