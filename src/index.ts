@@ -4,6 +4,7 @@ import type * as Util from './util'
 import type * as Decimal from './decimal'
 import type { regex } from './regex'
 import type * as ratio from './ratio'
+import type * as str from './strutil'
 
 import type {LetVal,LetArg,LetForm,Each,Atom,TMap,Sexpr,TNil,Keyword,Sym,PrimString,PrimBoolean,PrimTestNumber,PrimNumber,BitString,RatioString,NumString,Prim,Args,Fn,IFn,Vector,Var,Env,TNotMatch,IfForm} from './sexprtypes'
 import {VNil,VNotMatch} from './sexprtypes'
@@ -227,10 +228,15 @@ export type LispSplit<
   : LispSplitError0
 
 // [todo] refactoring
-type StrWrap<S extends string> = ['prim', `'${S}'`]
+type PrimStrWrap<S extends string> = ['prim', `'${S}'`]
 // [todo] refactoring
-type StrUnwrap<S extends ['prim', string]> = S extends ['prim', `'${infer s}'`] ? s : never
+type PrimStrUnwrap<S extends ['prim', string]> = S extends ['prim', `'${infer s}'`] ? s : never
+// [todo] refactoring
+type StrWrap<S extends string> = `'${S}'`
+// [todo] refactoring
+type StrUnwrap<S extends string> = S extends `'${infer s}'` ? s : S
 
+// [note] this is not in accordance with the spec of Clojure.
 export type LiteralReplaceError0 = 'LiteralReplaceError0'
 export type LiteralReplaceError1 = 'LiteralReplaceError1'
 export type LiteralReplaceError2 = 'LiteralReplaceError2'
@@ -241,14 +247,14 @@ export type LiteralReplace<
 , Replace extends Fn | BuiltinsUnion | ['prim', string]> =
   regex.RegexFind<String, Regex> extends [infer prev extends string, infer match extends string, infer next extends string]
     ? Replace extends (Fn | BuiltinsUnion)
-      ? Eval<[Replace, StrWrap<prev>, StrWrap<match>, StrWrap<next>]> extends ['prim', `'${infer EvalR}'`]
+      ? Eval<[Replace, PrimStrWrap<prev>, PrimStrWrap<match>, PrimStrWrap<next>]> extends ['prim', `'${infer EvalR}'`]
         ? LiteralReplace<next, Regex, Replace> extends infer rpl extends string
           ? `${prev}${EvalR}${rpl}`
         : ErrorCase<LiteralReplaceError2, '', [String, Regex, Replace]>
-      : [Replace, StrWrap<prev>, StrWrap<match>, StrWrap<next>]
+      : [Replace, PrimStrWrap<prev>, PrimStrWrap<match>, PrimStrWrap<next>]
     : Replace extends ['prim', string]
       ? LiteralReplace<next, Regex, Replace> extends infer rpl extends string
-        ? `${prev}${StrUnwrap<Replace>}${rpl}`
+        ? `${prev}${PrimStrUnwrap<Replace>}${rpl}`
       : ErrorCase<LiteralReplaceError3, '', [String, Regex, Replace]>
     : ErrorCase<LiteralReplaceError0, '', [String, Regex, Replace]>
   : String
@@ -257,13 +263,69 @@ export type LispReplaceError0 = 'LispReplaceError0'
 export type LispReplace<
   S> =
   S extends [infer S extends ['prim', string], infer R extends ['prim', string], infer ForS extends (Fn | BuiltinsUnion | ['prim', string])]
-    ? LiteralReplace<StrUnwrap<S>, StrUnwrap<R>, ForS> extends infer R
+    ? LiteralReplace<PrimStrUnwrap<S>, PrimStrUnwrap<R>, ForS> extends infer R
       ? R extends {error: unknown}
         ? R
       : ['prim', R]
     : never
   : ErrorCase<LispReplaceError0, '', S>
 
+export type _StrSubs<
+  S extends string
+, BitNum extends string
+, C extends string = ''> =
+  [true & Bit.BitLTE<BitNum, '0000000000000000'>, S & ''] extends [never, never]
+    ? S extends `${infer First}${infer Rest}`
+      ? _StrSubs<Rest, Bit.BitDec<BitNum>, `${C}${First}`>
+    : never
+  : [C, S]
+
+export type StrSubsAll<
+  S extends string
+, N extends string | ratio.Ratio
+, M extends string | ratio.Ratio = str.StrLen<S>> =
+  [ratio.ForceNat<N>, ratio.ForceNat<M>] extends [infer NatN extends string, infer NatM extends string]
+    ? _StrSubs<StrUnwrap<S>,NatN> extends [infer prev extends string, infer tmpMid extends string]
+      ? _StrSubs<StrUnwrap<tmpMid>, Bit.BitSub<NatM, NatN>> extends [infer mid extends string, infer post extends string]
+        ? [prev, mid, post]
+      : never
+    : never
+  : never
+
+export type LispStrSubsAll0 = 'LispStrSubsAll0'
+export type LispStrSubsAll1 = 'LispStrSubsAll1'
+export type LispStrSubsAll2 = 'LispStrSubsAll2'
+export type LispStrSubsAll3 = 'LispStrSubsAll3'
+export type _LispStrSubsAll<
+  S> =
+  S extends [['prim', infer s extends string], ['prim', infer n extends string | ratio.Ratio], ['prim', infer m extends string | ratio.Ratio]]
+    ? StrSubsAll<s,n,m> extends [infer prev extends string, infer mid extends string, infer post extends string]
+      ? [PrimStrWrap<prev>, PrimStrWrap<mid>, PrimStrWrap<post>]
+    : ErrorCase<LispStrSubsAll1, '', S>
+  : S extends [['prim', infer s extends string], ['prim', infer n extends string | ratio.Ratio]]
+    ? StrSubsAll<s,n> extends [infer prev extends string, infer mid extends string, infer post extends string]
+      ? [PrimStrWrap<prev>, PrimStrWrap<mid>, PrimStrWrap<post>]
+    : ErrorCase<LispStrSubsAll3, '', S>
+  : ErrorCase<LispStrSubsAll0, '', S>
+
+export type LispStrSubsAll<
+  S
+, idx extends number = -1> =
+  _LispStrSubsAll<S> extends infer R
+    ? R extends [infer prev extends PrimString, infer mid extends PrimString, infer post extends PrimString]
+      ? idx extends 0
+        ? prev
+      : idx extends 1
+        ? mid
+      : idx extends 2
+        ? post
+      : ['vec', prev, mid, post]
+    : ErrorCase<LispStrSubsAll2, '', R>
+  : never
+
+export type LispCljSubs<S> = LispStrSubsAll<S, 1>
+
+  
 
 
 // --------------------------------------------
@@ -1476,7 +1538,7 @@ export type LispSomeThreadLast<S> = LispSomeThreadGeneral<S, 'last'>
 // ---------------------------------------
 
 export type BuiltinsUnion =
-'->' | '->>' | 'some->' | 'some->>' | 'str' | 'vector' | 'map' | 'filter' | 'remove' | 'reduce' | 'count' | 'concat' | 'conj' | 'first' | 'second' | 'last' | 'rest' | 'butlast' | 'reverse' | 'interleave' | 'take' | 'drop' | 'assoc-in' | 'update-in' | 'assoc' | 'update' | 'get' | 'get-in' | 'eq' | '=' | 'not' | 'and' | 'or' | 'inc' | 'dec' | '+' | '-' | '*' | '/' | '%' | 'mod' | '>' | '<' | '>=' | '<=' | 'number?' | 'string?' | 'vector?' | 'map?' | 'fn?' | 'keyword?' | 'ifn?' | 'pos-int?' | 'neg-int?' | 'odd?' | 'even?' | 'zero?' | 'symbol?' | 'empty?' | 'every?' | 'some' | 'nil?' | 'some?' | 'boolean?' | 'type' | 're-find' | 'split'
+'->' | '->>' | 'some->' | 'some->>' | 'str' | 'vector' | 'map' | 'filter' | 'remove' | 'reduce' | 'count' | 'concat' | 'conj' | 'first' | 'second' | 'last' | 'rest' | 'butlast' | 'reverse' | 'interleave' | 'take' | 'drop' | 'assoc-in' | 'update-in' | 'assoc' | 'update' | 'get' | 'get-in' | 'eq' | '=' | 'not' | 'and' | 'or' | 'inc' | 'dec' | '+' | '-' | '*' | '/' | '%' | 'mod' | '>' | '<' | '>=' | '<=' | 'number?' | 'string?' | 'vector?' | 'map?' | 'fn?' | 'keyword?' | 'ifn?' | 'pos-int?' | 'neg-int?' | 'odd?' | 'even?' | 'zero?' | 'symbol?' | 'empty?' | 'every?' | 'some' | 'nil?' | 'some?' | 'boolean?' | 'type' | 're-find' | 'split' | 'subs-all' | 'subs'
 export type BuiltinsFn = Exclude<BuiltinsUnion, 'if' | 'let' | 'fn' | '->' | '->>' | 'some->' | 'some->>'>
 
 type Builtins<
@@ -1498,6 +1560,10 @@ type Builtins<
     ? LispRefind<Reading<OPR, env, [[prev]]>>
   : U extends `split`
     ? LispSplit<Reading<OPR, env, [[prev]]>>
+  : U extends `subs-all`
+    ? LispStrSubsAll<Reading<OPR, env, [[prev]]>>
+  : U extends `subs`
+    ? LispCljSubs<Reading<OPR, env, [[prev]]>>
   : U extends `replace`
     ? LispReplace<Reading<OPR, env, [[prev]]>>
   : U extends `vector`
