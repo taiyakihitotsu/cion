@@ -1347,6 +1347,13 @@ export type Interleave<
     : []
   : []
 export type LispInterleave<S> = S extends [['vec', ...infer V], ['vec', ...infer W]] ? ['vec', ...Interleave<V, W>] : ErrorCase<InterleaveError1, 'interleave should have 2 vector.', S> 
+type LispAbsError0 = 'LispAbsError0'
+export type LispAbs<
+  S> =
+  S extends [['prim', infer N extends ratio.Number]]
+    ? ['prim', ratio.Abs<N>]
+  : ErrorCase<LispAbsError0, 'Not Number.', S>
+
 type ReduceError0 = 'ReduceError0'
 type ReduceError1 = 'ReduceError1'
 type ReduceError2 = 'ReduceError2'
