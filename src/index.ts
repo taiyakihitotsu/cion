@@ -1411,6 +1411,15 @@ export type LispAbs<
     ? ['prim', ratio.Abs<N>]
   : ErrorCase<LispAbsError0, 'Not Number.', S>
 
+type LispRepeatError0 = 'LispRepeatError0'
+type LispRepeatError1 = 'LispRepeatError1'
+export type LispRepeat<
+  S> =
+  S extends [['prim', infer N extends ratio.Number], infer V extends Each]
+    ? ratio.ForceNat<N> extends infer Nat extends ratio.Nat
+      ? ['vec', ...vec.Repeat<Nat, V>]
+    : ErrorCase<LispRepeatError1, `Cast failure.`, S>
+  : ErrorCase<LispRepeatError0, '', S>
 
 export type _Range<
   N extends ratio.Nat
