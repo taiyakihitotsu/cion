@@ -5,6 +5,7 @@ import type * as Decimal from './decimal'
 import type { regex } from './regex'
 import type * as ratio from './ratio'
 import type * as str from './strutil'
+import type * as vec from './vecutil'
 
 import type {LetVal,LetArg,LetForm,Each,Atom,TMap,Sexpr,TNil,Keyword,Sym,PrimString,PrimBoolean,PrimTestNumber,PrimNumber,BitString,RatioString,NumString,Prim,Args,Fn,IFn,Vector,Var,Env,TNotMatch,IfForm} from './sexprtypes'
 import {VNil,VNotMatch} from './sexprtypes'
@@ -1347,6 +1348,54 @@ export type Interleave<
     : []
   : []
 export type LispInterleave<S> = S extends [['vec', ...infer V], ['vec', ...infer W]] ? ['vec', ...Interleave<V, W>] : ErrorCase<InterleaveError1, 'interleave should have 2 vector.', S> 
+type _Nui<
+  S extends unknown[]
+, V extends unknown
+, Where extends 0 | 1
+, R extends unknown[] = []> =
+  S extends [infer F, ...infer T]
+    ? _Nui<T, V, Where, [...R, (Where extends 0 ? [V, F] : [F, V])]>
+  : R
+
+export type Nui<S extends unknown[], V extends unknown, Where extends 0|1> = _Nui<S, V, Where>
+
+type LispKeysError0 = 'LispKeysError0'
+type LispKeysError1 = 'LispKeysError1'
+type LispKeysError2 = 'LispKeysError2'
+type LispKeysError3 = 'LispKeysError3'
+type LispKeysError4 = 'LispKeysError4'
+type LispKeysError5 = 'LispKeysError5'
+type LispKeysError6 = 'LispKeysError6'
+type LispKeysError7 = 'LispKeysError7b'
+export type GetKV<
+  S extends TMap | Vector> =
+  S extends ['map', []] | ['vec']
+    ? []
+  : S extends ['map', [infer K extends Keyword, infer V extends Atom, ...infer Rest extends Atom[]]]
+    ? GetKV<['map', Rest]> extends infer Result extends (Keyword | PrimNumber)[]
+      ? [K, ...Result]
+    : [K]
+  : S extends ['vec', ...infer Rest extends Atom[]]
+    ? [Decimal.DtoB<`${Rest['length']}`>] extends [infer Length extends string]
+      ? Range<'0', Length> extends infer Idxes extends string[]
+        ? Nui<Idxes, 'prim', 0>
+      : never
+    : never
+  : ErrorCase<LispKeysError0,'',S>
+
+export type LispKeys<
+  S> =
+  S extends [infer M extends TMap | Vector]
+    ? GetKV<M> extends infer KS
+      ? KS extends (Keyword | PrimNumber)[]
+        ? ['vec', ...KS]
+      : KS
+    : never
+  : S extends {error: unknown}
+    ? ErrorCase<LispKeysError1, '', S>
+  : TNil
+
+
 type LispThirdError0 = "LispThirdError0"
 export type LispThird<
   S> =
