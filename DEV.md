@@ -83,3 +83,6 @@ Note that the Type `Fn` does not match builtin-functions. To accept both, use th
 In Cion Lisp, the `#` prefix for regex (e.g., `#''`) is not required. Within character classes `([ or [^)`, unescaped hyphens `(-)` are read literally unless written as ranges like `a-z`. 
 
 The escape character is `\\` (double backslash), not `\`, following TypeScript rules.
+
+Group-match is implemented but Group-catch isn't.
+
