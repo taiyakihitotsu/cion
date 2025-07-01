@@ -1411,6 +1411,32 @@ export type LispAbs<
     ? ['prim', ratio.Abs<N>]
   : ErrorCase<LispAbsError0, 'Not Number.', S>
 
+
+export type _Range<
+  N extends ratio.Nat
+, M extends ratio.Nat
+, R extends ratio.Nat[] = []> =
+  Bit.BitGTE<N, M> extends false
+    ? _Range<Bit.BitInc<N>, M, [...R, N]>
+  : R
+
+export type Range<
+  N extends ratio.Number
+, M extends ratio.Number> =
+  [ratio.ForceNat<N>, ratio.ForceNat<M>] extends [infer n extends ratio.Nat, infer m extends ratio.Nat]
+    ? _Range<n,m>
+  : never
+
+type LispRangeError0 = 'LispRangeError0'
+type LispRangeError1 = 'LispRangeError1'
+export type LispRange<
+  S> =
+  S extends [['prim', infer N extends ratio.Number], ['prim', infer M extends ratio.Number]]
+    ? Range<N,M> extends infer r extends unknown[]
+      ? ['vec', ...Nui<r, 'prim', 0>]
+    : ErrorCase<LispRangeError1, 'Range broken.', S>
+  : ErrorCase<LispRangeError0, 'Both should be number.', S>
+
 type ReduceError0 = 'ReduceError0'
 type ReduceError1 = 'ReduceError1'
 type ReduceError2 = 'ReduceError2'
