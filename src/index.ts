@@ -414,6 +414,8 @@ export type LispSub<
 , Init extends boolean = true> =
   S extends []
     ? [`prim`, ratio.ForceRatio<R>]
+  : [S, Init] extends [[[`prim`, infer Fst extends NumString]], true]
+    ? [`prim`, ratio.Not<Fst>]
   : S extends [[`prim`, infer Fst extends NumString], ...infer Rest extends ['prim', NumString][]]
     ? Init extends true
       ? LispSub<Rest, Fst, false>

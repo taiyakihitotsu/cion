@@ -217,4 +217,25 @@ export type Relation<
     : never
   : never
 
+// -------------------
+// -- abs
+// -------------------
+
+export type Abs<
+  X extends Number> =
+  X extends BitString
+    ? Bit.BitAbs<X>
+  : X extends [infer t  extends BitString, infer d extends BitString]
+    ? Commonize<[Bit.BitAbs<t>, Bit.BitAbs<d>]>
+  : never
+
+export type Not<
+  X extends Number> =
+  X extends BitString
+    ? Bit.BitRevSign<X>
+  : X extends Ratio & [infer t  extends BitString, infer d extends BitString]
+    ? Commonize<[Bit.BitRevSign<t>, d]>
+  : never
+
+
 export * as ratio from './ratio'
