@@ -1538,7 +1538,7 @@ export type LispSomeThreadLast<S> = LispSomeThreadGeneral<S, 'last'>
 // ---------------------------------------
 
 export type BuiltinsUnion =
-'->' | '->>' | 'some->' | 'some->>' | 'str' | 'vector' | 'map' | 'filter' | 'remove' | 'reduce' | 'count' | 'concat' | 'conj' | 'first' | 'second' | 'last' | 'rest' | 'butlast' | 'reverse' | 'interleave' | 'take' | 'drop' | 'assoc-in' | 'update-in' | 'assoc' | 'update' | 'get' | 'get-in' | 'eq' | '=' | 'not' | 'and' | 'or' | 'inc' | 'dec' | '+' | '-' | '*' | '/' | '%' | 'mod' | '>' | '<' | '>=' | '<=' | 'number?' | 'string?' | 'vector?' | 'map?' | 'fn?' | 'keyword?' | 'ifn?' | 'pos-int?' | 'neg-int?' | 'odd?' | 'even?' | 'zero?' | 'symbol?' | 'empty?' | 'every?' | 'some' | 'nil?' | 'some?' | 'boolean?' | 'type' | 're-find' | 'split' | 'subs-all' | 'subs'
+'->' | '->>' | 'some->' | 'some->>' | 'str' | 'vector' | 'map' | 'filter' | 'remove' | 'reduce' | 'count' | 'concat' | 'conj' | 'first' | 'second' | 'third' | 'last' | 'rest' | 'butlast' | 'reverse' | 'repeat' | 'range' | 'interleave' | 'take' | 'drop' | 'assoc-in' | 'update-in' | 'assoc' | 'update' | 'get' | 'get-in' | 'keys' | 'eq' | '=' | 'not' | 'and' | 'or' | 'inc' | 'dec' | '+' | '-' | '*' | '/' | '%' | 'mod' | '>' | '<' | '>=' | '<=' | 'number?' | 'string?' | 'vector?' | 'map?' | 'fn?' | 'keyword?' | 'ifn?' | 'pos-int?' | 'neg-int?' | 'odd?' | 'even?' | 'zero?' | 'symbol?' | 'empty?' | 'every?' | 'some' | 'nil?' | 'some?' | 'boolean?' | 'type' | 're-find' | 'split' | 'subs-all' | 'subs'
 export type BuiltinsFn = Exclude<BuiltinsUnion, 'if' | 'let' | 'fn' | '->' | '->>' | 'some->' | 'some->>'>
 
 type Builtins<
@@ -1546,137 +1546,149 @@ type Builtins<
 , OPR extends unknown[]
 , env
 , prev> =
-  U extends '->'
-    ? Eval<LispThreadFirst<OPR>, env, [[prev]]>
-  : U extends '->>'
-    ? Eval<LispThreadLast<OPR>, env, [[prev]]>
-  : U extends 'some->'
-    ? Eval<LispSomeThreadFirst<OPR>, env, [[prev]]>
-  : U extends 'some->>'
-    ? Eval<LispSomeThreadLast<OPR>, env, [[prev]]>
-  : U extends `str`
-    ? Str<Reading<OPR, env, [[prev]]>>
-  : U extends `re-find`
-    ? LispRefind<Reading<OPR, env, [[prev]]>>
-  : U extends `split`
-    ? LispSplit<Reading<OPR, env, [[prev]]>>
-  : U extends `subs-all`
-    ? LispStrSubsAll<Reading<OPR, env, [[prev]]>>
-  : U extends `subs`
-    ? LispCljSubs<Reading<OPR, env, [[prev]]>>
-  : U extends `replace`
-    ? LispReplace<Reading<OPR, env, [[prev]]>>
-  : U extends `vector`
-    ? LispVector<Reading<OPR, env, [[prev]]>>
-  : U extends `map`
-    ? LispMap<Reading<OPR, env, [[prev]]>>
-  : U extends `filter`
-    ? LispFilter<Reading<OPR, env, [[prev]]>>
-  : U extends `remove`
-    ? LispRemove<Reading<OPR, env, [[prev]]>>
-  : U extends `reduce`
-    ? LispReduce<Reading<OPR, env, [[prev]]>>
-  : U extends `count`
-    ? LispCount<Reading<OPR, env, [[prev]]>>
-  : U extends `concat`
-    ? LispConcat<Reading<OPR, env, [[prev]]>>
-  : U extends `conj`
-    ? LispConj<Reading<OPR, env, [[prev]]>>
-  : U extends `first`
-    ? LispFirst<Reading<OPR, env, [[prev]]>>
-  : U extends `second`
-    ? LispSecond<Reading<OPR, env, [[prev]]>>
-  : U extends `last`
-    ? LispLast<Reading<OPR, env, [[prev]]>>
-  : U extends `rest`
-    ? LispRest<Reading<OPR, env, [[prev]]>>
-  : U extends `butlast`
-    ? LispButlast<Reading<OPR, env, [[prev]]>>
-  : U extends `reverse`
-    ? LispReverse<Reading<OPR, env, [[prev]]>>
-  : U extends `interleave`
-    ? LispInterleave<Reading<OPR, env, [[prev]]>>
-  : U extends `take`
-    ? LispTake<Reading<OPR, env, [[prev]]>>
-  : U extends `drop`
-    ? LispDrop<Reading<OPR, env, [[prev]]>>
-  : U extends `assoc-in`
-    ? LispAssocIn<Reading<OPR, env, [[prev]]>>
-  : U extends `update-in`
-    ? LispUpdateIn<Reading<OPR, env, [[prev]]>>
-  : U extends `assoc`
-    ? LispAssoc<Reading<OPR, env, [[prev]]>>
-  : U extends `update`
-    ? LispUpdate<Reading<OPR, env, [[prev]]>>
-  : U extends `get`
-    ? LispGet<Reading<OPR, env, [[prev]]>>
-  : U extends `get-in`
-    ? LispGetIn<Reading<OPR, env, [[prev]]>>
-  : U extends `eq` | `=`
-    ? LispEq<Reading<OPR, env, [[prev]]>>
-  : U extends `not`
-    ? LispNot<Reading<OPR, env, [[prev]]>>
-  : U extends `and`
-    ? LispAnd<Reading<OPR, env, [[prev]]>>
-  : U extends `or`
-    ? LispOr<Reading<OPR, env, [[prev]]>>
-  : U extends `inc`
-    ? LispInc<Reading<OPR, env, [[prev]]>>
-  : U extends `dec`
-    ? LispDec<Reading<OPR, env, [[prev]]>>
-  : U extends `+`
-    ? LispAdd<Reading<OPR, env, [[prev]]>>
-  : U extends `-`
-    ? LispSub<Reading<OPR, env, [[prev]]>>
-  : U extends `*`
-    ? LispMul<Reading<OPR, env, [[prev]]>>
-  : U extends `/`
-    ? LispDiv<Reading<OPR, env, [[prev]]>>
-  : U extends `mod` | `%`
-    ? LispMod<Reading<OPR, env, [[prev]]>>
-  : U extends `>` | `<` | `>=` | `<=`
-    ? LispRelation<U, Reading<OPR, env, [[prev]]>>
-  : U extends `number?`
-    ? LispIsNumber<Reading<OPR, env, [[prev]]>>
-  : U extends `string?`
-    ? LispIsString<Reading<OPR, env, [[prev]]>>
-  : U extends `vector?`
-    ? LispIsVector<Reading<OPR, env, [[prev]]>>
-  : U extends `map?`
-    ? LispIsMap<Reading<OPR, env, [[prev]]>>
-  : U extends `fn?`
-    ? LispIsFn<Reading<OPR, env, [[prev]]>>
-  : U extends `keyword?`
-    ? LispIsKeyword<Reading<OPR, env, [[prev]]>>
-  : U extends `ifn?`
-    ? LispIsIfn<Reading<OPR, env, [[prev]]>>
-  : U extends `pos-int?`
-    ? LispIsPosInt<Reading<OPR, env, [[prev]]>>
-  : U extends `neg-int?`
-    ? LispIsNegInt<Reading<OPR, env, [[prev]]>>
-  : U extends `odd?`
-    ? LispIsOdd<Reading<OPR, env, [[prev]]>>
-  : U extends `even?`
-    ? LispIsEven<Reading<OPR, env, [[prev]]>>
-  : U extends `zero?`
-    ? LispIsZero<Reading<OPR, env, [[prev]]>>
-  : U extends `symbol?`
-    ? LispIsSymbol<Reading<OPR, env, [[prev]]>>
-  : U extends `empty?`
-    ? LispIsEmpty<Reading<OPR, env, [[prev]]>>
-  : U extends `every?`
-    ? LispIsEvery<Reading<OPR, env, [[prev]]>>
-  : U extends `some`
-    ? LispSome<Reading<OPR, env, [[prev]]>>
-  : U extends `nil?`
-    ? LispIsNil<Reading<OPR, env, [[prev]]>>
-  : U extends `boolean?`
-    ? LispIsBoolean<Reading<OPR, env, [[prev]]>>
-  : U extends `type`
-    ? LispType<Reading<OPR, env, [[prev]]>>
-  : U extends `some?`
-    ? LispIsSome<Reading<OPR, env, [[prev]]>>
-  : Eval<[ReadLet<U, env>, OPR[0]], env, [prev]>
+  Reading<OPR, env, [[prev]]> extends infer R
+    ? U extends '->'
+      ? Eval<LispThreadFirst<OPR>, env, [[prev]]>
+    : U extends '->>'
+      ? Eval<LispThreadLast<OPR>, env, [[prev]]>
+    : U extends 'some->'
+      ? Eval<LispSomeThreadFirst<OPR>, env, [[prev]]>
+    : U extends 'some->>'
+      ? Eval<LispSomeThreadLast<OPR>, env, [[prev]]>
+    : U extends `str`
+      ? Str<R>
+    : U extends `re-find`
+      ? LispRefind<R>
+    : U extends `split`
+      ? LispSplit<R>
+    : U extends `subs-all`
+      ? LispStrSubsAll<R>
+    : U extends `subs`
+      ? LispCljSubs<R>
+    : U extends `replace`
+      ? LispReplace<R>
+    : U extends `vector`
+      ? LispVector<R>
+    : U extends `map`
+      ? LispMap<R>
+    : U extends `filter`
+      ? LispFilter<R>
+    : U extends `remove`
+      ? LispRemove<R>
+    : U extends `reduce`
+      ? LispReduce<R>
+    : U extends `count`
+      ? LispCount<R>
+    : U extends `concat`
+      ? LispConcat<R>
+    : U extends `conj`
+      ? LispConj<R>
+    : U extends `first`
+      ? LispFirst<R>
+    : U extends `second`
+      ? LispSecond<R>
+    : U extends `third`
+      ? LispThird<R>
+    : U extends `last`
+      ? LispLast<R>
+    : U extends `rest`
+      ? LispRest<R>
+    : U extends `butlast`
+      ? LispButlast<R>
+    : U extends `reverse`
+      ? LispReverse<R>
+    : U extends `repeat`
+      ? LispRepeat<R>
+    : U extends 'range'
+      ? LispRange<R>
+    : U extends `interleave`
+      ? LispInterleave<R>
+    : U extends `take`
+      ? LispTake<R>
+    : U extends `drop`
+      ? LispDrop<R>
+    : U extends `assoc-in`
+      ? LispAssocIn<R>
+    : U extends `update-in`
+      ? LispUpdateIn<R>
+    : U extends `assoc`
+      ? LispAssoc<R>
+    : U extends `update`
+      ? LispUpdate<R>
+    : U extends `get`
+      ? LispGet<R>
+    : U extends `get-in`
+      ? LispGetIn<R>
+    : U extends `keys`
+      ? LispKeys<R>
+    : U extends `eq` | `=`
+      ? LispEq<R>
+    : U extends `not`
+      ? LispNot<R>
+    : U extends `and`
+      ? LispAnd<R>
+    : U extends `or`
+      ? LispOr<R>
+    : U extends `inc`
+      ? LispInc<R>
+    : U extends `dec`
+      ? LispDec<R>
+    : U extends `+`
+      ? LispAdd<R>
+    : U extends `-`
+      ? LispSub<R>
+    : U extends `*`
+      ? LispMul<R>
+    : U extends `/`
+      ? LispDiv<R>
+    : U extends `mod` | `%`
+      ? LispMod<R>
+    : U extends `abs`
+      ? LispAbs<R>
+    : U extends `>` | `<` | `>=` | `<=`
+      ? LispRelation<U, R>
+    : U extends `number?`
+      ? LispIsNumber<R>
+    : U extends `string?`
+      ? LispIsString<R>
+    : U extends `vector?`
+      ? LispIsVector<R>
+    : U extends `map?`
+      ? LispIsMap<R>
+    : U extends `fn?`
+      ? LispIsFn<R>
+    : U extends `keyword?`
+      ? LispIsKeyword<R>
+    : U extends `ifn?`
+      ? LispIsIfn<R>
+    : U extends `pos-int?`
+      ? LispIsPosInt<R>
+    : U extends `neg-int?`
+      ? LispIsNegInt<R>
+    : U extends `odd?`
+      ? LispIsOdd<R>
+    : U extends `even?`
+      ? LispIsEven<R>
+    : U extends `zero?`
+      ? LispIsZero<R>
+    : U extends `symbol?`
+      ? LispIsSymbol<R>
+    : U extends `empty?`
+      ? LispIsEmpty<R>
+    : U extends `every?`
+      ? LispIsEvery<R>
+    : U extends `some`
+      ? LispSome<R>
+    : U extends `nil?`
+      ? LispIsNil<R>
+    : U extends `boolean?`
+      ? LispIsBoolean<R>
+    : U extends `type`
+      ? LispType<R>
+    : U extends `some?`
+      ? LispIsSome<R>
+    : Eval<[ReadLet<U, env>, OPR[0]], env, [prev]>
+  : never
 
 type EvalError1 = "EvalError1";
 type EvalError2 = "EvalError2";
