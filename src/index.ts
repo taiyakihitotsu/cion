@@ -56,6 +56,64 @@ const EvalTest3: GetVar<
   [MakeVar<"ss", "stringer">, MakeVar<"s", "string">]
 > = VNotMatch;
 
+type DelVar<Name extends string, EnvLifo extends Env> = _DelVar<Name, EnvLifo>
+type _DelVar<
+  Name extends string
+, DelEnv extends Env
+, R extends Env = []> = 
+  DelEnv extends []
+    ? R
+  : DelEnv extends [infer Fst extends Var, ...infer Rest extends Env]
+    ? Fst['name'] & Name extends never
+      ? _DelVar<Name, Rest, [...R, Fst]> 
+    : _DelVar<Name, Rest, R>
+  : never
+// [note]
+//   used in `Reading`.
+//   If it hits a fn pattern,
+//     it deletes the syms in env
+//     which are inherited of the previous let-forms.
+type DelEnv<Name extends string, DelEnvLifo extends Env[]> = _DelEnv<Name, DelEnvLifo>
+type _DelEnv<
+  Name extends string
+, DelEnvLifo extends Env[]
+, R extends Env[] = []> =
+  DelEnvLifo extends []
+    ? R
+  : DelEnvLifo extends [infer Fst extends Env, ...infer Rest extends Env[]]
+    ? _DelEnv<Name, Rest, [...R, DelVar<Name, Fst>]>
+  : never
+
+const delenv_test0: DelEnv<'a', [[{name: 'a', value: 's'}]]> = [[]]
+const delenv_test1: DelEnv<'a', [[{name: 'a', value: 's'}, {name: 'b', value: 's'}]]> = [[{name: 'b', value: 's'}]]
+const delenv_test2: DelEnv<'a', [[]]> = [[]]
+const delenv_test3: DelEnv<'a', [[],[{name: 'a', value: 's'}, {name: 'b', value: 's'}]]> = [[],[{name: 'b', value: 's'}]]
+const delenv_test4: DelEnv<'a', [[{name: 'a', value:'s'}],[{name: 'a', value: 's'}, {name: 'b', value: 's'}]]> = [[],[{name: 'b', value: 's'}]]
+const delenv_test5: DelEnv<'a', [[{name: 'c', value:'s'}],[{name: 'a', value: 's'}, {name: 'b', value: 's'}]]> = [[{name: 'c', value:'s'}],[{name: 'b', value: 's'}]]
+const delenv_test: DelEnv<'x', [[{name: 'c', value:'s'}],[{name: 'a', value: 's'}, {name: 'b', value: 's'}]]> = [[{name: 'c', value:'s'}],[{name: 'a', value: 's'}, {name: 'b', value: 's'}]]
+
+type ReduceDelEnv<
+  Syms extends Sym[]
+, ReduceDelEnvLifo extends Env[]> =
+  0 extends ReduceDelEnvLifo['length'] | Syms['length']
+    ? ReduceDelEnvLifo
+  : Syms extends [['sym', infer Fst extends string], ...infer Rest extends Sym[]]
+    ? ReduceDelEnv<Rest, DelEnv<Fst, ReduceDelEnvLifo>>
+  : never
+
+const reduce_delenv_test0: ReduceDelEnv<[['sym', 'a']], [[{name: 'a', value: 's'}]]> = [[]]
+const reduce_delenv_test1: ReduceDelEnv<[['sym', 'a']], [[{name: 'a', value: 's'}, {name: 'b', value: 's'}]]> = [[{name: 'b', value: 's'}]]
+const reduce_delenv_test2: ReduceDelEnv<[['sym', 'a']], [[]]> = [[]]
+const reduce_delenv_test3: ReduceDelEnv<[['sym', 'a']], [[],[{name: 'a', value: 's'}, {name: 'b', value: 's'}]]> = [[],[{name: 'b', value: 's'}]]
+const reduce_delenv_test4: ReduceDelEnv<[['sym', 'a']], [[{name: 'a', value:'s'}],[{name: 'a', value: 's'}, {name: 'b', value: 's'}]]> = [[],[{name: 'b', value: 's'}]]
+const reduce_delenv_test5: ReduceDelEnv<[['sym', 'a']], [[{name: 'c', value:'s'}],[{name: 'a', value: 's'}, {name: 'b', value: 's'}]]> = [[{name: 'c', value:'s'}],[{name: 'b', value: 's'}]]
+const reduce_delenv_test6: ReduceDelEnv<[['sym', 'x']], [[{name: 'c', value:'s'}],[{name: 'a', value: 's'}, {name: 'b', value: 's'}]]> = [[{name: 'c', value:'s'}],[{name: 'a', value: 's'}, {name: 'b', value: 's'}]]
+const reduce_delenv_test7: ReduceDelEnv<[['sym', 'a'], ['sym', 'x']], [[{name: 'c', value:'s'}],[{name: 'a', value: 's'}, {name: 'b', value: 's'}]]> = [[{name: 'c', value:'s'}],[{name: 'b', value: 's'}]]
+const reduce_delenv_test: ReduceDelEnv<[['sym', 'a'], ['sym', 'b'], ['sym', 'c']], [[{name: 'c', value:'s'}],[{name: 'a', value: 's'}, {name: 'b', value: 's'}]]> = [[], []]
+
+
+
+
 type EnvLifo = Env[];
 
 type LetError0 = "LetError";
@@ -147,18 +205,20 @@ type ReadingError3 = "ReadingError3";
 
 type Reading<
   AS
-, EnvLifo = [[]]
+, EnvList = [[]]
 , prev = 0
 , R = []> =
   R extends Atom[]
     ? AS extends [infer H, ...infer T]
       ? H extends Sym & ['sym', infer _ extends BuiltinsUnion]
-        ? Reading<T, EnvLifo, prev, [...R, H]>
+        ? Reading<T, EnvList, prev, [...R, H]>
+      : H extends Fn & ['fn', infer Syms extends Sym[], infer Body]
+        ? Reading<T, EnvList, prev, [...R, ['fn', Syms, ReadLetRecur<Body, ReduceDelEnv<Syms, EnvList extends EnvLifo ? EnvList : never>>]]>
       : H extends Atom
-        ? Reading<T, EnvLifo, prev, [...R, ReadAtom<H, EnvLifo, prev>]>
+        ? Reading<T, EnvList, prev, [...R, ReadAtom<H, EnvList, prev>]>
       : H extends Sexpr | LetForm | IfForm
-        ? Reading<T, EnvLifo, prev, [...R, Eval<H, EnvLifo, prev>]>
-      : ErrorCase<ReadingError1, "", AS>
+        ? Reading<T, EnvList, prev, [...R, Eval<H, EnvList, prev>]>
+      : ErrorCase<ReadingError1, "Atom but not able to read.", [EnvList, H]>
     : R
   : ErrorCase<ReadingError0, 'sexpr is not atom list.', R>
 
@@ -1888,7 +1948,7 @@ export type Eval<
       : LV extends LetForm
         ? Eval<[`let`, [[`sym`, LN], Eval<LV, env, [prev]>], LC], env, [prev]>
       : LV extends Fn
-        ? Eval<LC, Let<LN, LV, env>, [prev]>
+        ? Eval<LC, Let<LN, Reading<[LV], env, [[prev]]> extends infer a extends [Fn] ? a[0] : never, env>, [prev]>
       : LV extends Sexpr | Atom
         ? Eval<LV, env, [[prev]]> extends infer ValueEvaluated
           ? ValueEvaluated extends {error: string}
