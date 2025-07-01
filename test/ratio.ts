@@ -34,8 +34,36 @@ const alcd_test13: ratio.RatioStr<ratio.LCD<[de.DtoB<'-3'>, de.DtoB<'-10'>]>> = 
 const alcd_test03x: ratio.RatioStr<ratio.LCD<[de.DtoB<'3'>, de.DtoB<'-10'>]>> = '-3/10'
 const alcd_test13x: ratio.RatioStr<ratio.LCD<[de.DtoB<'3'>, de.DtoB<'10'>]>> = '3/10'
 
+const ggg_test0: de.BtoD<ratio.GCM<de.DtoB<'21'>, de.DtoB<'21'>>> = '21'
+const ggg_test1: de.BtoD<ratio.GCM<de.DtoB<'-21'>, de.DtoB<'21'>>> = '21'
+const ggg_test2: de.BtoD<ratio.GCM<de.DtoB<'7'>, de.DtoB<'5'>>> = '1'
+const ggg_test3: de.BtoD<ratio.GCM<de.DtoB<'7'>, de.DtoB<'15'>>> = '1'
+const ggg_test4: de.BtoD<ratio.GCM<de.DtoB<'7'>, de.DtoB<'0'>>> = '7'
+const ggg_test5: de.BtoD<ratio.GCM<de.DtoB<'9'>, de.DtoB<'3'>>> = '3'
+const ggg_test6: de.BtoD<ratio.GCM<de.DtoB<'9'>, de.DtoB<'30'>>> = '3'
+const ggg_test: de.BtoD<ratio.GCM<de.DtoB<'8'>, de.DtoB<'2'>>> = '2'
 
+const abs_test0: de.BtoD<ratio.Abs<de.DtoB<'9'>>> = '9'
+const abs_test1: de.BtoD<ratio.Abs<de.DtoB<'-9'>>> = '9'
+const abs_test1e: de.BtoD<ratio.Abs<de.DtoB<'0'>>> = '0'
+const abs_test2a: ratio.RatioStr<ratio.Abs<[de.DtoB<'9'>, de.DtoB<'3'>]>> = '3'
+const abs_test2b: ratio.RatioStr<ratio.Abs<[de.DtoB<'-9'>, de.DtoB<'3'>]>> = '3'
+const abs_test2c: ratio.RatioStr<ratio.Abs<[de.DtoB<'9'>, de.DtoB<'-3'>]>> = '3'
+const abs_test2d: ratio.RatioStr<ratio.Abs<[de.DtoB<'-9'>, de.DtoB<'-3'>]>> = '3'
+const abs_test3: ratio.RatioStr<ratio.Abs<[de.DtoB<'0'>, de.DtoB<'-3'>]>> = '0'
 
+const not_test0: de.BtoD<ratio.Not<de.DtoB<'9'>>> = '-9'
+const not_test1: de.BtoD<ratio.Not<de.DtoB<'-9'>>> = '9'
+const not_test1e: de.BtoD<ratio.Not<de.DtoB<'0'>>> = '0'
+const  not_test2a: ratio.RatioStr<ratio.Not<[de.DtoB<'9'>, de.DtoB<'3'>]>> = '-3'
+const not_test2b: ratio.RatioStr<ratio.Not<[de.DtoB<'-9'>, de.DtoB<'3'>]>> = '3'
+const not_test2c: ratio.RatioStr<ratio.Not<[de.DtoB<'9'>, de.DtoB<'-3'>]>> = '3'
+const  not_test2d: ratio.RatioStr<ratio.Not<[de.DtoB<'-9'>, de.DtoB<'-3'>]>> = '-3'
+const  not_test2ax: ratio.RatioStr<ratio.Not<[de.DtoB<'3'>, de.DtoB<'9'>]>> = '-1/3'
+const not_test2bx: ratio.RatioStr<ratio.Not<[de.DtoB<'3'>, de.DtoB<'-9'>]>> = '1/3'
+const not_test2cx: ratio.RatioStr<ratio.Not<[de.DtoB<'-3'>, de.DtoB<'9'>]>> = '1/3'
+const  not_test2dx: ratio.RatioStr<ratio.Not<[ de.DtoB<'-3'>, de.DtoB<'-9'>]>> = '-1/3'
+const  not_test3: ratio.RatioStr<ratio.Not<[de.DtoB<'0'>, de.DtoB<'-3'>]>> = '0'
 
 const fr_test0 : ratio.DecimalRatio<ratio.ForceRatio<[de.DtoB<'10'>, de.DtoB<'2'>]>> = ['10', '2']
 const fr_test1 : ratio.DecimalRatio<ratio.ForceRatio<de.DtoB<'3'>>> = ['3', '1']
