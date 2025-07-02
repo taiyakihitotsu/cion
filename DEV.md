@@ -1,6 +1,6 @@
 ## setup
 ```terminal
-sh scripts/init.sh
+sh init.sh
 ```
 
 ## format
@@ -85,4 +85,3 @@ In Cion Lisp, the `#` prefix for regex (e.g., `#''`) is not required. Within cha
 The escape character is `\\` (double backslash), not `\`, following TypeScript rules.
 
 Group-match is implemented but Group-catch isn't.
-

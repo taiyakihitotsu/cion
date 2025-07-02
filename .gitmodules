@@ -3,3 +3,6 @@
 	url = git@github.com:taiyakihitotsu/condsmith.git
 	branch = master
 	ignore = all
+[submodule "submodules/scripts"]
+	path = submodules/scripts
+	url = git@github.com:taiyakihitotsu/condscript.git

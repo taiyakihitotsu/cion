@@ -60,12 +60,12 @@ type DelVar<Name extends string, EnvLifo extends Env> = _DelVar<Name, EnvLifo>
 type _DelVar<
   Name extends string
 , DelEnv extends Env
-, R extends Env = []> = 
+, R extends Env = []> =
   DelEnv extends []
     ? R
   : DelEnv extends [infer Fst extends Var, ...infer Rest extends Env]
     ? Fst['name'] & Name extends never
-      ? _DelVar<Name, Rest, [...R, Fst]> 
+      ? _DelVar<Name, Rest, [...R, Fst]>
     : _DelVar<Name, Rest, R>
   : never
 // [note]
