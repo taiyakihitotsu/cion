@@ -136,10 +136,10 @@ const unparse_maintest1_mod1: Cion.Lisp<"(% 5 5)"> = '0'
 const unparse_maintest2_mod1: Cion.Lisp<"(% 7 6)"> = '1'
 const unparse_maintest3_mod1: Cion.Lisp<"(% 14 6)"> = '2'
 const unparse_maintest4_mod1: Cion.Lisp<"(% 6 0)"> = 'nil'
-const unparse_maintest5_mod1: Cion.Lisp<"(% -1 2)"> = '1'
-const unparse_maintest6_mod1: Cion.Lisp<"(% (- 0 1) 2)"> = '1'
+const unparse_maintest5_mod1: Cion.Lisp<"(% -1 2)"> = '-1'
+const unparse_maintest6_mod1: Cion.Lisp<"(% (- 0 1) 2)"> = '-1'
 const unparse_maintest7_mod1: Cion.Lisp<"(% 6 1)"> = '0'
-const unparse_maintest8_mod1: Cion.Lisp<"(% -17 5)"> = '3'
+const unparse_maintest8_mod1: Cion.Lisp<"(% -17 5)"> = '-2'
 
 // structure: map, vec, list.
 const unparse_maintest12_get_0: Cion.Lisp<"(:a {:a 1})"> = '1'

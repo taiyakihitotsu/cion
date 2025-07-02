@@ -544,34 +544,37 @@ export type LispDiv<
     : ErrorCase<LispDivError0, "", S>
   : ErrorCase<LispDivError1, "", S>
 
-
-
-type LispModError0 = 'LispModError0'
-type LispModError1 = 'LispModError1'
-export type LispMod<
+export type LispTruncOrFloor<
   S
-, R extends NumString = "0000000000000000"
-, Init extends boolean = true> =
-  S extends []
-    ? [`prim`, R]
-  : S extends [ [`prim`, infer Fst extends NumString]
-              , ...infer Rest extends ['prim', NumString][]]
-    ? Init extends true
-      ? Bit.BitGTE<ratio.ForceNat<Fst> extends infer f extends string?f:never, '0000000000000000'> extends true
-        ? LispMod<Rest, Fst, false>
-      : Rest extends [['prim', infer Snd extends NumString]]
-        ? ratio.Scaling<ratio.ForceRatio<Fst>, ratio.ForceRatio<Snd>> extends [[infer rfst extends BitString, infer _rfstm], [infer rsnd extends BitString, infer _rsndm]]
-          ? LispMod<[['prim', Bit.BitSub<rsnd, Bit.BitRevSign<rfst>>], ['prim', Snd]]>
+, Mode extends 'trunc' | 'floor'> =
+  LispIsNumber<S> extends ['prim', true]
+    ? S extends [['prim', infer R extends ratio.Ratio]]
+      ? ['prim', Mode extends 'trunc' ? ratio.Trunc<R> : ratio.Floor<R>]
+    : S extends [infer ss]
+      ? ss
+    : never
+  : TNil
+export type LispTrunc<S> = LispTruncOrFloor<S, 'trunc'>
+export type LispFloor<S> = LispTruncOrFloor<S, 'floor'>
+
+type LispRemOrModError0 = 'LispRemOrModError0'
+type LispRemOrModError1 = 'LispRemOrModError1'
+type LispRemOrModError2 = 'LispRemOrModError2'
+export type LispRemOrMod<
+  S
+, Mode extends 'rem' | 'mod'> =
+  S extends [infer Fst extends Atom, infer Snd extends Atom]
+    ? [['prim', true], ['prim', true]] extends [LispIsNumber<[Fst]>, LispIsNumber<[Snd]>]
+      ? ['prim', false] extends LispIsZero<[Snd]>
+        ? Eval<[['sym', '/'], Fst, Snd]> extends infer Q extends PrimNumber
+          ? Eval<[['sym', '-'], Fst, [['sym', '*'], Eval<[['sym', Mode extends 'rem' ? 'trunc' : 'floor'], Q]>, Snd]]>
         : never
-      : never
-    : ratio.Scaling<ratio.ForceRatio<Fst>, ratio.ForceRatio<R>> extends [[infer rfst extends BitString, infer _rfstm], [infer rsnd extends BitString, infer _rsndm]]
-      ? Bit.BitMod<rsnd,rfst> extends Bit.Nil | string & infer Mod
-        ? Mod extends string
-          ? LispMod<Rest, Mod, false>
-        : Bit.Nil
-      : never
-    : ErrorCase<LispModError0, '', S>
-  : ErrorCase<LispModError1, '', S>
+      : TNil
+    : ErrorCase<LispRemOrModError2, '', S>
+  : ErrorCase<LispRemOrModError1, '', S>
+
+export type LispRem<S> = LispRemOrMod<S,'rem'>
+export type LispMod<S> = LispRemOrMod<S,'mod'>
 
 type LispRelationError0 = 'LispRelationError0'
 type LispRelationError1 = 'LispRelationError1'
@@ -636,7 +639,9 @@ type IsEven<
 export type LispIsNumber<
   S> =
   S extends [['prim', infer N extends BitString]]
-    ? N extends `1${infer rN}`
+    ? N extends `1` | `0`
+      ? ['prim', true]
+    : N extends `1${infer rN}`
       ? ['prim', IsNumber<rN>]
     : ['prim', IsNumber<N>]
   : S extends [['prim', infer N extends RatioString]]
@@ -763,13 +768,7 @@ export type LispIsZero<
       : ['prim', true]
     : ['prim', false]
   : S extends [['prim', infer N extends RatioString]]
-    ? ratio.ForceNat<N> extends infer D extends string
-      ? D extends 'nil'
-        ? ['prim', false]
-      : Bit.BitIsZero<D> extends true
-        ? ['prim', true]
-      : ['prim', false]
-    : never
+    ? ['prim', ratio.IsZero<N>]
   : ['prim', false]
 
 // symbol?
@@ -1714,7 +1713,7 @@ export type LispSomeThreadLast<S> = LispSomeThreadGeneral<S, 'last'>
 // ---------------------------------------
 
 export type BuiltinsUnion =
-'->' | '->>' | 'some->' | 'some->>' | 'str' | 'vector' | 'map' | 'filter' | 'remove' | 'reduce' | 'count' | 'concat' | 'conj' | 'first' | 'second' | 'third' | 'last' | 'rest' | 'butlast' | 'reverse' | 'repeat' | 'range' | 'interleave' | 'take' | 'drop' | 'assoc-in' | 'update-in' | 'assoc' | 'update' | 'get' | 'get-in' | 'keys' | 'eq' | '=' | 'not' | 'and' | 'or' | 'inc' | 'dec' | '+' | '-' | '*' | '/' | '%' | 'mod' | '>' | '<' | '>=' | '<=' | 'number?' | 'string?' | 'vector?' | 'map?' | 'fn?' | 'keyword?' | 'ifn?' | 'pos-int?' | 'neg-int?' | 'odd?' | 'even?' | 'zero?' | 'symbol?' | 'empty?' | 'every?' | 'some' | 'nil?' | 'some?' | 'boolean?' | 'type' | 're-find' | 'split' | 'subs-all' | 'subs'
+'->' | '->>' | 'some->' | 'some->>' | 'str' | 'vector' | 'map' | 'filter' | 'remove' | 'reduce' | 'count' | 'concat' | 'conj' | 'first' | 'second' | 'third' | 'last' | 'rest' | 'butlast' | 'reverse' | 'repeat' | 'range' | 'interleave' | 'take' | 'drop' | 'assoc-in' | 'update-in' | 'assoc' | 'update' | 'get' | 'get-in' | 'keys' | 'eq' | '=' | 'not' | 'and' | 'or' | 'inc' | 'dec' | '+' | '-' | '*' | '/' | 'trunc' | 'floor' |'%' | 'rem' | 'mod' | '>' | '<' | '>=' | '<=' | 'number?' | 'string?' | 'vector?' | 'map?' | 'fn?' | 'keyword?' | 'ifn?' | 'pos-int?' | 'neg-int?' | 'odd?' | 'even?' | 'zero?' | 'symbol?' | 'empty?' | 'every?' | 'some' | 'nil?' | 'some?' | 'boolean?' | 'type' | 're-find' | 'split' | 'subs-all' | 'subs'
 export type BuiltinsFn = Exclude<BuiltinsUnion, 'if' | 'let' | 'fn' | '->' | '->>' | 'some->' | 'some->>'>
 
 type Builtins<
@@ -1817,7 +1816,13 @@ type Builtins<
       ? LispMul<R>
     : U extends `/`
       ? LispDiv<R>
-    : U extends `mod` | `%`
+    : U extends `trunc`
+      ? LispTrunc<R>
+    : U extends `floor`
+      ? LispFloor<R>
+    : U extends `rem` | `%`
+      ? LispRem<R>
+    : U extends `mod`
       ? LispMod<R>
     : U extends `abs`
       ? LispAbs<R>

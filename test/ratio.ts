@@ -87,3 +87,61 @@ const div_test1 : ratio.DecimalRatio<ratio.Div<[de.DtoB<'10'>, de.DtoB<'2'>], [d
 // @ts-expect-error:
 const div_test : ratio.DecimalRatio<ratio.Div<[de.DtoB<'10'>, de.DtoB<'2'>], [de.DtoB<'0'>, de.DtoB<'3'>]>> = ['30', '20']
 
+const test_floor0 : de.BtoD<ratio.Floor<[de.DtoB<'11'>, de.DtoB<'2'>]>> = '5'
+const test_floor1 : de.BtoD<ratio.Floor<[de.DtoB<'2'>, de.DtoB<'11'>]>> = '0'
+const test_floor2 : de.BtoD<ratio.Floor<[de.DtoB<'11'>, de.DtoB<'-2'>]>> = '-6'
+const test_floor3 : de.BtoD<ratio.Floor<[de.DtoB<'-2'>, de.DtoB<'11'>]>> = '-1'
+const test_floor4 : de.BtoD<ratio.Floor<[de.DtoB<'-11'>, de.DtoB<'2'>]>> = '-6'
+const test_floor5 : de.BtoD<ratio.Floor<[de.DtoB<'2'>, de.DtoB<'-11'>]>> = '-1'
+const test_floor6 : de.BtoD<ratio.Floor<[de.DtoB<'-2'>, de.DtoB<'-11'>]>> = '0'
+const test_floor7 : de.BtoD<ratio.Floor<[de.DtoB<'-11'>, de.DtoB<'-2'>]>> = '5'
+
+const test_trunc0 : de.BtoD<ratio.Trunc<[de.DtoB<'11'>, de.DtoB<'2'>]>> = '5'
+const test_trunc1 : de.BtoD<ratio.Trunc<[de.DtoB<'2'>, de.DtoB<'11'>]>> = '0'
+const test_trunc2 : de.BtoD<ratio.Trunc<[de.DtoB<'11'>, de.DtoB<'-2'>]>> = '-5'
+const test_trunc3 : de.BtoD<ratio.Trunc<[de.DtoB<'-2'>, de.DtoB<'11'>]>> = '0'
+const test_trunc4 : de.BtoD<ratio.Trunc<[de.DtoB<'-11'>, de.DtoB<'2'>]>> = '-5'
+const test_trunc5 : de.BtoD<ratio.Trunc<[de.DtoB<'2'>, de.DtoB<'-11'>]>> = '0'
+const test_trunc6 : de.BtoD<ratio.Trunc<[de.DtoB<'-2'>, de.DtoB<'-11'>]>> = '0'
+const test_trunc7 : de.BtoD<ratio.Trunc<[de.DtoB<'-11'>, de.DtoB<'-2'>]>> = '5'
+
+const tt_test_floor0 : de.BtoD<ratio.Floor<[de.DtoB<'10'>, de.DtoB<'3'>]>> = '3'
+const tt_test_floorx3 : de.BtoD<ratio.Floor<[de.DtoB<'10'>, de.DtoB<'-3'>]>> = '-4'
+const tt_test_floor4 : de.BtoD<ratio.Floor<[de.DtoB<'-10'>, de.DtoB<'3'>]>> = '-4'
+const tt_test_floor7 : de.BtoD<ratio.Floor<[de.DtoB<'-10'>, de.DtoB<'-3'>]>> = '3'
+const tt_test_floor1 : de.BtoD<ratio.Floor<[de.DtoB<'3'>, de.DtoB<'10'>]>> = '0'
+const tt_test_floor3 : de.BtoD<ratio.Floor<[de.DtoB<'-3'>, de.DtoB<'10'>]>> = '-1'
+const tt_test_floor5 : de.BtoD<ratio.Floor<[de.DtoB<'3'>, de.DtoB<'-10'>]>> = '-1'
+const tt_test_floor6 : de.BtoD<ratio.Floor<[de.DtoB<'-3'>, de.DtoB<'-10'>]>> = '0'
+
+const tt_test_trunc0 : de.BtoD<ratio.Trunc<[de.DtoB<'10'>, de.DtoB<'3'>]>> = '3'
+const tt_test_truncx3 : de.BtoD<ratio.Trunc<[de.DtoB<'10'>, de.DtoB<'-3'>]>> = '-3'
+const tt_test_trunc4 : de.BtoD<ratio.Trunc<[de.DtoB<'-10'>, de.DtoB<'3'>]>> = '-3'
+const tt_test_trunc7 : de.BtoD<ratio.Trunc<[de.DtoB<'-10'>, de.DtoB<'-3'>]>> = '3'
+const tt_test_trunc1 : de.BtoD<ratio.Trunc<[de.DtoB<'3'>, de.DtoB<'10'>]>> = '0'
+const tt_test_trunc3 : de.BtoD<ratio.Trunc<[de.DtoB<'-3'>, de.DtoB<'10'>]>> = '0'
+const tt_test_trunc5 : de.BtoD<ratio.Trunc<[de.DtoB<'3'>, de.DtoB<'-10'>]>> = '0'
+const tt_test_trunc6 : de.BtoD<ratio.Trunc<[de.DtoB<'-3'>, de.DtoB<'-10'>]>> = '0'
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

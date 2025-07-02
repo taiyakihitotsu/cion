@@ -136,6 +136,7 @@ const testsometh5ab: Cion.Lisp<`(some-> 1 boolean? string? ((fn [n] (if (= n fal
 const testsomet60: Cion.Lisp<`((fn [n] (some-> n number?)) 1)`> = 'true'
 const testsometh00: Cion.Lisp<`((fn [n] (some-> n inc)) 1)`> = '2'
 
+// const _testsometh00: Cion.Lisp<`(let [m (inc n)] (if m m nil))`>['ast']['error'] = 'EvalError12'
 const _testsometh00: Cion.Lisp<`(let [m (inc n)] (if m m nil))`>['ast']['error'] = 'EvalError12'
 const _testsometh01: Cion.Lisp<`(let [m (inc 1)] (if m m nil))`> = '2'
 const _testsometh02: Cion.Lisp<`(let [m (inc n)] m)`>['ast']['error'] = 'EvalError12'

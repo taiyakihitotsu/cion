@@ -98,7 +98,7 @@ const test_refind : Cion.Lisp<`(re-find ${email} 'zzz.zzz@testmailreg.com')`> = 
 
 ## Builtins
  - if, fn, let, count, nil, ->, ->>, some->, some->>
- - +, -, *, /, mod, inc, dec, abs
+ - +, -, *, /, mod, rem, *trunc, floor, inc, dec, abs
  - str, re-find, split, subs, *subs-all, replace
  - and, or, not, >, <, =, eq, >=, <=
  - number?, string?, vector?, map?, fn?, ifn?, nat-int?, pos-int?, neg-int?, odd?, even?, zero?, keyword?, empty?, boolean?, type, every?, some, nil?, some?
@@ -108,7 +108,7 @@ const test_refind : Cion.Lisp<`(re-find ${email} 'zzz.zzz@testmailreg.com')`> = 
  - first, second, *third, last, rest, butlast, get, get-in
  - ... and vector ```[0 1 2]``` & map ```{:x 0 :y 1 :z 2}``` syntax.
 
-([note] `*` are not implemented Clojure.)
+[note] `*` are not implemented in Clojure.
 
 # Author
 taiyakihitotsu

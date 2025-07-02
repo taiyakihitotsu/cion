@@ -1,30 +1,64 @@
 import type Cion from '../src/index'
-import type { LispMod } from '../src/index'
 
-const testlispmod0: LispMod<[[`prim`, '00000011'], [`prim`, '0000001']]> = [`prim`, '0000000000000000']
-const testlispmod1: LispMod<[[`prim`, '00001111'], [`prim`, '0000001'], [`prim`, '00000011']]> = [`prim`, '0000000000000000']
-const testlispmod2: LispMod<[[`prim`, '00000011'], [`prim`, '0000000']]> = [`prim`, 'nil']
-const testlispmod3: LispMod<[[`prim`, '00000101'], [`prim`, '0000010']]> = [`prim`, '0000000000000001']
-const testlispmod4: LispMod<[[`prim`, '00010001'], [`prim`, '00000011']]> = [`prim`, '0000000000000010']
-const testlispmod5: LispMod<[['prim', '1111111111111110'], ['prim', '0000000000000101']]> = ['prim', '0000000000000011']
-const testlispmod6: LispMod<[['prim', '1111111111101111'], ['prim', '0000000000000101']]> = ['prim', '0000000000000011']
+const mod_test0 : Cion.Lisp<`(mod 10 5)`> = '0'
+const mod_test1 : Cion.Lisp<`(mod 10 10)`> = '0'
+const mod_test2 : Cion.Lisp<`(mod 1 1)`> = '0'
+const mod_test3 : Cion.Lisp<`(mod 1 0)`> = 'nil'
+const mod_test4 : Cion.Lisp<`(mod 0 1)`> = '0'
+const mod_test5 : Cion.Lisp<`(mod 0 0)`> = 'nil'
+const mod_test6 : Cion.Lisp<`(mod 5 10)`> = '5'
+const mod_test7 : Cion.Lisp<`(mod 2 5)`> = '2'
+const mod_test8 : Cion.Lisp<`(mod 17 5)`> = '2'
+const mod_test9 : Cion.Lisp<`(mod 17 3)`> = '2'
+const mod_test10 : Cion.Lisp<`(mod 17 6)`> = '5'
+const mod_test11 : Cion.Lisp<`(mod 17 -6)`> = '-1'
 
-const maintest0_mod: Cion.RawLisp<"(mod 2 5)"> = ['prim', '0000000000000010']
-const maintest1_mod: Cion.RawLisp<"(mod 5 5)"> = ['prim', '0000000000000000']
-const maintest2_mod: Cion.RawLisp<"(mod 7 6)"> = ['prim', '0000000000000001']
-const maintest3_mod: Cion.RawLisp<"(mod 14 6)"> = ['prim', '0000000000000010']
-const maintest4_mod: Cion.RawLisp<"(mod 6 0)"> = ['prim', 'nil']
-const maintest5_mod: Cion.RawLisp<"(mod -1 2)"> = ['prim', '0000000000000001']
-const maintest6_mod: Cion.RawLisp<"(mod (- 0 1) 2)"> = ['prim', '0000000000000001']
-const maintest7_mod: Cion.RawLisp<"(mod 6 1)"> = ['prim', '0000000000000000']
-const maintest8_mod: Cion.RawLisp<"(mod -17 5)"> = ['prim', '0000000000000011']
+const mod_test01_fc : Cion.Lisp<`(mod -10 3)`> = '2'
+const mod_test2_fc : Cion.Lisp<`(mod 10 -3)`> = '-2'
+const mod_test3_fc : Cion.Lisp<`(mod -10 -3)`> = '-1'
+const mod_test4_fc : Cion.Lisp<`(mod 10 3)`> = '1'
 
-const maintest0_mod1: Cion.RawLisp<"(% 2 5)"> = ['prim', '0000000000000010']
-const maintest1_mod1: Cion.RawLisp<"(% 5 5)"> = ['prim', '0000000000000000']
-const maintest2_mod1: Cion.RawLisp<"(% 7 6)"> = ['prim', '0000000000000001']
-const maintest3_mod1: Cion.RawLisp<"(% 14 6)"> = ['prim', '0000000000000010']
-const maintest4_mod1: Cion.RawLisp<"(% 6 0)"> = ['prim', 'nil']
-const maintest5_mod1: Cion.RawLisp<"(% -1 2)"> = ['prim', '0000000000000001']
-const maintest6_mod1: Cion.RawLisp<"(% (- 0 1) 2)"> = ['prim', '0000000000000001']
-const maintest7_mod1: Cion.RawLisp<"(% 6 1)"> = ['prim', '0000000000000000']
-const maintest8_mod1: Cion.RawLisp<"(% -17 5)"> = ['prim', '0000000000000011']
+// ---
+
+const mod_test0a : Cion.Lisp<`(mod 10/3 5/3)`> = '0'
+const mod_test1a : Cion.Lisp<`(mod 10/3 10/3)`> = '0'
+const mod_test2a : Cion.Lisp<`(mod 1/3 1/3)`> = '0'
+const mod_test3a : Cion.Lisp<`(mod 1/3 0)`> = 'nil'
+const mod_test6a : Cion.Lisp<`(mod 0 1/3)`> = '0'
+const mod_test4a : Cion.Lisp<`(mod 0 0)`> = 'nil'
+const mod_test5a : Cion.Lisp<`(mod 5/3 10/3)`> = '5/3'
+
+const mod_test0bpp : Cion.Lisp<`(mod 10/3 5/2)`>   = '5/6'
+const mod_test0bpm : Cion.Lisp<`(mod 10/3 -5/2)`>  = '-5/3'
+const mod_test0bmp : Cion.Lisp<`(mod -10/3 5/2)`>  = '5/3'
+const mod_test0bmm : Cion.Lisp<`(mod -10/3 -5/2)`> = '-5/6'
+
+const mod_test1bpp : Cion.Lisp<`(mod 11/3 10/7)`>   = '17/21'
+const mod_test1bpm : Cion.Lisp<`(mod 11/3 -10/7)`>  = '-13/21'
+const mod_test1cbmp : Cion.Lisp<`(mod -11/3 10/7)`>  = '13/21'
+const mod_test1bmm : Cion.Lisp<`(mod -11/3 -10/7)`> = '-17/21'
+
+const mod_test2bpp : Cion.Lisp<`(mod 1/3 1/2)`>   = '1/3'
+const mod_test2bpm : Cion.Lisp<`(mod 1/3 -1/2)`>  = '-1/6'
+const mod_test2bmp : Cion.Lisp<`(mod -1/3 1/2)`>  = '1/6'
+const mod_test2bmm : Cion.Lisp<`(mod -1/3 -1/2)`> = '-1/3'
+const mod_test3bpp : Cion.Lisp<`(mod 1/2 1/3)`>   = '1/6'
+const mod_test3bpm : Cion.Lisp<`(mod 1/2 -1/3)`>  = '-1/6'
+const mod_test3bmp : Cion.Lisp<`(mod -1/2 1/3)`>  = '1/6'
+const mod_test3bmm : Cion.Lisp<`(mod -1/2 -1/3)`> = '-1/6'
+
+const mod_test0c : Cion.Lisp<`(mod 10/3 7)`> = '10/3'
+const mod_test1c : Cion.Lisp<`(mod 1/3 7)`> = '1/3'
+const mod_test2c : Cion.Lisp<`(mod 7 10/3)`> = '1/3'
+
+const mod_test_f0 : Cion.Lisp<`(mod 1 0)`> = 'nil'
+const mod_test_f1 : Cion.Lisp<`(mod 1 nil)`>['ast']['error'] = 'LispRemOrModError2'
+const mod_est_f2 : Cion.Lisp<`(mod 1 true)`>['ast']['error'] = 'LispRemOrModError2'
+const mod_test_f3 : Cion.Lisp<`(mod 1 'string')`>['ast']['error'] = 'LispRemOrModError2'
+const mod_test_f4 : Cion.Lisp<`(mod 1 mod)`>['ast']['error'] = 'LispRemOrModError2'
+const mod_test_f5 : Cion.Lisp<`(mod 1 (fn [x] x))`>['ast']['error'] = 'LispRemOrModError2'
+const mod_test_f6 : Cion.Lisp<`(mod 1 [])`>['ast']['error'] = 'LispRemOrModError2'
+const mod_test_f7 : Cion.Lisp<`(mod 1 {})`>['ast']['error'] = 'LispRemOrModError2'
+
+const mod_test_f8 : Cion.Lisp<`(mod 1 2/3)`> = '1/3'
+const mod_test_f : Cion.Lisp<`(mod 1 -2/3)`> = '-1/3'

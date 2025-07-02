@@ -55,6 +55,9 @@ export type ForceRatio<
 
 // [note]
 // This uses `BitDiv` which truncates the decimal part, so it behaves like a step function.
+// [note]
+// this is trunc, not floor.
+export type Trunc<Z extends BitString | Ratio> = ForceNat<Z>
 export type ForceNat<
   Z extends BitString | Ratio> =
   Z extends [ infer xc extends BitString
@@ -64,6 +67,23 @@ export type ForceNat<
     : Bit.BitDiv<xc, xm>
   : Z extends BitString
     ? Z
+  : never
+
+const test0: decimal.BtoD<Bit.BitDiv<decimal.DtoB<'11'>, decimal.DtoB<'2'>>> = '5'
+const test1: decimal.BtoD<Bit.BitDiv<decimal.DtoB<'11'>, decimal.DtoB<'20'>>> = '0'
+const test2: decimal.BtoD<Bit.BitDiv<decimal.DtoB<'10'>, decimal.DtoB<'3'>>> = '3'
+const test3: decimal.BtoD<Bit.BitDiv<decimal.DtoB<'10'>, decimal.DtoB<'-3'>>> = '-3'
+
+export type Floor<
+  Z extends BitString | Ratio> =
+  Z extends BitString
+    ? Z
+  : Z extends Ratio & [infer X extends BitString, infer Y extends BitString]
+    ? [GCM<X,Y>, Bit.BitDiv<X,Y>] extends [infer tGCM extends BitString, infer tDiv extends BitString]
+      ? [Bit.BitEq<tGCM, Y>, Bit.BitLT<X, '0'> & Bit.BitLT<Y, '0'>] extends [false, never]
+        ? Bit.BitDec<tDiv>
+      : tDiv
+    : never
   : never
 
 export type RatioStr<
@@ -237,5 +257,16 @@ export type Not<
     ? Commonize<[Bit.BitRevSign<t>, d]>
   : never
 
+// ---------------
+// --check
+// -----------
+
+export type IsZero<
+  X extends Number> =
+  X extends BitString
+    ? Bit.BitIsZero<X>
+  : X extends Ratio & [infer t extends BitString, infer _]
+    ? Bit.BitIsZero<t>
+  : never
 
 export * as ratio from './ratio'
