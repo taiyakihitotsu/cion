@@ -456,54 +456,65 @@ export type LispNot<S> = S extends [['prim', infer U]] ? ['prim', _Not<U>] : nev
 
 type LispAddError0 = 'LispAddError0'
 type LispAddError1 = 'LispAddError1'
-export type LispAdd<
+type LispAddError2 = 'LispAddError2'
+export type LispAdd<S> = _LispAdd<S>
+export type _LispAdd<
   S
 , R extends NumString = "00000000"> =
   S extends []
     ? [`prim`, ratio.ForceRatio<R>]
   : S extends [infer Fst, ...infer Rest]
-    ? Fst extends [`prim`, infer FstP extends NumString]
-      ? LispAdd<Rest, ratio.Add<ratio.ForceRatio<R>, ratio.ForceRatio<FstP>>>
+    ? LispIsNumber<[Fst]> extends ['prim', false]
+      ? ErrorCase<LispAddError2, 'Args should be number', [Fst]>
+    : Fst extends [`prim`, infer FstP extends NumString]
+      ? _LispAdd<Rest, ratio.Add<ratio.ForceRatio<R>, ratio.ForceRatio<FstP>>>
     : ErrorCase<LispAddError0, "", S>
   : ErrorCase<LispAddError1, "", S>
 
 type LispSubError0 = 'LispSubError0'
-export type LispSub<
+type LispSubError1 = 'LispSubError1'
+export type LispSub<S> = _LispSub<S>
+export type _LispSub<
   S
 , R extends NumString = "00000000"
 , Init extends boolean = true> =
   S extends []
     ? [`prim`, ratio.ForceRatio<R>]
+  : LispIsNumber<[S extends Sexpr ? S[0] : never]> extends ['prim', false]
+    ? ErrorCase<LispSubError1, 'Args should be number', S>
   : [S, Init] extends [[[`prim`, infer Fst extends NumString]], true]
     ? [`prim`, ratio.Not<Fst>]
   : S extends [[`prim`, infer Fst extends NumString], ...infer Rest extends ['prim', NumString][]]
     ? Init extends true
-      ? LispSub<Rest, Fst, false>
-    : LispSub<Rest, ratio.Sub<ratio.ForceRatio<R>, ratio.ForceRatio<Fst>>, false>
+      ? _LispSub<Rest, Fst, false>
+    : _LispSub<Rest, ratio.Sub<ratio.ForceRatio<R>, ratio.ForceRatio<Fst>>, false>
   : ErrorCase<LispSubError0, "", S>
 
 type LispIncError0 = 'LispIncError0'
 export type LispInc<
   S> =
-  S extends [['prim', infer Fst extends NumString]]
-    ? LispAdd<[...S, ['prim', '0000000000000001']]>
+  LispIsNumber<S> extends ['prim', true]
+    ? LispAdd<[...S extends [PrimNumber] ? S : never, ['prim', '0000000000000001']]>
   : ErrorCase<LispIncError0, "", S>
 
 type LispDecError0 = 'LispDecError0'
 export type LispDec<
   S> =
-  S extends [['prim', infer Fst extends NumString]]
-    ? LispSub<[...S, ['prim', '0000000000000001']]>
+  LispIsNumber<S> extends ['prim', true]
+    ? LispSub<[...S extends [PrimNumber] ? S : never, ['prim', '0000000000000001']]>
   : ErrorCase<LispDecError0, "", S>
 
 type LispMulError0 = 'LispMulError0'
+type LispMulError1 = 'LispMulError1'
 export type LispMul<
   S
 , R extends NumString = "00000000"
 , Init extends boolean = true> =
   S extends []
     ? [`prim`, ratio.ForceRatio<R>]
-  : S extends [[`prim`, infer Fst extends NumString], ...infer Rest extends ['prim', NumString][]]
+  : LispIsNumber<[S extends Sexpr ? S[0] : never]> extends ['prim', false]
+    ? ErrorCase<LispMulError1, 'Args should be number', S>
+  : S extends [[`prim`, infer Fst extends NumString], ...infer Rest extends Atom[]]
     ? Init extends true
       ? LispMul<Rest, Fst, false>
     : LispMul<Rest, ratio.Mul<ratio.ForceRatio<R>, ratio.ForceRatio<Fst>>, false>
@@ -511,13 +522,17 @@ export type LispMul<
 
 type LispDivError0 = 'LispDivError0'
 type LispDivError1 = 'LispDivError1'
+type LispDivError2 = 'LispDivError2'
 export type LispDiv<
   S
 , R extends NumString = "00000001"
 , Init extends boolean = true> =
   S extends []
     ? [`prim`, ratio.ForceRatio<R>]
-  : S extends [[`prim`, infer Fst extends NumString], ...infer Rest extends ['prim', NumString][]]
+  : LispIsNumber<[S extends Sexpr ? S[0] : never]> extends ['prim', false]
+    ? ErrorCase<LispDivError2, 'Args should be number', S>
+  : S extends [[`prim`, infer Fst extends NumString]
+              , ...infer Rest extends Atom[]]
     ? Init extends true
       ? LispDiv<Rest, Fst, false>
     : ratio.Div<ratio.ForceRatio<R>, ratio.ForceRatio<Fst>> extends infer Div

@@ -19,3 +19,15 @@ const maintest6_add: Cion.RawLisp<"(+ 5 0 4)"> = ['prim', ["0000000000001001", '
 const maintest7_add: Cion.RawLisp<"(+ 0 4 5)"> = ['prim', ["0000000000001001", '0000000000000001']]
 const maintest8_add: Cion.RawLisp<"(+ -1 1)"> = ['prim', ["0000000000000000", '0000000000000001']] 
 const maintest9_add: Cion.RawLisp<"(+ -2 -2)"> = ['prim', ["1111111111111100", '0000000000000001']]
+
+const inc_test0 : Cion.Lisp<`(+ 1 0)`> = '1'
+const inc_test1 : Cion.Lisp<`(+ 1 nil)`>['ast']['error'] = 'LispAddError2'
+const inc_test2 : Cion.Lisp<`(+ 1 true)`>['ast']['error'] = 'LispAddError2'
+const inc_test3 : Cion.Lisp<`(+ 1 'string')`>['ast']['error'] = 'LispAddError2'
+const inc_test4 : Cion.Lisp<`(+ 1 inc)`>['ast']['error'] = 'LispAddError2'
+const inc_test5 : Cion.Lisp<`(+ 1 (fn [x] x))`>['ast']['error'] = 'LispAddError2'
+const inc_test6 : Cion.Lisp<`(+ 1 [])`>['ast']['error'] = 'LispAddError2'
+const inc_test7 : Cion.Lisp<`(+ 1 {})`>['ast']['error'] = 'LispAddError2'
+
+const inc_test8 : Cion.Lisp<`(+ 1 2/3)`> = '5/3'
+const inc_test : Cion.Lisp<`(+ 1 -2/3)`> = '1/3'
