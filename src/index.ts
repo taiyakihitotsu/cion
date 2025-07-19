@@ -1662,9 +1662,15 @@ type SomeThreadFirstError2 = 'SomeThreadFirstError2'
 type SomeThreadFirstError3 = 'SomeThreadFirstError3'
 type TmpGensym = ['sym', 'm']
 
-type SomeLetWrap<
-  T> =
-['if', T, T, TNil]
+type SomeThreadInitValue<C> = ['vec', C, ['prim', true]]
+type SomeThreadWrapFn<F> = []
+
+export type RegenFn<
+  Body extends (Sexpr|Each)
+, InsertP extends 'second' | 'last'> =
+(InsertP extends 'second'
+     ? ['fn', [['sym', 'x']], ThreadFirst<['sym', 'x'], [Body]>]
+   :  ['fn', [['sym', 'x']], ThreadLast<['sym', 'x'], [Body]>])
 
 export type SomeThreadGeneral<
   Fst
@@ -1672,18 +1678,14 @@ export type SomeThreadGeneral<
 , InsertP extends 'second' | 'last'> =
   V['length'] extends 0
     ? Fst
-  : V extends [infer Head extends (Sexpr|Each), ...infer Tail extends (Sexpr|Each)[]]
-    ? Tail['length'] extends 0
-      ? [InsertSecond<VecWrap<Head>, Fst>, InsertP] extends [infer C extends (Sexpr|Each), 'second']
-        ? ['if', C, C, ['prim', 'false']]
-      : [InsertLast<VecWrap<Head>, Fst>] extends [infer C]
-        ? SomeLetWrap<C>
-      : never
-    : ( InsertP extends 'second'
-          ? ThreadFirst<SomeThreadGeneral<Fst, Tail, InsertP>, [Head]>
-        : ThreadLast<SomeThreadGeneral<Fst, Tail, InsertP>, [Head]>) extends infer ThreadWrap
-      ? ['if', ThreadWrap, ThreadWrap, TNil]
-    : ErrorCase<SomeThreadFirstError2, 'insert error', [InsertSecond<VecWrap<Head>, Fst>, V]>
+  : V extends [ infer F extends (Sexpr|Each)
+              , ...infer Rest extends (Sexpr|Each)[]]
+    ? [ RegenFn<F, InsertP>
+      , SomeThreadGeneral<Fst, Rest, InsertP>] extends [infer Reged, infer Cont]
+      ? ['if', [['sym', 'nil?'], Cont]
+          , TNil
+          , [Reged, Cont]]
+    : ErrorCase<SomeThreadFirstError2, 'insert error', [Fst, V]>
   : ErrorCase<SomeThreadFirstError1, '', [Fst, V]>
 
 type LispSomeThreadGeneralError0 = 'LispSomeThreadGeneralError0'

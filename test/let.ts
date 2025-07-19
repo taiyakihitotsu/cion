@@ -123,7 +123,7 @@ const maintest_letmap_1d: Cion.RawLisp<`(let [c {:status 'in' :message 'message1
 const maintest_letmap_1ce: Cion.RawLisp<`(let [v 'in'] [(:status {:status 'in' :message 'message1'}) ((fn [] (:a {:a 'in'})))])`> = ['vec', ['prim', "'in'"], ['prim', "'in'"]]
 const maintest_aflet_0: Cion.RawLisp<`(+ 1 (let [x 1 y 2] (- x y)))`> = ['prim', ['0000000000000000', '0000000000000001']]
 
-const testsometh5aaa: Cion.Lisp<`(some-> 1 boolean? string? ((fn [n] (if (= n false) 2 -2))) neg-int?)`> = 'nil'
+const testsometh5aaa: Cion.Lisp<`(some-> 1 boolean? string? ((fn [n] (if (= n false) 2 -2))) neg-int?)`> = 'false'
 const testsometh5a: Cion.Lisp<`(some-> 1 boolean? string? ((fn [n] (if (= n false) 2 -2))) pos-int?)`> = 'true'
 const testsometh5aa: Cion.Lisp<`(some-> 1 boolean? string? ((fn [n] (if (= n false) 2 -2))) inc)`> = '3'
 
