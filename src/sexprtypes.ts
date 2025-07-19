@@ -51,4 +51,6 @@ export type Env = [] | Var[];
 export type  TNotMatch = "NotMatch";
 export const VNotMatch = "NotMatch";
 
+export type Falsy = TNil | ['prim', false] | {error: unknown}
+
 export type IfForm = [`if`, Each | Sexpr, Each | Sexpr, Each | Sexpr];

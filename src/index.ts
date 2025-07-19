@@ -7,7 +7,7 @@ import type * as ratio from './ratio'
 import type * as str from './strutil'
 import type * as vec from './vecutil'
 
-import type {LetVal,LetArg,LetForm,Each,Atom,TMap,Sexpr,TNil,Keyword,Sym,PrimString,PrimBoolean,PrimTestNumber,PrimNumber,BitString,RatioString,NumString,Prim,Args,Fn,IFn,Vector,Var,Env,TNotMatch,IfForm} from './sexprtypes'
+import type {LetVal,LetArg,LetForm,Each,Atom,TMap,Sexpr,TNil,Keyword,Sym,PrimString,PrimBoolean,PrimTestNumber,PrimNumber,BitString,RatioString,NumString,Prim,Args,Fn,IFn,Vector,Var,Env,TNotMatch,IfForm, Falsy} from './sexprtypes'
 import {VNil,VNotMatch} from './sexprtypes'
 
 // -----------------
@@ -1923,7 +1923,9 @@ export type Eval<
         : OPC extends Sexpr
           ? Eval<[Eval<OPC, env, [[prev]]>, ...OPR], env, [prev]>
         : ErrorCase<EvalError4, `the 1st is not a symbol but it should be.`, A, env>
-      : ErrorCase<EvalError6, `env 1st should not be [].`, A, env>
+      : env extends unknown[][]
+        ? ErrorCase<EvalError9, `env should be arr of arr.`, env>
+      : ErrorCase<EvalError6, `env 1st should not be [].`, env>
     : ErrorCase<EvalError2, ``, A, env>
   : A extends IfForm & [`if`, infer IFCond, infer IFT, infer IFF]
     ? Eval<If<Eval<IFCond, env, [[prev]]>, IFT, IFF>, env, [prev]>
@@ -1978,7 +1980,7 @@ export type Eval<
           : Eval<LC, Let<LN, ValueEvaluated, env>, [prev]>
         : never
       : LV extends IfForm
-        ? Eval<LC, Eval<LV, env, [[prev]]>, [prev]>
+        ? Eval<LC, Let<LN, Eval<LV, env, [[prev]]>, env>, [[prev]]>
       : ErrorCase<EvalError7, '', LV, env>
     : A extends ['let', [], infer Sexpr]
       ? Eval<Sexpr, env, [prev]>
