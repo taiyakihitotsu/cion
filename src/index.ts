@@ -394,16 +394,17 @@ export type LispCljSubs<S> = LispStrSubsAll<S, 1>
 // --------------------------------------------
 
 type _And<Fst, Snd> = Fst extends false ? false : Snd extends false ? false : true
+type LispAndError0 = "LispAndError0"
 type _LispAnd<
   S> =
   S extends [infer Fst, ...infer Rest]
-    ? Fst extends [`prim`, infer Boolean]
-      ? Boolean extends `nil`
-        ? false
-      : Rest extends []
-        ? Boolean
+    ? Fst extends Falsy
+      ? false
+    : Fst extends [`prim`, infer Boolean]
+      ? Rest extends []
+        ? true
       : _And<Boolean, _LispAnd<Rest>>
-    : never
+    : ErrorCase<LispAndError0, 'Is not prim', S>
   : never
 
 export type LispAnd<

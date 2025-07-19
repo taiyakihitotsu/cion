@@ -24,3 +24,12 @@ const maintest7_1_and: Cion.RawLisp<"(and true true true)"> = ['prim', true]
 const maintest8_1_and: Cion.RawLisp<"(and false true false)"> = ['prim', false]
 const maintest9_1_and: Cion.RawLisp<"(and false false false)"> = ['prim', false]
 const maintest10_1_and: Cion.RawLisp<"(and false true true)"> = ['prim', false]
+
+const maintest_if0: Cion.Lisp<"(and true (if 1 1 1))"> = 'true'
+const maintest_if1: Cion.Lisp<"((fn [n] (and n (if 1 1 1))) true)"> = 'true'
+const maintest_if2: Cion.Lisp<"((fn [n m] (and n (if m 1 1))) true true)"> = 'true'
+const maintest_if3_: Cion.Lisp<"((fn [n m] (and n m)) true (if 9 9 9))"> = 'true'
+const maintest_if3: Cion.Lisp<"((fn [n m] (and n (if m 1 1))) true (if 9 9 9))"> = 'true'
+const maintest_if4: Cion.Lisp<`((fn [x y] (and (number? x) (number? y))) 9 (if 9 9 9))`> = 'true'
+const maintest_if5: Cion.Lisp<`((fn [x y] (and (number? x) (number? y))) 9 (inc 9))`> = 'true'
+const maintest_if6: Cion.Lisp<`((fn [x y] (and (number? x) (number? y))) 9 (+ 9 9))`> = 'true'
