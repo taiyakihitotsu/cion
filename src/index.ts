@@ -699,38 +699,66 @@ export type LispIsIfn<
     ? LispIsFn<S>
   : ['prim', true]
 
-// pos-int?
-export type LispIsPosInt<
-  S> =
-  S extends [['prim', infer N extends BitString]]
-    ? N extends `1${infer _}`
-      ? ['prim', false]
-    : LispIsNumber<S>
-  : S extends [['prim', infer N extends RatioString]]
-    ? ratio.ForceNat<N> extends infer D extends BitString
-      ? D extends 'nil'
-        ? ['prim', false]
-      : D extends `1${infer _}`
-        ? ['prim', false]
-      : LispIsNumber<[['prim', D]]>
-    : never
-  : ['prim', false]
-
-// neg-int?
-export type LispIsNegInt<
+// neg?
+export type LispIsNeg<
   S> =
   S extends [['prim', infer N extends BitString]]
     ? N extends `1${infer _}`
       ? LispIsNumber<S>
     : ['prim', false]
   : S extends [['prim', infer N extends RatioString]]
-    ? ratio.ForceNat<N> extends infer D extends BitString
-      ? D extends 'nil'
-        ? ['prim', false]
-      : D extends `1${infer _}`
-        ? LispIsNumber<[['prim', D]]>
+    ? ratio.Commonize<N> extends [infer m extends BitString, infer _n]
+      ? m extends `1${infer _}`
+        ? LispIsNumber<S>
       : ['prim', false]
     : never
+  : ['prim', false]
+
+// pos?
+export type LispIsPos<
+  S> =
+  S extends [['prim', infer N extends BitString]]
+    ? N extends `1${infer _}`
+      ? ['prim', false]
+    : LispIsNumber<S>
+  : S extends [['prim', infer N extends RatioString]]
+    ? ratio.Commonize<N> extends [infer m extends BitString, infer _n]
+      ? m extends `1${infer _}`
+        ? ['prim', false]
+      : LispIsNumber<S>
+    : never
+  : ['prim', false]
+
+// int?
+export type LispIsInt<
+  S> =
+  S extends [['prim', infer _N extends BitString]]
+    ? LispIsNumber<S>
+  : S extends [['prim', infer N extends RatioString]]
+    ? Eq<ratio.IsInt<N>, true> extends true
+      ? ['prim', true]
+    : ['prim', false]
+  : ['prim', false]
+
+// nat?
+export type LispIsNat<
+  S> =
+  [Eq<LispIsInt<S> extends infer a?a:never, ['prim', true]>, Eq<LispIsNeg<S> extends infer a?a:never, ['prim', false]>] extends [true, true]
+    ? ['prim', true]
+  : ['prim', false]
+
+// pos-int?
+export type LispIsPosInt<
+  S> =
+  [Eq<LispIsInt<S> extends infer a?a:never, ['prim', true]>, Eq<LispIsPos<S> extends infer a?a:never, ['prim', true]>] extends [true, true]
+    ? ['prim', true]
+  : ['prim', false]
+
+// neg-int?
+export type LispIsNegInt<
+  S> =
+  [Eq<LispIsInt<S> extends infer a?a:never, ['prim', true]>, Eq<LispIsNeg<S> extends infer a?a:never, ['prim', true]>] extends [true, true]
+    ? ['prim', true]
   : ['prim', false]
 
 // odd?
@@ -1734,7 +1762,7 @@ export type LispSomeThreadLast<S> = LispSomeThreadGeneral<S, 'last'>
 // ---------------------------------------
 
 export type BuiltinsUnion =
-'->' | '->>' | 'some->' | 'some->>' | 'str' | 'vector' | 'map' | 'filter' | 'remove' | 'reduce' | 'count' | 'concat' | 'conj' | 'first' | 'second' | 'third' | 'last' | 'rest' | 'butlast' | 'reverse' | 'repeat' | 'range' | 'interleave' | 'take' | 'drop' | 'assoc-in' | 'update-in' | 'assoc' | 'update' | 'get' | 'get-in' | 'keys' | 'eq' | '=' | 'not' | 'and' | 'or' | 'inc' | 'dec' | '+' | '-' | '*' | '/' | 'trunc' | 'floor' |'%' | 'rem' | 'mod' | '>' | '<' | '>=' | '<=' | 'number?' | 'string?' | 'vector?' | 'map?' | 'fn?' | 'keyword?' | 'ifn?' | 'pos-int?' | 'neg-int?' | 'odd?' | 'even?' | 'zero?' | 'symbol?' | 'empty?' | 'every?' | 'some' | 'nil?' | 'some?' | 'boolean?' | 'any?' | 'prim?' | 'type' | 're-find' | 'split' | 'subs-all' | 'subs'
+'->' | '->>' | 'some->' | 'some->>' | 'str' | 'vector' | 'map' | 'filter' | 'remove' | 'reduce' | 'count' | 'concat' | 'conj' | 'first' | 'second' | 'third' | 'last' | 'rest' | 'butlast' | 'reverse' | 'repeat' | 'range' | 'interleave' | 'take' | 'drop' | 'assoc-in' | 'update-in' | 'assoc' | 'update' | 'get' | 'get-in' | 'keys' | 'eq' | '=' | 'not' | 'and' | 'or' | 'inc' | 'dec' | '+' | '-' | '*' | '/' | 'trunc' | 'floor' |'%' | 'rem' | 'mod' | '>' | '<' | '>=' | '<=' | 'number?' | 'string?' | 'vector?' | 'map?' | 'fn?' | 'keyword?' | 'ifn?' | 'pos-int?' | 'neg-int?' | 'pos?' | 'neg?' | 'int?' | 'nat?' | 'odd?' | 'even?' | 'zero?' | 'symbol?' | 'empty?' | 'every?' | 'some' | 'nil?' | 'some?' | 'boolean?' | 'any?' | 'prim?' | 'type' | 're-find' | 'split' | 'subs-all' | 'subs'
 export type BuiltinsFn = Exclude<BuiltinsUnion, 'if' | 'let' | 'fn' | '->' | '->>' | 'some->' | 'some->>'>
 
 type Builtins<
@@ -1867,6 +1895,14 @@ type Builtins<
       ? LispIsPosInt<R>
     : U extends `neg-int?`
       ? LispIsNegInt<R>
+    : U extends `pos?`
+      ? LispIsPos<R>
+    : U extends `neg?`
+      ? LispIsNeg<R>
+    : U extends `int?`
+      ? LispIsInt<R>
+    : U extends `nat?`
+      ? LispIsNat<R>
     : U extends `odd?`
       ? LispIsOdd<R>
     : U extends `even?`

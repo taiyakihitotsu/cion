@@ -19,3 +19,10 @@ const maintest_isnegint_15: Cion.RawLisp<`(neg-int? (first [-1 '1' 2]))`> = ['pr
 const maintest_isnegint_16: Cion.RawLisp<`(neg-int? (let [x 1 y 2] (- x y)))`> = ['prim', true]
 const maintest_isnegint_17: Cion.RawLisp<`(neg-int? (let [] (- 1 2)))`> = ['prim', true]
 const maintest_isnegint_18: Cion.RawLisp<`(neg-int? (* 3 (let [x 1 y 2] (- x y))))`> = ['prim', true]
+
+const maintest_isnegint_diff_0: Cion.RawLisp<`(neg-int? 1/2)`>   = ['prim', false]
+const maintest_isnegint_diff_1: Cion.RawLisp<`(neg-int? -1/2)`>  = ['prim', false]
+const maintest_isnegint_diff_2: Cion.RawLisp<`(neg-int? -3/1)`>  = ['prim', true]
+const maintest_isnegint_diff_3: Cion.RawLisp<`(neg-int? 3/1)`>   = ['prim', false]
+const maintest_isnegint_diff_4: Cion.RawLisp<`(neg-int? -3/-1)`> = ['prim', false]
+const maintest_isnegint_diff_5: Cion.RawLisp<`(neg-int? 3/-1)`>  = ['prim', true]

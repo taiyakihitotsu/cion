@@ -1,5 +1,6 @@
 import * as Bit from './bit'
 import * as decimal from './decimal'
+import * as u from './util'
 
 // -----------
 // -- util
@@ -9,8 +10,10 @@ export type Nat = BitString
 export type Ratio = [BitString, BitString]
 export type Number = Nat | Ratio
 export type DivByZero = 'nil'
-export type RatioZero = ['0000000000000000', '0000000000000001']
-export type RatioOne =  ['0000000000000001', '0000000000000001']
+export type Zero = '0000000000000000'
+export type One = '0000000000000001'
+export type RatioZero = [Zero, One]
+export type RatioOne =  [One, One]
 
 export type Scaling<
   X extends Ratio
@@ -69,6 +72,7 @@ export type ForceNat<
     ? Z
   : never
 
+// [todo]
 const test0: decimal.BtoD<Bit.BitDiv<decimal.DtoB<'11'>, decimal.DtoB<'2'>>> = '5'
 const test1: decimal.BtoD<Bit.BitDiv<decimal.DtoB<'11'>, decimal.DtoB<'20'>>> = '0'
 const test2: decimal.BtoD<Bit.BitDiv<decimal.DtoB<'10'>, decimal.DtoB<'3'>>> = '3'
@@ -113,6 +117,7 @@ export type GCM<
   Bit.BitLT<X, Y> extends true
     ? _GCM<Bit.BitAbs<X>, Bit.BitAbs<Y>>
   : _GCM<Bit.BitAbs<Y>, Bit.BitAbs<X>>
+
 // least common multiple
 export type LCD<
   Z extends BitString | Ratio> =
@@ -268,5 +273,23 @@ export type IsZero<
   : X extends Ratio & [infer t extends BitString, infer _]
     ? Bit.BitIsZero<t>
   : never
+
+export type IsInt<
+  X extends Number> =
+  X extends BitString
+    ? true
+  : X extends Ratio
+    ? Commonize<X> extends [infer _t, infer u extends BitString]
+      ? u extends One
+        ? true
+      : false
+    : false
+  : false
+
+export type IsNat<
+  X extends Number> =
+  [u.Equal<IsInt<X>, true>, u.Equal<Relation<X, RatioZero, '>='>, true>] extends [true, true]
+    ? true
+  : false
 
 export * as ratio from './ratio'

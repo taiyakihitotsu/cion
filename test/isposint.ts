@@ -19,3 +19,10 @@ const maintest_isposint_15: Cion.RawLisp<`(pos-int? (first [0 '1' 2]))`> = ['pri
 const maintest_isposint_16: Cion.RawLisp<`(pos-int? (let [x 1 y 2] (+ x y)))`> = ['prim', true]
 const maintest_isposint_17: Cion.RawLisp<`(pos-int? (let [] (+ 1 2)))`> = ['prim', true]
 const maintest_isposint_18: Cion.RawLisp<`(pos-int? (+ 3 (let [x 1 y 2] (+ x y))))`> = ['prim', true]
+
+const maintest_isposint_diff_0: Cion.RawLisp<`(pos-int? 1/2)`>   = ['prim', false]
+const maintest_isposint_diff_1: Cion.RawLisp<`(pos-int? -1/2)`>  = ['prim', false]
+const maintest_isposint_diff_2: Cion.RawLisp<`(pos-int? -3/1)`>  = ['prim', false]
+const maintest_isposint_diff_3: Cion.RawLisp<`(pos-int? 3/1)`>   = ['prim', true]
+const maintest_isposint_diff_4: Cion.RawLisp<`(pos-int? -3/-1)`> = ['prim', true]
+const maintest_isposint_diff_5: Cion.RawLisp<`(pos-int? 3/-1)`>  = ['prim', false]
