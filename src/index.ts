@@ -1369,6 +1369,20 @@ type LispDrop<
     : never
   : ErrorCase<DropError1, '1st and 2nd should be a number and a vector.', S>
 
+// min? max?
+type LispMinError0 = 'LispMinError0'
+type LispMaxError0 = 'LispMaxError0'
+type _LispMinMax<
+  S
+, W
+, E extends string> =
+  S extends Sexpr
+    ? Eval<[['sym', 'reduce'], ['fn', [['sym', 'return'], ['sym', 'i']], ['if', [['sym', W], ['sym', 'return'], ['sym', 'i']], ['sym', 'return'], ['sym', 'i']]], S[0], ['vec', ...S]]>
+  : ErrorCase<E, '', S>
+type LispMin<S> = _LispMinMax<S, '<=', LispMinError0>
+type LispMax<S> = _LispMinMax<S, '>=', LispMinError0>
+
+
 // -------------------------------------
 // -- map, filter, remove, every, some
 // -------------------------------------
@@ -1771,7 +1785,7 @@ export type LispSomeThreadLast<S> = LispSomeThreadGeneral<S, 'last'>
 // ---------------------------------------
 
 export type BuiltinsUnion =
-'->' | '->>' | 'some->' | 'some->>' | 'str' | 'vector' | 'map' | 'filter' | 'remove' | 'reduce' | 'count' | 'concat' | 'conj' | 'first' | 'second' | 'third' | 'last' | 'rest' | 'butlast' | 'reverse' | 'repeat' | 'range' | 'interleave' | 'take' | 'drop' | 'assoc-in' | 'update-in' | 'assoc' | 'update' | 'get' | 'get-in' | 'keys' | 'eq' | '=' | 'not' | 'and' | 'or' | 'inc' | 'dec' | '+' | '-' | '*' | '/' | 'trunc' | 'floor' |'%' | 'rem' | 'mod' | '>' | '<' | '>=' | '<=' | 'number?' | 'string?' | 'vector?' | 'map?' | 'fn?' | 'keyword?' | 'ifn?' | 'pos-int?' | 'neg-int?' | 'pos?' | 'neg?' | 'int?' | 'nat?' | 'odd?' | 'even?' | 'zero?' | 'symbol?' | 'empty?' | 'every?' | 'ratio?' | 'some' | 'nil?' | 'some?' | 'boolean?' | 'any?' | 'prim?' | 'type' | 're-find' | 'split' | 'subs-all' | 'subs'
+'->' | '->>' | 'some->' | 'some->>' | 'str' | 'vector' | 'map' | 'filter' | 'remove' | 'reduce' | 'count' | 'concat' | 'conj' | 'first' | 'second' | 'third' | 'last' | 'rest' | 'butlast' | 'reverse' | 'repeat' | 'range' | 'interleave' | 'take' | 'drop' | 'assoc-in' | 'update-in' | 'assoc' | 'update' | 'get' | 'get-in' | 'keys' | 'eq' | '=' | 'not' | 'and' | 'or' | 'inc' | 'dec' | '+' | '-' | '*' | '/' | 'trunc' | 'floor' |'%' | 'rem' | 'mod' | '>' | '<' | '>=' | '<=' | 'number?' | 'string?' | 'vector?' | 'map?' | 'fn?' | 'keyword?' | 'ifn?' | 'pos-int?' | 'neg-int?' | 'pos?' | 'neg?' | 'int?' | 'nat?' | 'odd?' | 'even?' | 'zero?' | 'symbol?' | 'empty?' | 'every?' | 'ratio?' | 'some' | 'nil?' | 'some?' | 'boolean?' | 'any?' | 'prim?' | 'type' | 're-find' | 'split' | 'subs-all' | 'subs' | 'min' | 'max'
 export type BuiltinsFn = Exclude<BuiltinsUnion, 'if' | 'let' | 'fn' | '->' | '->>' | 'some->' | 'some->>'>
 
 type Builtins<
@@ -1940,6 +1954,10 @@ type Builtins<
       ? LispIsAny<R>
     : U extends `prim?`
       ? LispIsPrim<R>
+    : U extends `min`
+      ? LispMin<R>
+    : U extends `max`
+      ? LispMax<R>
     : Eval<[ReadLet<U, env>, OPR[0]], env, [prev]>
   : never
 
