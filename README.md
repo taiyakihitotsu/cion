@@ -98,14 +98,14 @@ const test_refind : Cion.Lisp<`(re-find ${email} 'zzz.zzz@testmailreg.com')`> = 
 
 ## Builtins
  - if, fn, let, count, nil, ->, ->>, some->, some->>
- - +, -, *, /, mod, rem, *trunc, floor, inc, dec, abs
- - str, re-find, split, subs, *subs-all, replace
+ - +, -, *, /, mod, rem, `*`trunc, floor, inc, dec, abs, min, max
+ - str, re-find, split, subs, `*`subs-all, replace
  - and, or, not, >, <, =, eq, >=, <=
- - number?, string?, vector?, map?, fn?, ifn?, nat-int?, pos-int?, neg-int?, odd?, even?, zero?, keyword?, empty?, boolean?, type, every?, some, nil?, some?
- - map, filter, remove, reduce
+ - `*`prim?, any?, number?, string?, vector?, map?, fn?, ifn?, int?, nat?, ratio?, nat-int?, pos?, neg? pos-int?, neg-int?, odd?, even?, zero?, keyword?, empty?, boolean?, type, every?, some, nil?, some?
+ - map, filter, remove, reduce, zipmap, apply
  - conj, concat, interleave, reverse, range, repeat, drop, take, keys
  - assoc, assoc-in, update, update-in
- - first, second, *third, last, rest, butlast, get, get-in
+ - first, second, `*`third, last, rest, butlast, get, get-in
  - ... and vector ```[0 1 2]``` & map ```{:x 0 :y 1 :z 2}``` syntax.
 
 [note] `*` are not implemented in Clojure.
