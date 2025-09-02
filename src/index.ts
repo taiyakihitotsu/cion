@@ -1209,6 +1209,20 @@ export type LispCount<
     ? ['prim', Count<V>]
   : ErrorCase<CountError1, 'Arg of count should be vector.', S>
 
+
+type Zipmap<
+  KS
+, VS> =
+  [KS, VS] extends [[infer fstK, ...infer restK], [infer fstV, ...infer restV]]
+    ? [fstK, fstV, ...Zipmap<restK, restV>]
+  : []
+type LispZipmapError0 = "LispZipmapError0"
+type LispZipmap<
+  S> =
+  S extends [['vec', ...infer VecKeys], ['vec', ...infer VecValues]]
+    ? ['map', Zipmap<VecKeys, VecValues>]
+  : ErrorCase<LispZipmapError0, '', S>
+
 // ------------
 // -- getter
 // ------------
@@ -1785,7 +1799,7 @@ export type LispSomeThreadLast<S> = LispSomeThreadGeneral<S, 'last'>
 // ---------------------------------------
 
 export type BuiltinsUnion =
-'->' | '->>' | 'some->' | 'some->>' | 'str' | 'vector' | 'map' | 'filter' | 'remove' | 'reduce' | 'count' | 'concat' | 'conj' | 'first' | 'second' | 'third' | 'last' | 'rest' | 'butlast' | 'reverse' | 'repeat' | 'range' | 'interleave' | 'take' | 'drop' | 'assoc-in' | 'update-in' | 'assoc' | 'update' | 'get' | 'get-in' | 'keys' | 'eq' | '=' | 'not' | 'and' | 'or' | 'inc' | 'dec' | '+' | '-' | '*' | '/' | 'trunc' | 'floor' |'%' | 'rem' | 'mod' | '>' | '<' | '>=' | '<=' | 'number?' | 'string?' | 'vector?' | 'map?' | 'fn?' | 'keyword?' | 'ifn?' | 'pos-int?' | 'neg-int?' | 'pos?' | 'neg?' | 'int?' | 'nat?' | 'odd?' | 'even?' | 'zero?' | 'symbol?' | 'empty?' | 'every?' | 'ratio?' | 'some' | 'nil?' | 'some?' | 'boolean?' | 'any?' | 'prim?' | 'type' | 're-find' | 'split' | 'subs-all' | 'subs' | 'min' | 'max'
+'->' | '->>' | 'some->' | 'some->>' | 'str' | 'vector' | 'map' | 'filter' | 'remove' | 'reduce' | 'count' | 'concat' | 'conj' | 'first' | 'second' | 'third' | 'last' | 'rest' | 'butlast' | 'reverse' | 'repeat' | 'range' | 'interleave' | 'take' | 'drop' | 'assoc-in' | 'update-in' | 'assoc' | 'update' | 'get' | 'get-in' | 'keys' | 'eq' | '=' | 'not' | 'and' | 'or' | 'inc' | 'dec' | '+' | '-' | '*' | '/' | 'trunc' | 'floor' |'%' | 'rem' | 'mod' | '>' | '<' | '>=' | '<=' | 'number?' | 'string?' | 'vector?' | 'map?' | 'fn?' | 'keyword?' | 'ifn?' | 'pos-int?' | 'neg-int?' | 'pos?' | 'neg?' | 'int?' | 'nat?' | 'odd?' | 'even?' | 'zero?' | 'symbol?' | 'empty?' | 'every?' | 'ratio?' | 'some' | 'nil?' | 'some?' | 'boolean?' | 'any?' | 'prim?' | 'type' | 're-find' | 'split' | 'subs-all' | 'subs' | 'min' | 'max' | 'zipmap'
 export type BuiltinsFn = Exclude<BuiltinsUnion, 'if' | 'let' | 'fn' | '->' | '->>' | 'some->' | 'some->>'>
 
 type Builtins<
@@ -1958,6 +1972,8 @@ type Builtins<
       ? LispMin<R>
     : U extends `max`
       ? LispMax<R>
+    : U extends `zipmap`
+      ? LispZipmap<R>
     : Eval<[ReadLet<U, env>, OPR[0]], env, [prev]>
   : never
 
