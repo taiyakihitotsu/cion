@@ -791,7 +791,7 @@ export type LispIsEven<
 export type LispIsZero<
   S> =
   S extends [['prim', infer N extends string]]
-    ? Bit.BitIsZero<N> extends true
+    ? Eq<Bit.BitIsZero<N>, true> extends true
       ? N extends 'nil'
         ? ['prim', false]
       : ['prim', true]
