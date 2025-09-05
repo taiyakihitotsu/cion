@@ -628,10 +628,11 @@ type IsOdd<
     ? _IsOdd<S>
   : false
 
+
 type IsEven<
   S extends string> =
-  true extends IsNumber<S>
-    ? true extends _IsOdd<S>
+  Eq<IsNumber<S>,true> extends true
+    ? Eq<_IsOdd<S>, true> extends true
       ? false
     : true
   : false
@@ -780,7 +781,9 @@ export type LispIsEven<
   S extends [['prim', infer N extends string]]
     ? ['prim', IsEven<N>]
   : S extends [['prim', infer N extends RatioString]]
-    ? ratio.ForceNat<N> extends infer D extends string
+    ? Eq<ratio.IsInt<N>,false> extends true
+      ? ['prim', false]
+    : ratio.ForceNat<N> extends infer D extends string
       ? D extends 'nil'
         ? ['prim', false]
       : ['prim', IsEven<D>]
