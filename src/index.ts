@@ -1309,10 +1309,13 @@ export type Rest<
       ? [`vec`, ...T]
     : [`vec`]
   : ErrorCase<RestError0, CommonArgVecErrMsg, V>
+// rest
 export type LispRest<
   S> =
   S extends [infer V extends Vector]
-    ? Rest<V>
+    ? Eq<V,['vec']> extends true
+      ? TNil
+    : Rest<V>
   : ErrorCase<RestError1, CommonArgVecErrMsgFn<'rest'>, S>
 
 type ButlastError0 = "ButlastError0"
