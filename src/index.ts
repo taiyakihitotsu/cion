@@ -388,8 +388,42 @@ export type LispStrSubsAll<
 
 export type LispCljSubs<S> = LispStrSubsAll<S, 1>
 
-  
+// [todo] move to somewhere
+type TrimQuote<S extends string> = S extends `'${infer innerS}'` ? innerS : S extends `"${infer innerS}"` ? innerS : S
+export type GetStr<S> = S extends ['prim', infer s extends string] ? TrimQuote<s> : S extends string ? TrimQuote<S> : never
+export type Join<
+  S extends string
+, V extends unknown[]
+, Ret extends string = ''> =
+  Eq<V['length'], 1> extends true
+    ? `${Ret}${GetStr<V[0]>}`
+  : V extends [infer H extends unknown, ...infer Rest extends unknown[]]
+    ? Join<S, Rest, `${Ret}${GetStr<H>}${GetStr<S>}`>
+  : V
 
+export type LispJoinError0 = 'LispJoinError0'
+export type LispJoinError1 = 'LispJoinError1'
+export type LispJoinError2 = 'LispJoinError2'
+export type LispJoinError3 = 'LispJoinError3'
+export type LispJoinError4 = 'LispJoinError4'
+// join
+export type LispJoin<
+  S> =
+  S extends [['prim', infer Sep extends string], ['vec', ...infer Rest]]
+    ? Eq<Rest, []> extends true
+      ? ['prim', `''`]
+    : Eval<[['sym', 'map'], ['sym', 'str'], ['vec', ...Rest]]> extends ['vec', ...infer MRest extends unknown[]]
+      ? Join<Sep, MRest> extends infer RS extends string
+        ? ['prim', `'${RS}'`]
+      : 'nn'
+    : ErrorCase<LispJoinError3, 'Types of args may be ok but join is failed.', S>
+  : S extends unknown[]
+    ? S[0] extends ['prim', string]
+      ? ErrorCase<LispJoinError0, '2nd should be vector.', S>
+    : S[1] extends ['vec', ...infer _Rest extends ['prim', string][]]
+      ? ErrorCase<LispJoinError1, '1st should be string.', S>
+    : ErrorCase<LispJoinError2, '1st is str & 2nd is vec, but an error occurs.', S>
+  : ErrorCase<LispJoinError4, 'Malform Sexpr.', S>
 
 // --------------------------------------------
 // -- Logical Operators
@@ -1811,7 +1845,7 @@ export type LispSomeThreadLast<S> = LispSomeThreadGeneral<S, 'last'>
 // ---------------------------------------
 
 export type BuiltinsUnion =
-'->' | '->>' | 'some->' | 'some->>' | 'str' | 'vector' | 'map' | 'filter' | 'remove' | 'reduce' | 'count' | 'concat' | 'conj' | 'first' | 'second' | 'third' | 'last' | 'rest' | 'butlast' | 'reverse' | 'repeat' | 'range' | 'interleave' | 'take' | 'drop' | 'assoc-in' | 'update-in' | 'assoc' | 'update' | 'get' | 'get-in' | 'keys' | 'eq' | '=' | 'not' | 'and' | 'or' | 'inc' | 'dec' | '+' | '-' | '*' | '/' | 'trunc' | 'floor' |'%' | 'rem' | 'mod' | '>' | '<' | '>=' | '<=' | 'number?' | 'string?' | 'vector?' | 'map?' | 'fn?' | 'keyword?' | 'ifn?' | 'pos-int?' | 'neg-int?' | 'pos?' | 'neg?' | 'int?' | 'nat?' | 'odd?' | 'even?' | 'zero?' | 'symbol?' | 'empty?' | 'every?' | 'ratio?' | 'some' | 'nil?' | 'some?' | 'boolean?' | 'any?' | 'prim?' | 'type' | 're-find' | 'split' | 'subs-all' | 'subs' | 'min' | 'max' | 'zipmap' | 'apply'
+'->' | '->>' | 'some->' | 'some->>' | 'str' | 'vector' | 'map' | 'filter' | 'remove' | 'reduce' | 'count' | 'concat' | 'conj' | 'join' | 'first' | 'second' | 'third' | 'last' | 'rest' | 'butlast' | 'reverse' | 'repeat' | 'range' | 'interleave' | 'take' | 'drop' | 'assoc-in' | 'update-in' | 'assoc' | 'update' | 'get' | 'get-in' | 'keys' | 'eq' | '=' | 'not' | 'and' | 'or' | 'inc' | 'dec' | '+' | '-' | '*' | '/' | 'trunc' | 'floor' |'%' | 'rem' | 'mod' | '>' | '<' | '>=' | '<=' | 'number?' | 'string?' | 'vector?' | 'map?' | 'fn?' | 'keyword?' | 'ifn?' | 'pos-int?' | 'neg-int?' | 'pos?' | 'neg?' | 'int?' | 'nat?' | 'odd?' | 'even?' | 'zero?' | 'symbol?' | 'empty?' | 'every?' | 'ratio?' | 'some' | 'nil?' | 'some?' | 'boolean?' | 'any?' | 'prim?' | 'type' | 're-find' | 'split' | 'subs-all' | 'subs' | 'min' | 'max' | 'zipmap' | 'apply'
 export type BuiltinsFn = Exclude<BuiltinsUnion, 'if' | 'let' | 'fn' | '->' | '->>' | 'some->' | 'some->>'>
 
 type Builtins<
@@ -1856,6 +1890,8 @@ type Builtins<
       ? LispConcat<R>
     : U extends `conj`
       ? LispConj<R>
+    : U extends `join`
+      ? LispJoin<R>
     : U extends `first`
       ? LispFirst<R>
     : U extends `second`
