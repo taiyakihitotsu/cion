@@ -1450,7 +1450,7 @@ type _Filter<
     : [..._Filter<F, [`vec`, ...T]>]
   : [ErrorCase<FilterError0, "2nd should be vector", [F, V]>]
 
-export type Filter<F, V> = [`vec`, ..._Filter<F, V>];
+export type Filter<F, V> = V extends [`vec`] ? [`vec`] : [`vec`, ..._Filter<F, V>];
 
 export type LispFilter<
   S> =
