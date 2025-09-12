@@ -327,7 +327,9 @@ export type LispReplace<
     ? LiteralReplace<PrimStrUnwrap<S>, PrimStrUnwrap<R>, ForS> extends infer R
       ? R extends {error: unknown}
         ? R
-      : ['prim', R]
+      : R extends string
+        ? ['prim', `'${R}'`]
+      : never
     : never
   : ErrorCase<LispReplaceError0, '', S>
 
