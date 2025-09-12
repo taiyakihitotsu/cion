@@ -1331,7 +1331,8 @@ type _Butlast<
     : _Butlast<T,[...R,H]>
   : ErrorCase<ButlastError0, CommonArgVecErrMsg, V>
 export type Butlast<V> = V extends Vector & ['vec', ...infer v] ? _Butlast<v> extends Atom[] ? ['vec', ..._Butlast<v>] : ErrorCase<ButlastError1, CommonArgVecErrMsg, V> : ErrorCase<ButlastError3, CommonArgVecErrMsg, V>
-export type LispButlast<S> = S extends [infer V extends Vector] ? Butlast<V> : ButlastError2
+// butlast
+export type LispButlast<S> = S extends [infer V extends Vector] ? Eq<V,['vec']> extends true ? TNil : Butlast<V> : ButlastError2
 
 // -------------
 // -- new seq

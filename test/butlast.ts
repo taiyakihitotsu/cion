@@ -9,3 +9,8 @@ const testbutlast3: Butlast<Butlast<Butlast<Butlast<testbutlastvec>>>> = [`vec`]
 
 const maintest0_butlast_0: Cion.RawLisp<'(butlast [0 1 2 3])'> = ['vec', ['prim', '0000000000000000'], ['prim', '0000000000000001'], ['prim', '0000000000000010']]
 const maintest0_butlast_1: Cion.RawLisp<'(butlast [0])'> = ['vec']
+
+const maintest_butlast_0: Cion.Lisp<`(butlast [0 1 2])`> = '[0 1]'
+const maintest_butlast_1: Cion.Lisp<`(butlast [0])`> = '[]'
+const maintest_butlast_2: Cion.Lisp<`(butlast [])`> = 'nil'
+
