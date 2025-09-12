@@ -1,7 +1,7 @@
 # Cion
 [![npm](https://img.shields.io/npm/v/@taiyakihitotsu/cion)](https://www.npmjs.com/package/@taiyakihitotsu/cion) ![license](https://img.shields.io/npm/l/@taiyakihitotsu/cion) [![build](https://github.com/taiyakihitotsu/cion/actions/workflows/node.js.yml/badge.svg)](https://github.com/taiyakihitotsu/cion/actions)
 
-Clojure Implemented on TypeScript, at the type level.
+Lisp Implemented on TypeScript at the type level, very inspired by Clojure.
 
 ## Install
 ```terminal
