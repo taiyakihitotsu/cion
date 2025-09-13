@@ -36,6 +36,9 @@ jobs:
       - name: Run check:test
         run: npm run check:test
 
+      - name: Run check:spec
+        run: npm run check:spec
+
       - name: Run check:smith
         run: npm run check:smith
 
