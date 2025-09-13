@@ -18,5 +18,6 @@ const lispjointest_2: Cion.Lisp<`(join ',' ['a'])`> = `'a'`
 const lispjointest_3: Cion.Lisp<`(join ',' [])`> = `''`
 const lispjointest_4: Cion.Lisp<`(join ',' [1 2])`> = `'1,2'`
 const lispjointest_5: Cion.Lisp<`(join ',' [1 2 true])`> = `'1,2,true'`
+const lispjointest_6: Cion.Lisp<`(join ',' [0 1 'true' 2])`> = `'0,1,true,2'`
 
 

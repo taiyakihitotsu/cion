@@ -11,4 +11,5 @@ const maintest0_drop_2: Cion.RawLisp<'(drop 0 [0 1 2 3 4 5])'> = ['vec', ['prim'
 const drop_test0 : Cion.Lisp<`(drop 0 [0 1 2 3 4 5 6])`> = '[0 1 2 3 4 5 6]'
 const drop_test1 : Cion.Lisp<`(drop 2 [0 1 2 3 4 5 6])`> = '[2 3 4 5 6]'
 const drop_test : Cion.Lisp<`(drop 9 [0 1 2 3 4 5 6])`> = '[]'
+const drop_test2 : Cion.Lisp<`(drop -3 [0 1 2 3 4 5 6])`> = '[0 1 2 3 4 5 6]'
 

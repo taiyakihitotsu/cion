@@ -16,3 +16,4 @@ const lisp_strtest5fy: Cion.Lisp<`(replace 'abcdefg' '[b-g]' (fn [x y z] y))`> =
 const lisp_strtest5fz: Cion.Lisp<`(replace 'abcdefg' '[b-g]' (fn [x y z] z))`> = "'acdefgdefgefgfgg'"
 
 const jke : Cion.Lisp<`((fn [x y z] z) '' '' ' ')`> = "' '"
+const jkdd: Cion.Lisp<`(replace 'aabbaa' 'b' 'a')`> = "'aaaaaa'"

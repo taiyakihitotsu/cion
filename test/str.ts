@@ -22,6 +22,7 @@ const lisp_strtest6: Cion.Lisp<`(str 0 [] 2)`> = "'0[]2'"
 const lisp_strtest7: Cion.Lisp<`(str 0 {} 2)`> = "'0nil2'" // [todo] later
 const lisp_strtest8: Cion.Lisp<`(str 0 [0 1] 2)`> = "'0[0 1]2'"
 const lisp_strtest9: Cion.Lisp<`(str 0 {:a 0} 2)`> = "'0{:a 0}2'"
+const lisp_strtest10: Cion.Lisp<`(str 0 [0 1] {:a 0} 2)`> = "'0[0 1]{:a 0}2'"
 
 
 
