@@ -735,9 +735,13 @@ export type LispIsKeyword<
 // ifn?
 export type LispIsIfn<
   S> =
-  LispIsKeyword<S> extends ['prim', false]
-    ? LispIsFn<S>
-  : ['prim', true]
+  Eq<LispIsKeyword<S>, ['prim', true]> extends true
+    ? ['prim', true]
+  : Eq<LispIsMap<S>, ['prim', true]> extends true
+    ? ['prim', true]
+  : Eq<LispIsFn<S>, ['prim', true]> extends true
+    ? ['prim', true]
+  : ['prim', false]
 
 // neg?
 export type LispIsNeg<
