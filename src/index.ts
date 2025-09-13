@@ -581,6 +581,7 @@ export type LispDiv<
     : ErrorCase<LispDivError0, "", S>
   : ErrorCase<LispDivError1, "", S>
 
+// trunc / floor
 export type LispTruncOrFloor<
   S
 , Mode extends 'trunc' | 'floor'> =
@@ -591,7 +592,9 @@ export type LispTruncOrFloor<
       ? ss
     : never
   : TNil
+// trunc
 export type LispTrunc<S> = LispTruncOrFloor<S, 'trunc'>
+// floor
 export type LispFloor<S> = LispTruncOrFloor<S, 'floor'>
 
 type LispRemOrModError0 = 'LispRemOrModError0'

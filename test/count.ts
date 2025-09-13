@@ -7,4 +7,10 @@ const testlcount: LispCount<[['vec', ['prim', `'1'`], ['prim', `'2'`], ['prim', 
 
 const test_count0: Cion.RawLisp<`(count [0 1 2])`> = ['prim', '0000000000000011']
 
+
 const test_raw_count0: Cion.Lisp<`(count [0 1 2])`> = '3'
+const test_raw_count0x: Cion.Lisp<`(count [])`> = '0'
+// @ts-expect-error
+const test_raw_count1: Cion.Lisp<`(count {})`> = ''
+// @ts-expect-error
+const test_raw_count2: Cion.Lisp<`(count nil)`> = ''
