@@ -1091,7 +1091,7 @@ export type _Assoc<
         ? ['vec', ...S, Type extends 'update' ? Eval<[V, mV]> : V, ...mR]
       : Bit.BitGT<kB, '0'> extends true
         ? mR extends []
-          ? ['vec', ...S, mV]
+          ? TNil
         : _Assoc<['vec', ...mR], ['prim', Bit.BitSub<kB, '1'>], V, Type, [...S, mV]>
       : ['vec', ...S, V, ...mR]
     : ErrorCase<AssocError1, AssocErrorMsg1, M>
@@ -1099,9 +1099,9 @@ export type _Assoc<
     ? mK extends K
       ? ['map', [...S, mK, Type extends 'update' ? Eval<[V, mV]> : V, ...mR]]
     : mR extends []
-      ? ['map', [...S, mK, mV, K, V]]
+      ? TNil
     : _Assoc<['map', mR], K, V, Type, [...S, mK, mV]>
-  : ErrorCase<AssocError0, AssocErrorMsg0, M>
+  : TNil
 
 type AssocInError0 = 'AssocInError0'
 type AssocInError1 = 'AssocInError1'
@@ -1113,6 +1113,7 @@ type AssocInError6 = 'AssocInError6'
 type AssocInError7 = 'AssocInError7'
 type AssocInError8 = 'AssocInError8'
 
+type AccessFailed = 'AccessFailed'
 type _rAssocIn<
   M  extends Vector | TMap
 , Kh extends (Keyword | PrimNumber)
@@ -1124,11 +1125,15 @@ type _rAssocIn<
   : Get<Kh, M> extends infer Next
     ? Next extends Vector | TMap
       ? _AssocIn<Next, ['vec', ...Kt], V, Type> extends infer Recur
-        ? Recur extends Atom
+        ? Recur extends AccessFailed
+          ? AccessFailed
+        : Recur extends TNil
+          ? AccessFailed
+        : Recur extends Atom
           ? _Assoc<M, Kh, Recur>
         : ErrorCase<AssocInError7, `The value of key (${Kt[0][1] extends RatioString ? `${Kt[0][1][0]}/${Kt[0][1][1]}` : Kt[0][1] extends string ? Kt[0][1] : never}) is not vector nor map.`, M>
       : ErrorCase<AssocInError3, '', M>
-    : ErrorCase<AssocInError8, "Keys rests but its value is not vector nor map.", M>
+    : AccessFailed
   : ErrorCase<AssocInError4, "", M>
  
 // [note]
@@ -1176,6 +1181,7 @@ _AssocIn<M, K, F, 'update'>
 
 type LispAssocError0 = 'LispAssocError0'
 type LispAUErrorMsg  = '1st or 2nd is not proper form.'
+// assoc
 export type LispAssoc<
   S> =
   S extends [ infer M extends Vector | TMap
@@ -1193,15 +1199,21 @@ export type LispAssoc<
   : ErrorCase<LispAssocError0, LispAUErrorMsg, S>
 
 type LispAssocInError0 = 'LispAssocInError0'
+// assoc-in
 export type LispAssocIn<
   S> =
   S extends [ infer M extends Vector | TMap
   , infer Ks extends ['vec', ...(Keyword | PrimNumber | ['prim', RatioString])[]]
   , infer V extends Atom]
-    ? _AssocIn<M,Ks,V>
+    ? _AssocIn<M,Ks,V> extends infer Return
+      ? Eq<Return, AccessFailed> extends true
+        ? TNil
+      : Return
+    : never
   : ErrorCase<LispAssocInError0, LispAUErrorMsg, S>
 
 type LispUpdateError0 = 'LispUpdateError0'
+// update
 export type LispUpdate<
   S> =
   S extends [ infer M extends Vector | TMap
@@ -1213,6 +1225,7 @@ type LispUpdateInError0 = 'LispUpdateInError0'
 type LispUpdateInError1 = 'LispUpdateInError1'
 type LispUpdateInError2 = 'LispUpdateInError2'
 type LispUpdateInError3 = 'LispUpdateInError3'
+// update-in
 export type LispUpdateIn<
   S> =
   S extends [ infer M extends Vector | TMap

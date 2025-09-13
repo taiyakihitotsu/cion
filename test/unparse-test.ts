@@ -230,13 +230,13 @@ const unparse_maintest0_conj_1: Cion.Lisp<'(conj [0 1] [2])'> = '[0 1 [2]]'
 
 // assoc, update, assoc-in, update-in
 const unparse_maintest0_assoc_0: Cion.Lisp<'(assoc [0 1 2] 0 99)'> = '[99 1 2]'
-const unparse_maintest0_assoc_1: Cion.Lisp<'(assoc [0 1 2] 3 99)'> = '[0 1 2]' // no effect
+const unparse_maintest0_assoc_1: Cion.Lisp<'(assoc [0 1 2] 3 99)'> = 'nil'
 
 const unparse_maintest0_update_0: Cion.Lisp<'(update [0 1 2] 1 (fn [x] (+ x 99)))'> = '[0 100 2]'
-const unparse_maintest0_update_1: Cion.Lisp<'(update [0 1 2] 99 (fn [x] (+ x 99)))'> = '[0 1 2]' // no effect
+const unparse_maintest0_update_1: Cion.Lisp<'(update [0 1 2] 99 (fn [x] (+ x 99)))'> = 'nil'
 
 const unparse_maintest0_assocIn_0: Cion.Lisp<'(assoc-in [0 1 2] [0] 99)'> = '[99 1 2]'
-const unparse_maintest0_assocIn_1: Cion.Lisp<'(assoc-in [0 1 2] [99] 99)'> = '[0 1 2]' // no effect
+const unparse_maintest0_assocIn_1: Cion.Lisp<'(assoc-in [0 1 2] [99] 99)'> = 'nil'
 // @ts-expect-error:
 const unparse_maintest0_assocIn_2: Cion.Lisp<'(assoc-in [0 1 2] [0 0] 99)'> = {ast: [], error: 'InnerUnparseError'}
 const unparse_maintest0_assocIn_3: Cion.Lisp<'(assoc-in [0 1 [2 3 4]] [2 0] 99)'> = '[0 1 [99 3 4]]'
@@ -246,7 +246,7 @@ const unparse_maintest0_assocIn_5: Cion.Lisp<'(assoc-in [0 1 [2 3 {:a 4 :b 5}]] 
 const unparse_maintest0_assocIn_6: Cion.Lisp<'(assoc-in {:x [0 1 [2 3 {:a 4 :b 5}]] :y 0} [:x 2 2 :a] 99)'> = '{:x [0 1 [2 3 {:a 99 :b 5}]] :y 0}'
 
 const unparse_maintest0_updateIn_0: Cion.Lisp<'(update-in [0 1 2] [1] (fn [x] (+ x 99)))'> = '[0 100 2]'
-const unparse_maintest0_updateIn_1: Cion.Lisp<'(update-in [0 1 2] [99] (fn [x] (+ x 99)))'> = '[0 1 2]' // no effect
+const unparse_maintest0_updateIn_1: Cion.Lisp<'(update-in [0 1 2] [99] (fn [x] (+ x 99)))'> = 'nil'
 // @ts-expect-error:
 const unparse_maintest0_updateIn_2: Cion.Lisp<'(update-in [0 1 2] [99 99] (fn [x] (+ x 99)))'> = {ast: [], error: 'InnerUnparseError'}
 

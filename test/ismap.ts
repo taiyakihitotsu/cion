@@ -32,4 +32,4 @@ const maintest_ismap_letfn_21: Cion.RawLisp<`(map? (:x {:x {:y 1}}))`> = ['prim'
 const maintest_ismap_letfn_22: Cion.RawLisp<`(map? (first [{:x '0'} '1' 2]))`> = ['prim', true]
 const maintest_ismap_letfn_23: Cion.RawLisp<`(map? (let [x 'a' y 'b'] {:x x :y y}))`> = ['prim', true]
 const maintest_ismap_letfn_24: Cion.RawLisp<`(map? (let [] {:x 'a' :y 'b'}))`> = ['prim', true]
-const maintest_ismap_letfn_25: Cion.RawLisp<`(map? (assoc (let [x 'a' y 'b'] {:x x :y y}) :c 2))`> = ['prim', true]
+const maintest_ismap_letfn_25: Cion.RawLisp<`(map? (assoc (let [x 'a' y 'b'] {:x x :y y}) :c 2))`> = ['prim', false]
