@@ -1161,7 +1161,7 @@ export type _AssocIn<
   : M extends TMap
     ? Ks extends ['vec', infer Kh extends Keyword, ...infer Kt extends (Keyword | PrimNumber | ['prim', RatioString])[]]
       ? _rAssocIn<M, Kh, Kt, V, Type>
-    : AssocInError5
+    : TNil
   : AssocInError6
 
 export type _Update<
@@ -1234,7 +1234,11 @@ export type LispUpdateIn<
   S extends [ infer M extends Vector | TMap
   , infer Ks extends ['vec', ...(Keyword | PrimNumber | ['prim', RatioString])[]]
   , infer V extends Fn | ['sym', BuiltinsFn]]
-    ? _UpdateIn<M,Ks,V>
+    ? _UpdateIn<M,Ks,V> extends infer Return
+      ? Eq<Return, AccessFailed> extends true
+        ? TNil
+      : Return
+    : never
   : S extends [infer M, infer Ks, infer _V]
     ? M extends Vector | TMap
       ? Ks extends ['vec', ...(Keyword | PrimNumber | ['prim', RatioString])[]]
