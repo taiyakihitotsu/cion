@@ -869,6 +869,8 @@ export type LispIsEmpty<
     ? V extends []
       ? ['prim', true]
     : ['prim', false]
+  : S extends [['map', []]]
+    ? ['prim', true]
   : ['prim', false]
 
 // boolean?
