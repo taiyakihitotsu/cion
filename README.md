@@ -97,11 +97,14 @@ const test_refind : Cion.Lisp<`(re-find ${email} 'zzz.zzz@testmailreg.com')`> = 
 
 
 ## Builtins
- - if, fn, let, count, nil, ->, ->>, some->, some->>
+The specs of some fns doesn't follow Clojure.  
+See [spec/spec.ts](https://github.com/taiyakihitotsu/cion/blob/main/spec/spec.ts).
+
+- if, fn, let, count, nil, ->, ->>, some->, some->>
  - +, -, *, /, mod, rem, `*`trunc, floor, inc, dec, abs, min, max
  - str, re-find, split, subs, `*`subs-all, replace, join
  - and, or, not, >, <, =, eq, >=, <=
- - `*`prim?, any?, number?, string?, vector?, map?, fn?, ifn?, int?, nat?, ratio?, nat-int?, pos?, neg? pos-int?, neg-int?, odd?, even?, zero?, keyword?, empty?, boolean?, type, every?, some, nil?, some?
+ - `*`prim?, any?, number?, string?, vector?, map?, fn?, ifn?, int?, `*`nat? (= nat-int?), ratio?, pos?, neg? pos-int?, neg-int?, odd?, even?, zero?, keyword?, empty?, boolean?, type, every?, some, nil?, some?
  - map, filter, remove, reduce, zipmap, apply
  - conj, concat, interleave, reverse, range, repeat, drop, take, keys
  - assoc, assoc-in, update, update-in
