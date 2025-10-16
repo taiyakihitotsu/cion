@@ -20,6 +20,81 @@ type _IsEqual<
   : false
 
 
+// ------------------
+// -- numeric
+// ------------------
+
+type StrToNum<T extends string> = T extends `${infer N extends number}` ? N : never;
+
+// (x) 2n, 2n -> n, n
+// (y) 2n, 2n+1 -> 2n, 2n -> n, n
+// (z) 2n+1, 2n -> 2n-1, (f: 0->5, 2->6, 4->7, 6->8, 8->9)
+// (zz) 2n+1, 2n+1 -> 2n+1, 2n -> (z)
+type HalveCipher_Up  = {0: 5, 1: 5, 2: 6, 3: 6, 4: 7, 5: 7, 6: 8, 7: 8, 8: 9, 9: 9}
+type HalveCipher_Div = {0: 0, 1: 0, 2: 1, 3: 1, 4: 2, 5: 2, 6: 3, 7: 3, 8: 4, 9: 4}
+type HalveCipher_Dec = {0: 0, 1: 0, 2: 2, 3: 2, 4: 4, 5: 4, 6: 6, 7: 6, 8: 8, 9: 8}
+type Digit = keyof HalveCipher_Div | keyof HalveCipher_Up
+type Even = 0 | 2 | 4 | 6 | 8
+type Odd  = 1 | 3 | 5 | 7 | 9
+type Nat =
+{ 0: never
+    , 1: 0
+    , 2: 1|0
+    , 3: 2|1|0
+    , 4: 3|2|1|0
+    , 5: 4|3|2|1|0
+    , 6: 5|4|3|2|1|0
+    , 7: 6|5|4|3|2|1|0
+    , 8: 7|6|5|4|3|2|1|0
+    , 9: 8|7|6|5|4|3|2|1|0 }
+
+// This is used for a culc of pivot.
+const Test_LooseHalve_0: LooseHalve< 0> = 0
+const Test_LooseHalve_1: LooseHalve< 2> = 1
+const Test_LooseHalve_2: LooseHalve<59> = 29
+const Test_LooseHalve_3: LooseHalve<60> = 30
+const Test_LooseHalve_4: LooseHalve<61> = 30
+const Test_LooseHalve_5: LooseHalve<71> = 35
+type LooseHalve<
+  N extends number> =
+  `${N}` extends `${infer F extends number}${infer SS}`
+    ? '' extends SS
+      ? HalveCipher_Div[F extends Digit ? F : never]
+    : SS extends `${infer S extends number}${infer T}`
+      ? '' extends T
+        ? [F, S] extends infer Nums extends [Digit, Digit]
+          ? Nums[0] extends Even
+            ? StrToNum<`${HalveCipher_Div[Nums[0]]}${HalveCipher_Div[Nums[1]]}`>
+          : StrToNum<`${HalveCipher_Div[Nums[0]]}${HalveCipher_Up[HalveCipher_Dec[Nums[1]]]}`>
+        : never
+      : never
+    : never
+  : never
+
+const TestLessThan_0: LessThan<9,9> = false
+const TestLessThan_1: LessThan<9,8> = false
+const TestLessThan_2: LessThan<8,9> = true
+const TestLessThan_3: LessThan<15,15> = false
+const TestLessThan_4: LessThan<15,14> = false
+const TestLessThan_6: LessThan<14,15> = true
+const TestLessThan_7: LessThan<25,14> = false
+const TestLessThan_8: LessThan<14,25> = true
+
+type LessThan<
+  Left extends number
+, Right extends number> =
+  Left extends Left & Right
+    ? false
+  : `${Left}/${Right}` extends `${infer LF extends Digit}${infer LS extends Digit}/${infer RF extends Digit}${infer RS extends Digit}`
+    ? LF extends Nat[RF]
+      ? true
+    : [LF, LS] extends [LF & RF, Nat[RS]]
+      ? true
+    : false
+  : Left extends Nat[Right extends Digit ? Right : never]
+    ? true
+  : false
+
 // ---------------
 // -- Record
 // ---------------
