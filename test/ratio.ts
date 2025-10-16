@@ -123,25 +123,14 @@ const tt_test_trunc3 : de.BtoD<ratio.Trunc<[de.DtoB<'-3'>, de.DtoB<'10'>]>> = '0
 const tt_test_trunc5 : de.BtoD<ratio.Trunc<[de.DtoB<'3'>, de.DtoB<'-10'>]>> = '0'
 const tt_test_trunc6 : de.BtoD<ratio.Trunc<[de.DtoB<'-3'>, de.DtoB<'-10'>]>> = '0'
 
+const tt_test_commonize_0: ratio.RatioStr<ratio.Commonize<[de.DtoB<'8'>, de.DtoB<'2'>]>> = '4'
+const tt_test_commonize_1: ratio.RatioStr<ratio.Commonize<[de.DtoB<'8'>, de.DtoB<'3'>]>> = '8/3'
+const tt_test_commonize_2: ratio.RatioStr<ratio.Commonize<[de.DtoB<'-8'>, de.DtoB<'3'>]>> = '-8/3'
+const tt_test_commonize_3: ratio.RatioStr<ratio.Commonize<[de.DtoB<'24'>, de.DtoB<'3'>]>> = '8'
+const tt_test_commonize_4: ratio.RatioStr<ratio.Commonize<[de.DtoB<'-24'>, de.DtoB<'3'>]>> = '-8'
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+const tt_test_simplilfy_0: ratio.SimplifyStr<[de.DtoB<'8'>, de.DtoB<'2'>]> = '4'
+const tt_test_simplilfy_1: ratio.SimplifyStr<[de.DtoB<'8'>, de.DtoB<'3'>]> = '8/3'
+const tt_test_simplilfy_2: ratio.SimplifyStr<[de.DtoB<'-8'>, de.DtoB<'3'>]> = '-8/3'
+const tt_test_simplilfy_3: ratio.SimplifyStr<[de.DtoB<'24'>, de.DtoB<'3'>]> = '8'
+const tt_test_simplilfy_4: ratio.SimplifyStr<[de.DtoB<'-24'>, de.DtoB<'3'>]> = '-8'

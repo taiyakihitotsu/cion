@@ -64,3 +64,16 @@ const maintest0a_eq1: Cion.RawLisp<"(= 1 1)"> = [`prim`, true]
 const maintest1a_eq1: Cion.RawLisp<"(= 1 2)"> = [`prim`, false]
 const maintest2a_eq1: Cion.RawLisp<"(let [a 1] (= a 1))"> = [`prim`, true]
 const maintest3a_eq1: Cion.RawLisp<"(let [a 2] (= a 1))"> = [`prim`, false]
+
+const test_t_0: Cion.Lisp<`(= 0 0)`> = 'true'
+const test_t_1: Cion.Lisp<`(= 'abcd' 'abcd')`> = 'true'
+const test_t_2: Cion.Lisp<`(= true true)`> = 'true'
+const test_t_3: Cion.Lisp<`(= [0 1 2] [0 1 2])`> = 'true'
+const test_t_3b: Cion.Lisp<`(= [0 1 2] [0 1 4/2])`> = 'true'
+const test_t_4: Cion.Lisp<`(= [0 [1 2]] [0 [1 2]])`> = 'true'
+const test_t_5: Cion.Lisp<`(= [] [])`> = 'true'
+const test_t_6: Cion.Lisp<`(= {:a 1} {:a 1})`> = 'true'
+const test_t_7: Cion.Lisp<`(= {:a 1 :b 2} {:a 1 :b 2})`> = 'true'
+const test_t_8: Cion.Lisp<`(= {:b 2 :a 1} {:a 1 :b 2})`> = 'true'
+const test_t_9: Cion.Lisp<`(= inc inc)`> = 'true'
+const test_t_10: Cion.Lisp<`(= inc (fn [x] (+ 1 x)))`> = 'false'

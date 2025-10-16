@@ -99,6 +99,16 @@ export type RatioStr<
     : `${decimal.BtoD<x>}/${decimal.BtoD<y>}`
   : never
 
+export type SimplifyStr<
+  X extends Number> =
+  X extends Nat
+    ? `${decimal.BtoD<X>}`
+  : X extends Ratio
+    ? Commonize<X> extends infer Commonized extends Ratio
+      ? RatioStr<Commonized>
+    : never
+  : never
+
 // [todo] roughly
 export type _GCM<
   x extends BitString
@@ -140,7 +150,6 @@ export type LCD<
     : 'nil'
   : never
 
-// [note] this is not for Ratio to Nat.
 export type Commonize<
   S extends Ratio> =
   S extends [infer c extends BitString, infer d extends BitString]

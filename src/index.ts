@@ -465,23 +465,110 @@ export type LispOr<
     ? [`prim`, _LispOr<S>]
   : [`prim`, false]
 
-type _Eq<Fst, Snd> = Fst extends Snd ? (Snd extends Fst ? Fst : never) : never;
-const lispeqtest: _Eq<[`prim`, "'a'"], [`prim`, "'a'"]> = [`prim`, "'a'"];
+type LispIsCollError0 = 'LispIsCollError0'
+type LispIsColl<
+  S> =
+  S extends infer A extends (Sexpr | Atom)
+    ? Util.Equal<LispIsMap<A> & LispIsVector<A>, never> extends true
+      ? ['prim', true]
+    : ['prim', false]
+  : ErrorCase<LispIsCollError0, 'S is not sexpr.', S>
+
+type _LispCollEq<
+  ConstFst
+, ConstSnd
+, Keys extends Atom[]
+, R = false> =
+  Keys extends [infer KF extends Atom, ...infer KR extends Atom[]]
+    ? [LispGet<[ConstFst, KF]>, LispGet<[ConstSnd, KF]>] extends infer M extends [Atom, Atom]
+      ? _LispEq<M[0], M[1]> extends true
+        ? _LispCollEq<ConstFst, ConstSnd, KR, true>
+      : false
+    : false
+  : Util.Equal<Keys['length'], 0> extends true
+    ? R
+  : false
+
+
+type LocalValues<
+  M extends TMap
+, SortM extends TMap = M> =
+Eval<[['sym', 'map'], ['fn', [['sym', 'x']], [['sym', 'get'], M, ['sym', 'x']]], LispKeys<[SortM]>]>
+
+type _RecurLispEq<
+  V extends readonly unknown[]
+, U extends readonly unknown[]> =
+  [V, U] extends [[infer A, ...infer B], [infer C, ...infer D]]
+    ? [A, C] extends [['prim', infer ASnd extends ratio.Number], ['prim', infer BSnd extends ratio.Number]]
+      ? Util.Equal<true, _PrimSndEq<ASnd, BSnd>> extends true
+        ? _RecurLispEq<B, D>
+      : false
+    : Util.Equal<A, C> extends true
+      ? Util.Equal<LispIsColl<A>, ['prim', true]> extends true
+        ? Util.Equal<_LispEq<A, C>, ['prim', true]> extends true
+          ? _RecurLispEq<B, D>
+        : false
+      : _RecurLispEq<B, D>
+    : false
+  : V['length'] & U['length'] extends never
+    ? false
+  : true
 
 type _LispEq<
-  S> =
-  S extends [infer Fst, ...infer Rest]
-    ? Rest extends []
-      ? Fst
-    : _Eq<Fst, _LispEq<Rest>>
-  : never
+  Fst
+, Snd> =
+  [LispIsColl<[Fst]>, LispIsColl<[Snd]>] extends [['prim', true], ['prim', true]]
+    ? [Fst, Snd] extends infer V extends [Vector, Vector]
+      ? ['prim', _RecurLispEq<V[0], V[1]>]
+    : [Fst, Snd] extends infer M extends [TMap, TMap]
+      ? [LocalValues<M[0]>, LocalValues<M[1], M[0]>] extends infer Sorted extends [Vector, Vector]
+        ? ['prim', _RecurLispEq<Sorted[0], Sorted[1]>]
+      : never
+    : never
+  : [Fst, Snd] extends [['prim', infer V extends ratio.Number], ['prim', infer U extends ratio.Number]]
+    ? ['prim', _PrimSndEq<V, U>]
+  : ['prim', Util.Equal<Fst, Snd>]
+
+type _PrimSndEq<
+  X extends string | boolean | ratio.Number
+, Y extends string | boolean | ratio.Number> =
+  [LispIsNumber<[['prim', X]]>, LispIsNumber<[['prim', Y]]>] extends [['prim', true], ['prim', true]]
+    ? [X, Y] extends [infer NX extends ratio.Number, infer NY extends ratio.Number]
+      ? Util.Equal<ratio.SimplifyStr<NX>, ratio.SimplifyStr<NY>>
+    : Util.Equal<X, Y>
+  : Util.Equal<X, Y>
+
+// [todo] move
+type LispEq_VecTest_0_Actual =
+_LispEq< ['vec', ['prim', `'x'`]]
+         , ['vec', ['prim', `'y'`]]>
+const LispEq_VecTest_0: Util.Equal<LispEq_VecTest_0_Actual, ['prim', false]> = true
+// [todo] move
+type LispEq_VecTest_1_Actual =
+_LispEq< ['vec', ['prim', `'x'`], ['vec', ['prim', true]]]
+         , ['vec', ['prim', `'x'`], ['vec', ['prim', true]]]>
+const LispEq_VecTest_1: Util.Equal<LispEq_VecTest_1_Actual, ['prim', true]> = true
+// [todo] move
+type LispEq_PrimTest_0_Actual =
+_LispEq< ['prim', 1]
+         , ['prim', 0]>
+const LispEq_PrimTest_0: Util.Equal<LispEq_PrimTest_0_Actual, ['prim', false]> = true
+// [todo] move
+type LispEq_PrimTest_1_Actual = _LispEq<['prim', 0], ['prim', 0]>
+const LispEq_PrimTest_1: Util.Equal<LispEq_PrimTest_1_Actual, ['prim', true]> = true
+// [todo] move
+type LispEq_MapTest_0_Actual = _LispEq<['map', [['key', 'a'], ['prim', true], ['key', 'b'], ['prim', 'b-str']]], ['map', [['key', 'a'], ['prim', true], ['key', 'b'], ['prim', 'b-str']]]>
+const LispEq_MapTest_0: Util.Equal<LispEq_MapTest_0_Actual, ['prim', true]> = true
 
 type LispEqError0 = typeof LispEqError0
 const LispEqError0 = "LispEqError0"
+// =
 export type LispEq<
   S> =
-  S extends [infer Fst, ...infer _]
-    ? [`prim`, Util.Equal<Fst, _LispEq<S>>]
+  S extends [ infer Fst extends (Sexpr | Atom)
+	    , infer Snd extends (Sexpr | Atom)
+	    , ...infer _]
+    ? _LispEq<Fst, Snd>
   : ErrorCase<LispEqError0, "", S>
 
 type _Not<B> = B extends false ? true : false
