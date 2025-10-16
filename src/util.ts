@@ -1,9 +1,24 @@
+// https://github.com/sindresorhus/type-fest/commit/785549f36465e3f3d99a08832784b603261f74f2
 export type Equal<
-  X
-, Y> =
-  (<T>() => T extends X & T | T ? 1 : 2) extends (<T>() => T extends Y & T | T ? 1 : 2)
+  A
+, B> =
+  [A, B] extends [infer AA, infer BB]
+    ? [AA] extends [never]
+      ? [BB] extends [never]
+        ? true
+      : false
+    : [BB] extends [never]
+      ? false
+    : _IsEqual<AA, BB>
+  : false
+
+type _IsEqual<
+  A
+, B> =
+  (<G>() => G extends A & G | G ? 1 : 2) extends (<G>() => G extends B & G | G ? 1 : 2)
     ? true
   : false
+
 
 // ---------------
 // -- Record
