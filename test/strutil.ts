@@ -1,97 +1,122 @@
 import type * as strutil from '../src/strutil'
+import type { Equal } from '../src/util'
 
+// --- String Utility Patterns ---
 
-const test_regcut: strutil.RegCut<'{1,}))rest'> = ['{', '1,}))rest']
+// RegCut
+const test_regcut_0: true = {} as Equal<['{', '1,}))rest'], strutil.RegCut<'{1,}))rest'>>
 
-const test_strlen0: strutil.StrLen<'111'> = '0000000000000011'
-const test_strlen1: strutil.StrLen<''>    = '0000000000000000'
+// StrLen (Fixed-length binary representation)
+const test_strlen_3: true = {} as Equal<'0000000000000011', strutil.StrLen<'111'>>
+const test_strlen_0: true = {} as Equal<'0000000000000000', strutil.StrLen<''>>
 
-const test_charat0: strutil.CharAt<'123', '0000000000000001'> = '2'
-const test_charat1: strutil.CharAt<'123', '0000000000000111'> = ''
-const test_charat2: strutil.CharAt<'', '0000000000000001'> = ''
+// CharAt
+const test_charat_match: true = {} as Equal<'2', strutil.CharAt<'123', '0000000000000001'>>
+const test_charat_out_of_range: true = {} as Equal<'', strutil.CharAt<'123', '0000000000000111'>>
+const test_charat_empty: true = {} as Equal<'', strutil.CharAt<'', '0000000000000001'>>
 
-const test_matchchar0: strutil.MatchChar<'s', 's'> = true
-const test_matchchar1: strutil.MatchChar<'', 's'> = false
-const test_matchchar2: strutil.MatchChar<'s', ''> = false
-const test_matchchar3: strutil.MatchChar<'s', 'ss'> = false
-const test_matchchar0x: strutil.MatchChar<'s', '.'> = false
-const test_matchchar3x: strutil.MatchChar<'s', '\\.'> = false
+// MatchChar
+const test_matchchar_true: true = {} as Equal<true, strutil.MatchChar<'s', 's'>>
+const test_matchchar_empty_src: true = {} as Equal<false, strutil.MatchChar<'', 's'>>
+const test_matchchar_empty_tar: true = {} as Equal<false, strutil.MatchChar<'s', ''>>
+const test_matchchar_multi: true = {} as Equal<false, strutil.MatchChar<'s', 'ss'>>
+const test_matchchar_dot_literal: true = {} as Equal<false, strutil.MatchChar<'s', '.'>>
+const test_matchchar_escaped_dot: true = {} as Equal<false, strutil.MatchChar<'s', '\\.'>>
 
-const test_somelen0: strutil.SomeLen<'sss', 'xxa'> = true
-const test_somelen1: strutil.SomeLen<'sss', 'sxxa'> = false
-const test_somelen2: strutil.SomeLen<'sss', ''> = false
-const test_somelen3: strutil.SomeLen<'', 'xxa'> = false
-const test_somelen4: strutil.SomeLen<'', ''> = true
+// SomeLen (Length comparison/equality)
+const test_somelen_same: true = {} as Equal<true, strutil.SomeLen<'sss', 'xxa'>>
+const test_somelen_diff: true = {} as Equal<false, strutil.SomeLen<'sss', 'sxxa'>>
+const test_somelen_tar_empty: true = {} as Equal<false, strutil.SomeLen<'sss', ''>>
+const test_somelen_src_empty: true = {} as Equal<false, strutil.SomeLen<'', 'xxa'>>
+const test_somelen_both_empty: true = {} as Equal<true, strutil.SomeLen<'', ''>>
 
-const test_strtake0: strutil.StrTake<'012345', '0000000000000011'> = '012'
-const test_strtake1: strutil.StrTake<'012345', '0000000000000000'> = ''
-const test_strtake2: strutil.StrTake<'012345', '0000000000001111'> = '012345'
+// StrTake
+const test_strtake_3: true = {} as Equal<'012', strutil.StrTake<'012345', '0000000000000011'>>
+const test_strtake_0: true = {} as Equal<'', strutil.StrTake<'012345', '0000000000000000'>>
+const test_strtake_overflow: true = {} as Equal<'012345', strutil.StrTake<'012345', '0000000000001111'>>
 
-const test_strDrop0: strutil.StrDrop<'012345', '0000000000000011'> = '345'
-const test_strDrop1: strutil.StrDrop<'012345', '0000000000000000'> = '012345'
-const test_strDrop2: strutil.StrDrop<'012345', '0000000000001111'> = ''
+// StrDrop
+const test_strdrop_3: true = {} as Equal<'345', strutil.StrDrop<'012345', '0000000000000011'>>
+const test_strdrop_0: true = {} as Equal<'012345', strutil.StrDrop<'012345', '0000000000000000'>>
+const test_strdrop_overflow: true = {} as Equal<'', strutil.StrDrop<'012345', '0000000000001111'>>
 
-const test_charsone0: strutil.StrSearchHead<'sssss', 's'> = ['s', 'ssss']
-const test_charsone1: strutil.StrSearchHead<'sssxx', 'xx'> = []
-const test_charsone2: strutil.StrSearchHead<'xxsss', 'xx'> = ['xx', 'sss']
-const test_charsone3: strutil.StrSearchHead<'xxsss', 'd'> = []
-const test_charsone2x: strutil.StrSearchHead<'xxsss', '.'> = ['x', 'xsss']
-const test_charsone3x: strutil.StrSearchHead<'xxsss', '\\.'> = []
+// StrSearchHead
+const test_searchhead_success: true = {} as Equal<['s', 'ssss'], strutil.StrSearchHead<'sssss', 's'>>
+const test_searchhead_fail_pos: true = {} as Equal<[], strutil.StrSearchHead<'sssxx', 'xx'>>
+const test_searchhead_match_start: true = {} as Equal<['xx', 'sss'], strutil.StrSearchHead<'xxsss', 'xx'>>
+const test_searchhead_no_match: true = {} as Equal<[], strutil.StrSearchHead<'xxsss', 'd'>>
+const test_searchhead_dot: true = {} as Equal<['x', 'xsss'], strutil.StrSearchHead<'xxsss', '.'>>
+const test_searchhead_escaped_dot: true = {} as Equal<[], strutil.StrSearchHead<'xxsss', '\\.'>>
 
-const test_charsoned0: strutil.MatchChar<'1', '\\d'> = true
-const test_charsoned1: strutil.MatchChar<'0', '\\d'> = true
-const test_charsoned2: strutil.MatchChar<'s', '\\d'> = false
-const test_charsoned3: strutil.MatchChar<'1', '\\w'> = true
-const test_charsoned4: strutil.MatchChar<'a', '\\w'> = true
-const test_charsoned5: strutil.MatchChar<'!', '\\w'> = false
-const test_charsoned0a: strutil.MatchChar<'1', '\\u'> = false
-const test_charsoned1a: strutil.MatchChar<'d', '\\u'> = false
-const test_charsoned2a: strutil.MatchChar<'D', '\\u'> = true
-const test_charsoned3a: strutil.MatchChar<'1', '\\l'> = false
-const test_charsoned4a: strutil.MatchChar<'d', '\\l'> = true
-const test_charsoned5a: strutil.MatchChar<'D', '\\l'> = false
-const test_charsonedx0: strutil.MatchChar<'1', '\\D'> = false
-const test_charsonedx1: strutil.MatchChar<'0', '\\D'> = false
-const test_charsonedx2: strutil.MatchChar<'s', '\\D'> = true
-const test_charsonedx3: strutil.MatchChar<'1', '\\W'> = false
-const test_charsonedx4: strutil.MatchChar<'a', '\\W'> = false
-const test_charsonedx5: strutil.MatchChar<'!', '\\W'> = true
-const test_charsonedx0a: strutil.MatchChar<'1', '\\U'> = true
-const test_charsonedx1a: strutil.MatchChar<'d', '\\U'> = true
-const test_charsonedx2a: strutil.MatchChar<'D', '\\U'> = false
-const test_charsonedx3a: strutil.MatchChar<'1', '\\L'> = true
-const test_charsonedx4a: strutil.MatchChar<'d', '\\L'> = true
-const test_charsonedx5a: strutil.MatchChar<'D', '\\L'> = false
+// --- Character Class Matchers (\d, \w, \u, \l and their negations) ---
+const test_match_digit_t: true = {} as Equal<true, strutil.MatchChar<'1', '\\d'>>
+const test_match_digit_t2: true = {} as Equal<true, strutil.MatchChar<'0', '\\d'>>
+const test_match_digit_f: true = {} as Equal<false, strutil.MatchChar<'s', '\\d'>>
 
-const test_charsone4: strutil.StrSearchHead<'xxsss', 'xs'> = []
-const test_charsone: strutil.StrSearchHead<'xsss', 'xs'> = ['xs', 'ss']
-const dot_test_charsone0: strutil.StrSearchHead<'sssss', '.s'> = ['ss', 'sss']
-const dot_test_charsone1: strutil.StrSearchHead<'sssxx', '..xx'> = []
-const dot_test_charsone1b: strutil.StrSearchHead<'sssxx', '...xx'> = ['sssxx', '']
-const dot_test_charsone1c: strutil.StrSearchHead<'sssxx', '.xx'> = []
-const dot_test_charsone2: strutil.StrSearchHead<'xxsss', 'xx.'> = ['xxs', 'ss']
-const dot_test_charsone3: strutil.StrSearchHead<'xxsss', '.d'> = []
-const dot_test_charsone4: strutil.StrSearchHead<'xxsss', 'x.s'> = ['xxs', 'ss']
-const dot_test_charsone4b: strutil.StrSearchHead<'xxsss', '.xs'> = ['xxs', 'ss']
-const dot_test_charsone5: strutil.StrSearchHead<'xsss', 'xs..'> = ['xsss', '']
-const dot_test_charsone: strutil.StrSearchHead<'x🦊sss', 'x🦊s..'> = ['x🦊sss', ''] // 🦊🦊
-// test
-const test_allsone0: strutil.StrSearchAll<'sssss', 's'> =  ['s', 'ssss']
-const test_allsone1: strutil.StrSearchAll<'sssxx', 'xx'> = ['sssxx', '']
-const test_allsone2: strutil.StrSearchAll<'xxsss', 'xx'> = ['xx', 'sss']
-const test_allsone2a: strutil.StrSearchAll<'xxxsss', 'xx'> = ['xx', 'xsss']
-const test_allsone3: strutil.StrSearchAll<'ssxxsss', 'xx'> = ['ssxx', 'sss']
-const test_allsone: strutil.StrSearchAll<'xxsss', 'd'> = []
-const test_tallsone0: strutil.StrSearchAll<'sssss', 's', '$'> = ['sssss', '']
-const test_tallsone1: strutil.StrSearchAll<'sssxx', 'xx', '$'> = ['sssxx', '']
-const test_tallsone2: strutil.StrSearchAll<'xxsss', 'xx', '$'> = []
-const test_tallsone3: strutil.StrSearchAll<'ssxxsss', 'xx', '$'> = []
-const test_tallsone: strutil.StrSearchAll<'xxsss', 'd', '$'> = []
-const test_hallsone0: strutil.StrSearchAll<'sssss', 's', '^'> = ['s', 'ssss']
-const test_hallsone1: strutil.StrSearchAll<'sssxx', 'xx', '^'> = []
-const test_hallsone2: strutil.StrSearchAll<'xxsss', 'xx', '^'> = ['xx', 'sss']
-const test_hallsone: strutil.StrSearchAll<'xxsss', 'd', '^'> = []
+const test_match_word_t: true = {} as Equal<true, strutil.MatchChar<'1', '\\w'>>
+const test_match_word_t2: true = {} as Equal<true, strutil.MatchChar<'a', '\\w'>>
+const test_match_word_f: true = {} as Equal<false, strutil.MatchChar<'!', '\\w'>>
 
-const test_strinter0: strutil.StrInter<'0123456789', '0000000000000010', '0000000000000101'> = '2345'
-const test_strinter1: strutil.StrInter<'0123456789', '0000000000000000', '0000000000000101'> = '012345'
-const test_strinter2: strutil.StrInter<'0123456789', '0000000000000010', '0000000000001111'> = '23456789'
+const test_match_upper_f: true = {} as Equal<false, strutil.MatchChar<'1', '\\u'>>
+const test_match_upper_f2: true = {} as Equal<false, strutil.MatchChar<'d', '\\u'>>
+const test_match_upper_t: true = {} as Equal<true, strutil.MatchChar<'D', '\\u'>>
+
+const test_match_lower_f: true = {} as Equal<false, strutil.MatchChar<'1', '\\l'>>
+const test_match_lower_t: true = {} as Equal<true, strutil.MatchChar<'d', '\\l'>>
+const test_match_lower_f2: true = {} as Equal<false, strutil.MatchChar<'D', '\\l'>>
+
+const test_match_not_digit_f: true = {} as Equal<false, strutil.MatchChar<'1', '\\D'>>
+const test_match_not_digit_f2: true = {} as Equal<false, strutil.MatchChar<'0', '\\D'>>
+const test_match_not_digit_t: true = {} as Equal<true, strutil.MatchChar<'s', '\\D'>>
+
+const test_match_not_word_f: true = {} as Equal<false, strutil.MatchChar<'1', '\\W'>>
+const test_match_not_word_f2: true = {} as Equal<false, strutil.MatchChar<'a', '\\W'>>
+const test_match_not_word_t: true = {} as Equal<true, strutil.MatchChar<'!', '\\W'>>
+
+const test_match_not_upper_t: true = {} as Equal<true, strutil.MatchChar<'1', '\\U'>>
+const test_match_not_upper_t2: true = {} as Equal<true, strutil.MatchChar<'d', '\\U'>>
+const test_match_not_upper_f: true = {} as Equal<false, strutil.MatchChar<'D', '\\U'>>
+
+const test_match_not_lower_t: true = {} as Equal<true, strutil.MatchChar<'1', '\\L'>>
+const test_match_not_lower_t2: true = {} as Equal<true, strutil.MatchChar<'d', '\\L'>>
+const test_match_not_lower_f: true = {} as Equal<false, strutil.MatchChar<'D', '\\L'>>
+
+// --- StrSearchHead (Advanced patterns with dots and anchors) ---
+const test_search_head_complex_f: true = {} as Equal<[], strutil.StrSearchHead<'xxsss', 'xs'>>
+const test_search_head_complex_t: true = {} as Equal<['xs', 'ss'], strutil.StrSearchHead<'xsss', 'xs'>>
+const test_search_head_dot_t: true = {} as Equal<['ss', 'sss'], strutil.StrSearchHead<'sssss', '.s'>>
+const test_search_head_dot_f: true = {} as Equal<[], strutil.StrSearchHead<'sssxx', '..xx'>>
+const test_search_head_dot_t2: true = {} as Equal<['sssxx', ''], strutil.StrSearchHead<'sssxx', '...xx'>>
+const test_search_head_dot_f2: true = {} as Equal<[], strutil.StrSearchHead<'sssxx', '.xx'>>
+const test_search_head_mixed: true = {} as Equal<['xxs', 'ss'], strutil.StrSearchHead<'xxsss', 'xx.'>>
+const test_search_head_mixed_f: true = {} as Equal<[], strutil.StrSearchHead<'xxsss', '.d'>>
+const test_search_head_mixed2: true = {} as Equal<['xxs', 'ss'], strutil.StrSearchHead<'xxsss', 'x.s'>>
+const test_search_head_mixed3: true = {} as Equal<['xxs', 'ss'], strutil.StrSearchHead<'xxsss', '.xs'>>
+const test_search_head_overflow: true = {} as Equal<['xsss', ''], strutil.StrSearchHead<'xsss', 'xs..'>>
+const test_search_head_unicode: true = {} as Equal<['x🦊sss', ''], strutil.StrSearchHead<'x🦊sss', 'x🦊s..'>>
+
+// --- StrSearchAll (Global vs Anchored Search) ---
+const test_search_all_greedy: true = {} as Equal<['s', 'ssss'], strutil.StrSearchAll<'sssss', 's'>>
+const test_search_all_found: true = {} as Equal<['sssxx', ''], strutil.StrSearchAll<'sssxx', 'xx'>>
+const test_search_all_start: true = {} as Equal<['xx', 'sss'], strutil.StrSearchAll<'xxsss', 'xx'>>
+const test_search_all_overlap: true = {} as Equal<['xx', 'xsss'], strutil.StrSearchAll<'xxxsss', 'xx'>>
+const test_search_all_middle: true = {} as Equal<['ssxx', 'sss'], strutil.StrSearchAll<'ssxxsss', 'xx'>>
+const test_search_all_none: true = {} as Equal<[], strutil.StrSearchAll<'xxsss', 'd'>>
+
+// StrSearchAll with End-Anchor ($)
+const test_search_all_end_t: true = {} as Equal<['sssss', ''], strutil.StrSearchAll<'sssss', 's', '$'>>
+const test_search_all_end_t2: true = {} as Equal<['sssxx', ''], strutil.StrSearchAll<'sssxx', 'xx', '$'>>
+const test_search_all_end_f: true = {} as Equal<[], strutil.StrSearchAll<'xxsss', 'xx', '$'>>
+const test_search_all_end_f2: true = {} as Equal<[], strutil.StrSearchAll<'ssxxsss', 'xx', '$'>>
+const test_search_all_end_none: true = {} as Equal<[], strutil.StrSearchAll<'xxsss', 'd', '$'>>
+
+// StrSearchAll with Start-Anchor (^)
+const test_search_all_start_t: true = {} as Equal<['s', 'ssss'], strutil.StrSearchAll<'sssss', 's', '^'>>
+const test_search_all_start_f: true = {} as Equal<[], strutil.StrSearchAll<'sssxx', 'xx', '^'>>
+const test_search_all_start_match: true = {} as Equal<['xx', 'sss'], strutil.StrSearchAll<'xxsss', 'xx', '^'>>
+const test_search_all_start_none: true = {} as Equal<[], strutil.StrSearchAll<'xxsss', 'd', '^'>>
+
+// --- StrInter (Substring via Indices) ---
+const test_str_inter_normal: true = {} as Equal<'2345', strutil.StrInter<'0123456789', '0000000000000010', '0000000000000101'>>
+const test_str_inter_from_start: true = {} as Equal<'012345', strutil.StrInter<'0123456789', '0000000000000000', '0000000000000101'>>
+const test_str_inter_to_end: true = {} as Equal<'23456789', strutil.StrInter<'0123456789', '0000000000000010', '0000000000001111'>>

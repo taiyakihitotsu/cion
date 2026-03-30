@@ -21,7 +21,7 @@ type InitCondition = ''
 export type ReadInter<
   S extends string> =
   S extends `${infer f extends keyof regexConst.TransNumber}-${infer s extends keyof regexConst.TransNumber}${infer _rest}`
-    ? vec.Inter<regexConst.ASCII, regexConst.TransNumber[f], regexConst.TransNumber[s]>
+    ? vec.BitInter<regexConst.ASCII, regexConst.TransNumber[f], regexConst.TransNumber[s]>
   : never
 
 type NegCharaClass<
@@ -92,22 +92,22 @@ export type ExpandMinMax<
 , min extends string
 , max extends string> =
   max extends '='
-    ? vec.Repeat<min,P> extends infer r
+    ? vec.BitRepeat<min,P> extends infer r
       ? r extends CompFrame
         ? r
       : never
     : never
   : max extends '<'
-    ? vec.Repeat<min,P> extends infer _Drp extends unknown[]
+    ? vec.BitRepeat<min,P> extends infer _Drp extends unknown[]
       ? [...(_Drp), ['*', P]] extends infer r
         ? r extends CompFrame
           ? r
         : never
       : never
     : never
-  : vec.Repeat<min,P> extends infer _Dfst extends unknown[]
+  : vec.BitRepeat<min,P> extends infer _Dfst extends unknown[]
     ? Bit.BitSub<max,min> extends infer _Dsub extends string
-      ? vec.Repeat<_Dsub, ['?', P]> extends infer _Dsnd extends unknown[]
+      ? vec.BitRepeat<_Dsub, ['?', P]> extends infer _Dsnd extends unknown[]
         ? [..._Dfst, ..._Dsnd] extends infer r
           ? r extends CompFrame
             ? r

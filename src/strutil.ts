@@ -1,5 +1,4 @@
 import type * as Bit from './bit'
-import type * as Decimal from './decimal'
 import type * as regexConst from './regex-const'
 
 export type  tZero = '0000000000000000'
@@ -101,7 +100,7 @@ export type MatchChar<
 export type StrLen<
   S extends string
 , N extends string = Bit.Zero> =
-  S extends `${infer F}${infer Rest}`
+  S extends `${infer _}${infer Rest}`
     ? Rest extends ''
       ? Bit.BitInc<N>
     : StrLen<Rest, Bit.BitInc<N>>

@@ -1,0 +1,101 @@
+import type Cion from '../../src/index'
+import type { LispEq, Eval, MakeVar } from '../../src/index'
+import type { Equal } from '../../src/util'
+
+const eq_test_0 : true = {} as Equal<['vec', ['sym', '='], ['prim', "'in'"], ['prim', "'in'"]] ,
+Eval<['vec', ['sym', '='], ['prim', "'in'"], ['prim', "'in'"]]>>
+
+const eq_test_1 : true = {} as Equal<[`prim`, true] ,
+Eval<[[`sym`, `eq`], [`prim`, 0], [`prim`, 0]]>>
+
+const eq_test_2 : true = {} as Equal<[`prim`, false] ,
+Eval<[[`sym`, `eq`], [`prim`, 1], [`prim`, 0]]>>
+
+const eq_test_3 : true = {} as Equal<[`prim`, true] ,
+Eval<[[`sym`, `eq`], [`prim`, 0], [`prim`, 0], [`prim`, 0]]>>
+
+const eq_test_4 : true = {} as Equal<[`prim`, false] ,
+Eval<[[`sym`, `eq`], [`prim`, 0], [`prim`, 1]]>>
+
+const eq_test_5 : true = {} as Equal<[`prim`, false] ,
+Eval<
+    [[`sym`, `eq`], [`sym`, `a`], [`prim`, 1]],
+    [[MakeVar<`a`, [`prim`, 0]>]]
+  >>
+
+const eq_test_7 : true = {} as Equal<[`prim`, true] ,
+LispEq<[[`prim`, "'a'"], [`prim`, "'a'"]]>>
+
+const eq_test_8 : true = {} as Equal<[`prim`, false] ,
+LispEq<[[`prim`, "'a'"], [`prim`, "'b'"]]>>
+
+const eq_test_9 : true = {} as Equal<[`prim`, false] ,
+LispEq<[[`prim`, "'a'"], [`prim`, "'b'"], [`prim`, "'a'"]]>>
+
+const eq_test_10 : true = {} as Equal<[`prim`, true] ,
+LispEq<[[`prim`, "'a'"], [`prim`, "'a'"], [`prim`, "'a'"]]>>
+
+const eq_test_11 : true = {} as Equal<[`prim`, false] ,
+LispEq<[[`prim`, "'a'"], [`prim`, "''"]]>>
+
+const eq_test_12 : true = {} as Equal<[`prim`, false] ,
+Cion.RawLisp<"(eq 'a' 'b')">>
+
+const eq_test_13 : true = {} as Equal<[`prim`, true] ,
+Cion.RawLisp<"(eq 'a' 'a')">>
+
+const eq_test_14 : true = {} as Equal<[`prim`, true] ,
+Cion.RawLisp<"(let [a 'a'] (eq a 'a'))">>
+
+const eq_test_15 : true = {} as Equal<[`prim`, false] ,
+Cion.RawLisp<"(let [a 'b'] (eq a 'a'))">>
+
+const eq_test_16 : true = {} as Equal<[`prim`, true] ,
+Cion.RawLisp<"(eq 1 1)">>
+
+const eq_test_17 : true = {} as Equal<[`prim`, false] ,
+Cion.RawLisp<"(eq 1 2)">>
+
+const eq_test_18 : true = {} as Equal<[`prim`, true] ,
+Cion.RawLisp<"(let [a 1] (eq a 1))">>
+
+const eq_test_19 : true = {} as Equal<[`prim`, false] ,
+Cion.RawLisp<"(let [a 2] (eq a 1))">>
+
+const eq_test_20 : true = {} as Equal<[`prim`, false] ,
+Cion.RawLisp<"(= 'a' 'b')">>
+
+const eq_test_21 : true = {} as Equal<[`prim`, true] ,
+Cion.RawLisp<"(= 'a' 'a')">>
+
+const eq_test_22 : true = {} as Equal<[`prim`, true] ,
+Cion.RawLisp<"(let [a 'a'] (= a 'a'))">>
+
+const eq_test_23 : true = {} as Equal<[`prim`, false] ,
+Cion.RawLisp<"(let [a 'b'] (= a 'a'))">>
+
+const eq_test_24 : true = {} as Equal<[`prim`, true] ,
+Cion.RawLisp<"(= 1 1)">>
+
+const eq_test_25 : true = {} as Equal<[`prim`, false] ,
+Cion.RawLisp<"(= 1 2)">>
+
+const eq_test_26 : true = {} as Equal<[`prim`, true] ,
+Cion.RawLisp<"(let [a 1] (= a 1))">>
+
+const eq_test_27 : true = {} as Equal<[`prim`, false] ,
+Cion.RawLisp<"(let [a 2] (= a 1))">>
+
+// String Expression Tests
+const eq_test_28 : true = {} as Equal<'true', Cion.Lisp<`(= 0 0)`>>
+const eq_test_29 : true = {} as Equal<'true', Cion.Lisp<`(= 'abcd' 'abcd')`>>
+const eq_test_30 : true = {} as Equal<'true', Cion.Lisp<`(= true true)`>>
+const eq_test_31 : true = {} as Equal<'true', Cion.Lisp<`(= [0 1 2] [0 1 2])`>>
+const eq_test_32 : true = {} as Equal<'true', Cion.Lisp<`(= [0 1 2] [0 1 4/2])`>>
+const eq_test_33 : true = {} as Equal<'true', Cion.Lisp<`(= [0 [1 2]] [0 [1 2]])`>>
+const eq_test_34 : true = {} as Equal<'true', Cion.Lisp<`(= [] [])`>>
+const eq_test_35 : true = {} as Equal<'true', Cion.Lisp<`(= {:a 1} {:a 1})`>>
+const eq_test_36 : true = {} as Equal<'true', Cion.Lisp<`(= {:a 1 :b 2} {:a 1 :b 2})`>>
+const eq_test_37 : true = {} as Equal<'true', Cion.Lisp<`(= {:b 2 :a 1} {:a 1 :b 2})`>>
+const eq_test_38 : true = {} as Equal<'true', Cion.Lisp<`(= inc inc)`>>
+const eq_test_39 : true = {} as Equal<'false', Cion.Lisp<`(= inc (fn [x] (+ 1 x)))`>>

@@ -1,0 +1,39 @@
+import type Cion from '../../src/index.ts'
+import type {Equal} from '../../src/util'
+
+const isany_test_0 : true = {} as Equal<['prim', true], Cion.RawLisp<`(any? 1)`>>
+const isany_test_1 : true = {} as Equal<['prim', true], Cion.RawLisp<`(any? -1)`>>
+const isany_test_2 : true = {} as Equal<['prim', true], Cion.RawLisp<`(any? 29438)`>>
+const isany_test_3 : true = {} as Equal<['prim', true], Cion.RawLisp<`(any? '')`>>
+const isany_test_4 : true = {} as Equal<['prim', true], Cion.RawLisp<`(any? '102')`>>
+const isany_test_5 : true = {} as Equal<['prim', true], Cion.RawLisp<`(any? false)`>>
+const isany_test_6 : true = {} as Equal<['prim', true], Cion.RawLisp<`(any? [])`>>
+const isany_test_7 : true = {} as Equal<['prim', true], Cion.RawLisp<`(any? [1 2 3])`>>
+const isany_test_8 : true = {} as Equal<['prim', true], Cion.RawLisp<`(any? (fn [x y] (+ x y)))`>>
+const isany_test_9 : true = {} as Equal<['prim', true], Cion.RawLisp<`(any? {:x 1 :y 1})`>>
+const isany_test_10 : true = {} as Equal<['prim', true], Cion.RawLisp<`(any? nil)`>>
+const isany_test_11 : true = {} as Equal<['prim', true], Cion.RawLisp<`(any? (+ 1 2))`>>
+const isany_test_12 : true = {} as Equal<['prim', true], Cion.RawLisp<`(any? ((fn [] (+ 1 2))))`>>
+const isany_test_13 : true = {} as Equal<['prim', true], Cion.RawLisp<`(any? ((fn [x y] (+ x y)) 1 2))`>>
+const isany_test_14 : true = {} as Equal<['prim', true], Cion.RawLisp<`(any? inc)`>>
+const isany_test_15 : true = {} as Equal<['prim', true], Cion.RawLisp<`(any? (:x {:x 1}))`>>
+const isany_test_16 : true = {} as Equal<['prim', true], Cion.RawLisp<`(any? (first [0 '1' 2]))`>>
+const isany_test_17 : true = {} as Equal<['prim', true], Cion.RawLisp<`(any? (let [x 1 y 2] (+ x y)))`>>
+const isany_test_18 : true = {} as Equal<['prim', true], Cion.RawLisp<`(any? (let [] (+ 1 2)))`>>
+const isany_test_19 : true = {} as Equal<['prim', true], Cion.RawLisp<`(any? (+ 3 (let [x 1 y 2] (+ x y))))`>>
+const isany_test_20 : true = {} as Equal<['prim', true], Cion.RawLisp<`(any? ((fn [] (str 'a' 'b'))))`>>
+const isany_test_21 : true = {} as Equal<['prim', true], Cion.RawLisp<`(any? ((fn [x y] (str x y)) 'a' 'b'))`>>
+const isany_test_22 : true = {} as Equal<['prim', true], Cion.RawLisp<`(any? (:x {:x '111'}))`>>
+const isany_test_23 : true = {} as Equal<['prim', true], Cion.RawLisp<`(any? (first ['0' '1' 2]))`>>
+const isany_test_24 : true = {} as Equal<['prim', true], Cion.RawLisp<`(any? (let [x 'a' y 'b'] (str x y)))`>>
+const isany_test_25 : true = {} as Equal<['prim', true], Cion.RawLisp<`(any? (let [] (str 'a' 'b')))`>>
+const isany_test_26 : true = {} as Equal<['prim', true], Cion.RawLisp<`(any? (let [] inc))`>>
+const isany_test_27 : true = {} as Equal<['prim', true], Cion.RawLisp<`(any? (str 'c' (let [x 'a' y 'b'] inc)))`>>
+const isany_test_28 : true = {} as Equal<['prim', true], Cion.RawLisp<`(any? (str 'c' (let [x 'a' y 'b'] (fn [] 1))))`>>
+const isany_test_29 : true = {} as Equal<['prim', true], Cion.RawLisp<`(any? ((fn [] (fn [x y] (+ x y)))))`>>
+const isany_test_30 : true = {} as Equal<['prim', true], Cion.RawLisp<`(any? ((fn [x y] (fn [z] (str x y z))) 'a' 'b'))`>>
+const isany_test_31 : true = {} as Equal<['prim', true], Cion.RawLisp<`(any? (:x {:x (fn [a] (+ 1 a))}))`>>
+const isany_test_32 : true = {} as Equal<['prim', true], Cion.RawLisp<`(any? (first [(fn [a] (+ 1 a)) '1' 2]))`>>
+const isany_test_33 : true = {} as Equal<['prim', true], Cion.RawLisp<`(any? (let [x 'a' y 'b'] (fn [z] (str x y z))))`>>
+const isany_test_34 : true = {} as Equal<['prim', true], Cion.RawLisp<`(any? (let [] (fn [x y] (+ x y))))`>>
+const isany_test_35 : true = {} as Equal<['prim', true], Cion.RawLisp<`(any? (fn [a] ((let [x 'a' y 'b'] (fn [z] (str x y z))) a)))`>>

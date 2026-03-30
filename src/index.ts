@@ -1740,7 +1740,7 @@ export type LispRepeat<
   S> =
   S extends [['prim', infer N extends ratio.Number], infer V extends Each]
     ? ratio.ForceNat<N> extends infer Nat extends ratio.Nat
-      ? ['vec', ...vec.Repeat<Nat, V>]
+      ? ['vec', ...vec.BitRepeat<Nat, V>]
     : ErrorCase<LispRepeatError1, `Cast failure.`, S>
   : ErrorCase<LispRepeatError0, '', S>
 

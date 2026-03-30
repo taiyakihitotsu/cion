@@ -1,6 +1,3 @@
-// import type {LetVal,LetArg,LetForm,Each,Atom,TMap,Sexpr,TNil,Keyword,Sym,PrimString,PrimBoolean,PrimTestNumber,PrimNumber,Prim,Args,Fn,IFn,Vector,Var,Env,TNotMatch,IfForm} from './sexprtypes.ts'
-// import {VNil,VNotMatch} from './sexprtypes.ts'
-
 export type LetVal = string | Each | Each[];
 
 export type EvenTuple<
@@ -12,11 +9,9 @@ export type EvenTuple<
   : Tape extends `${infer _}${infer Next}`
     ? R | EvenTuple<Type, Next, [...R, ...Type]>
   : never
-// [note] `Sym[]` is for destruction.
+
 export type LetArg = EvenTuple<[Sym | Sym[], Sexpr|LetVal]>
 export type LetForm = [`let`, LetArg, Each | Each[] | Sexpr];
-// test let
-// export const larttest: LetArg = [[`sym`, `t`], `test`];
 
 export type Each = LetForm | IfForm | Atom
 export type Atom = ['map', Atom[]] | Sym | Prim | Fn | Vector | Keyword | TNil
@@ -24,7 +19,7 @@ export type TMap = Exclude<Atom, Sym | Prim | Fn | Vector | Keyword | TNil>
 
 export type Sexpr = Array<Each | Each[] | Sexpr>;
 export type  TNil = ['prim', 'nil']
-export const VNil: TNil = ['prim', 'nil']
+export const VNil: TNil = ['prim', 'nil'] as const
 
 export type Keyword = [`key`, string]
 export type Sym = [`sym`, string];
