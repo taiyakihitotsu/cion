@@ -1,13 +1,19 @@
 # Cion
 [![npm](https://img.shields.io/npm/v/@taiyakihitotsu/cion)](https://www.npmjs.com/package/@taiyakihitotsu/cion) ![license](https://img.shields.io/npm/l/@taiyakihitotsu/cion) [![build](https://github.com/taiyakihitotsu/cion/actions/workflows/node.js.yml/badge.svg)](https://github.com/taiyakihitotsu/cion/actions)
 
-Lisp Implemented on TypeScript at the type level, very inspired by Clojure.
+Cion is a full-featured, **type-level Lisp interpreter** inspired by Clojure.
 
+[playground]( https://www.typescriptlang.org/play/?#code/JYWwDg9gTgLgBDAnmApnAwsCA7OAzKCEOAcgAEYBDYRSga2AAtgYIYBnAVwHoBjLbCQBQQ7gCoxcAMqgwAGzSUoLRiBQxgvOGO5DeOdvCmcQAfQCsALgwCAdABlg7MAB4SACgDUcAExwAzACUJAB8cAC8pObC3NxwFOwAtCgAHqi8MMlQhFB6BkYmFqYo2dDWmDgOTq4e3n5BoRGkAGzCohJwACLAAG5OAnDaukioXb2mfpEV2FXObu5xABxwACzBIaJxgwB6APxwAEQ+B0IjaN09poum-k3TszULcACMzXDN65uDcHuHi9z+E5nMaXbDAOR3OyOOYeOJ+AAMn1i31+BzBchO7UkADEQJQwENTsg0PYILxKHJseCYCUmh48NTae48LgANopAC6cHcYRSvkCAuEwNJ5LkAFl8XT3HiCcy2ZzuZI+T4BcE4ETRgA1FC8UzNK6QyrQ1wAA3ciRCYVZz18AVWXIAJABvEUUqlyGlQAC+cGdrvF+K9gRNG2RO32B1Zb0WHMx4kkpIgBIA7ip8LhvAp4DoNSSyW7cJF6WyoHAFe5gHhuSFIvCy4E4KXmdzvKXng3zWWXqrgrm4ImwKYVoaZsaXGas3BWVW-fnKdgvVzmzagsHQ1sfhGVidkQlkmkdZkSjk8thDP2IEmh8VSlBrAOh3T-G143AAEooADmqUJwI-35SUxKAAIy0KYoWqcd3CgFBEgZbAABNSFZShEgALw5TwSFIEDeGeHxnzXL5w0OEhcJIHc4j3VJ0iPW9T3Pf9UiA0CbxyawmMA3C6WEIA ) | [source]( https://github.com/taiyakihitotsu/cion/blob/main/test/playground.ts )
 ## Install
-```terminal
-npm install @taiyakihitotsu/cion
-```
-
+**pnpm** - `pnpm add -D @taiyakihitotsu/cion`  
+**npm** - `npm install -D @taiyakihitotsu/cion`  
+## Key Features
+- **Zero Runtime Overhead**: Computations are performed at compile-time and vanish in production.
+- **Turing-Complete**: Supports recursion, lexical scoping (`let`), and higher-order functions (`fn`), loop syntax by `let`+`fn` or `reduce`.
+- **Compile-time Regex**: Features a built-in type-level regex engine (`re-find`).
+- **Standard Library**: 90+ built-in type-level functions including `map`, `filter`, `reduce`, and thread macros (`->`, `->>`).
+## For Developers
+If you want to understand the internal implementation, see [DEV.md]( https://github.com/taiyakihitotsu/cion/blob/main/DEV.md ).
 ## How to Use
 ```typescript
 import type Cion from '@taiyakihitotsu/cion'
@@ -16,10 +22,10 @@ const test: Cion.Lisp<`(inc 3)`> = '4'
 ```
 
 ## Overview
-Cion has a common grammar of [clojure](https://clojure.org/guides/learn/clojure). You can pick some of [builtins](#builtins), vector ```[]```, and map ```{}```.
+Cion follows [clojure](https://clojure.org/guides/learn/clojure)'s standard syntax. You can pick some of [builtins](#builtins), vector ```[]```, and map ```{}```.
 
 **NOTE**
- - list, set is not supported. Use vector instead.
+ - Lists `()` and sets `#{}` are not supported. Use vector instead.
 
 (If you want to do a type-check of this doc, see [test/test-in-doc.ts](https://github.com/taiyakihitotsu/cion/blob/main/test/test-in-doc.ts))
 
@@ -40,8 +46,8 @@ const test_in_doc_a3: Cion.Lisp<`(+ 2 (- 1 4))`> = '-1'
 const test_in_doc_a3_err: Cion.Lisp<`(+ 2 (- 1 4))`> = '0'
 ```
 
-- Division by zero is not allowed, to return nil.
-- The value range is from -32767 to 32767. Decimal numbers are converted to 16bit number internally though, the minimum, -32768, is excluded for convenience. 
+- Division by zero returns `nil`.
+- The value range is from `-32767` to `32767`. Numbers are internally handled as 16-bit signed integers. The minimum, `-32768`, is excluded currently. 
 
 ### Logical operation
 ```typescript
@@ -62,7 +68,7 @@ const test_in_doc_get1: Cion.Lisp<`(get [1 2 3] 4)`> = 'nil'
 const test_in_doc_get1_err: Cion.Lisp<`(get [1 2 3] 4)`> = '[]'
 ```
 
- - Getting empty place is not allowed, to return nil.
+ - Accessing an empty index returns `nil`.
 
 ### if, let, fn
 ```typescript
@@ -79,9 +85,9 @@ const test_in_doc_fn0: Cion.Lisp<`((fn [x y] (+ x y)) 2 3)`> = '5'
 const test_in_doc_fn0_err: Cion.Lisp<`((fn [x y] (+ x y)) 2 3)`> = '6'
 ```
 
-- if forms having only two components is not implemented.
-- destructuring is not implemented.
-- empty body part is not supported.
+- Two-component `if` forms (`(if true true-branch)`) are not implemented.
+- Destructuring is not implemented.
+- Empty body part is not supported.
 
 ### loop
 ```typescript
@@ -122,15 +128,15 @@ The specs of some fns doesn't follow Clojure.
 See [spec/spec.ts](https://github.com/taiyakihitotsu/cion/blob/main/spec/spec.ts).
 
 - if, fn, let, count, nil, ->, ->>, some->, some->>
- - +, -, *, /, mod, rem, `*`trunc, floor, inc, dec, abs, min, max
- - str, re-find, split, subs, `*`subs-all, replace, join
- - and, or, not, >, <, =, eq, >=, <=
- - `*`prim?, any?, number?, string?, vector?, map?, fn?, ifn?, int?, `*`nat? (= nat-int?), ratio?, pos?, neg? pos-int?, neg-int?, odd?, even?, zero?, keyword?, empty?, boolean?, type, every?, some, nil?, some?
- - map, filter, remove, reduce, zipmap, apply
- - conj, concat, interleave, reverse, range, repeat, drop, take, keys
- - assoc, assoc-in, update, update-in
- - first, second, `*`third, last, rest, butlast, get, get-in
- - ... and vector ```[0 1 2]``` & map ```{:x 0 :y 1 :z 2}``` syntax.
+- +, -, *, /, mod, rem, `*`trunc, floor, inc, dec, abs, min, max
+- str, re-find, split, subs, `*`subs-all, replace, join
+- and, or, not, >, <, =, eq, >=, <=
+- `*`prim?, any?, number?, string?, vector?, map?, fn?, ifn?, int?, `*`nat? (= nat-int?), ratio?, pos?, neg? pos-int?, neg-int?, odd?, even?, zero?, keyword?, empty?, boolean?, type, every?, some, nil?, some?
+- map, filter, remove, reduce, zipmap, apply
+- conj, concat, interleave, reverse, range, repeat, drop, take, keys
+- assoc, assoc-in, update, update-in
+- first, second, `*`third, last, rest, butlast, get, get-in
+- ... and vector ```[0 1 2]``` & map ```{:x 0 :y 1 :z 2}``` syntax.
 
 [note] `*` are not implemented in Clojure.
 
@@ -138,4 +144,4 @@ See [spec/spec.ts](https://github.com/taiyakihitotsu/cion/blob/main/spec/spec.ts
 taiyakihitotsu
 
 # License
-3-clause BSD license
+BSD 3-Clause License
