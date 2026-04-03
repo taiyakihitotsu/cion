@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "rootDir": "./src",
     "target": "es2020",
     "module": "node16",
     "moduleResolution": "node16",
@@ -17,5 +18,5 @@
     "noUncheckedIndexedAccess": true,
     "noPropertyAccessFromIndexSignature": true
   },
-  "include": ["./src/**/*.ts"]
+  "include": ["./src/**/*.ts"],
 }

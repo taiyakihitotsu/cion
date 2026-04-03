@@ -12,15 +12,15 @@
     "dist"
   ],
   "scripts": {
-    "build": "npx tsc --emitDeclarationOnly",
-    "build:watch": "npx tsc --watch",
-    "check": "npx tsc --noEmit",
-    "check:test": "npx tsc --noEmit --project tsconfig.test.json",
-    "check:spec": "npx tsc --noEmit --project tsconfig.spec.json",
+    "build": "tsc --emitDeclarationOnly",
+    "build:watch": "tsc --watch",
+    "check": "tsc --noEmit",
+    "check:test": "tsc --noEmit --project tsconfig.test.json",
+    "check:spec": "tsc --noEmit --project tsconfig.spec.json",
     "check:smith": "sh ./submodules/scripts/sandbox-smith.sh && sh ./submodules/scripts/check-smith.sh",
-    "format:biome": "npx @biomejs/biome format --write spec",
-    "format:smith": "npm --prefix submodules/condsmith run format:smith ../../src",
-    "run": "npx ts-node src/index.ts",
+    "format:biome": "biome format --write spec",
+    "format:smith": "pnpm --prefix submodules/condsmith run format:smith ../../src",
+    "run": "ts-node src/index.ts",
     "precommit": "sh submodules/scripts/precommit.sh",
     "prepare": "husky"
   },
@@ -30,10 +30,10 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.2.4",
-    "@types/node": "^18.19.22",
-    "husky": "^9.1.7",
-    "ts-node": "^10.9.2",
-    "typescript": "^6.0.2"
+    "@types/node": "18.19.22",
+    "husky": "9.1.7",
+    "ts-node": "10.9.2",
+    "typescript": "6.0.2"
   },
   "author": "taiyakihitotsu <taiyakihitotsu@proton.me> https://github.com/taiyakihitotsu",
   "license": "3-clause BSD license"
