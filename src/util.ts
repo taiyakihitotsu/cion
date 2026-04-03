@@ -48,11 +48,12 @@ export type UnionToTuple<
 , T extends any[] = []> =
   [U] extends [never]
     ? T
-  : LastOf<U> extends infer LU
-    ? Exclude<U, LU> extends infer E
-      ? UnionToTuple<E, [LU, ...T]>
-    : never
-  : never
+  : UnionToTuple<Exclude<U, LastOf<U>>, [LastOf<U>, ...T]>
+  // : LastOf<U> extends infer LU
+  //   ? Exclude<U, LU> extends infer E
+  //     ? UnionToTuple<E, [LU, ...T]>
+  //   : never
+  // : never
 
 export type KeysTuple<R extends Record<PropertyKey, unknown>> = UnionToTuple<keyof R>
 
