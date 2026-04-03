@@ -20,13 +20,7 @@ type _IsEqual<
 export type DissocKeys<
   R extends Record<PropertyKey, unknown>
 , Ks extends (keyof R)[]> =
-  Ks extends []
-    ? R
-  : Ks extends [infer fK extends keyof R, ...infer rK]
-    ? rK extends Exclude<keyof R, fK>[]
-      ? DissocKeys<Omit<R, fK>, rK>
-    : never
-  : never
+Omit<R, Ks[number]>
 
 export type AssocWith<
   R extends Record<PropertyKey, unknown>
@@ -54,11 +48,13 @@ export type UnionToTuple<
 , T extends any[] = []> =
   [U] extends [never]
     ? T
-  : UnionToTuple<Exclude<U, LastOf<U>>, [LastOf<U>, ...T]>
+  : LastOf<U> extends infer LU
+    ? Exclude<U, LU> extends infer E
+      ? UnionToTuple<E, [LU, ...T]>
+    : never
+  : never
 
-export type UtoT<U> = UnionToTuple<U>
-
-export type KeysTuple<R extends Record<PropertyKey, unknown>> = UtoT<keyof R>
+export type KeysTuple<R extends Record<PropertyKey, unknown>> = UnionToTuple<keyof R>
 
 // -------------------------
 // -- about 2589 error
@@ -68,6 +64,8 @@ type _rec<
   T> =
   T extends {r: never}
     ? never
+  : T extends {r: {r: {r: {r: {r: {r: {r: {r: {r: {r: {r: {r: {r: {r: {r: {r: {r: {r: {r: {r: {r: {r: {r: {r: {r: {r: {r: {r: {r: {r: {r: {r: infer U}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}
+    ? { r: _rec<U> }
   : T extends {r: {r: {r: {r: {r: {r: {r: {r: {r: {r: {r: {r: {r: {r: {r: {r: infer U}}}}}}}}}}}}}}}}
     ? { r: _rec<U> }
   : T extends {r: {r: {r: {r: {r: {r: {r: {r: infer U}}}}}}}}

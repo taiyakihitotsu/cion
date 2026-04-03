@@ -296,6 +296,9 @@ export type recComp<
     : never
   : never
 
-export type Comp<S extends string, Option extends CompOption = InitCompOption> = u.Rec<recComp<S, u.AssocWith<InitCompOption, Option>>>
+export type Comp<
+  S extends string
+, Option extends CompOption = InitCompOption> =
+u.Rec<recComp<S, u.AssocWith<InitCompOption, Option>>>
 
 export type * as regexCompiler from './regex-compiler'

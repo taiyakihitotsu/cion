@@ -288,6 +288,8 @@ const test_cc_in_group__in_or_group_times_0: re.TapeEval<'abdqrest', typeof _tes
 const test_cc_in_group__in_or_group_times_1: re.TapeEval<'adzqrest', typeof _test_cc_in_group__in_or_group_times> = ['adzq', 'rest', []]
 const test_cc_in_group__in_or_group_times_2: re.TapeEval<'azzqrest', typeof _test_cc_in_group__in_or_group_times> = ['azzq', 'rest', []]
 const test_cc_in_group__in_or_group_times_3: re.TapeEval<'azqrest', typeof _test_cc_in_group__in_or_group_times>['dumpString'] = 'zqrest'
+
+// Negate Test
 type __ngts = rc.Comp<`(([^d-Z0-9${regexConst.SigStr}]|65)){3}`>['tapes']
 const test_cc_in_group__in_or_group_times_4: re.TapeEval<'abcrest', __ngts> = ['abc', 'rest', []]
 type __ngts32 = rc.Comp<`(([^d-Z0-9${regexConst.SigStr}])|65)`>['tapes']
