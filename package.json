@@ -1,6 +1,6 @@
 {
   "name": "@taiyakihitotsu/cion",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "private": false,
   "description": "Clojure implemented on TypeScript at the type-level.",
   "main": "index.d.ts",
