@@ -1,15 +1,21 @@
 # Cion
 [![npm](https://img.shields.io/npm/v/@taiyakihitotsu/cion)](https://www.npmjs.com/package/@taiyakihitotsu/cion) ![license](https://img.shields.io/npm/l/@taiyakihitotsu/cion) [![build](https://github.com/taiyakihitotsu/cion/actions/workflows/node.js.yml/badge.svg)](https://github.com/taiyakihitotsu/cion/actions)
 
-Cion is a full-featured, **type-level Lisp interpreter** inspired by Clojure.
+Cion is a full-featured, **type-level Lisp interpreter** inspired by Clojure.  
+Cion lets you execute Lisp code at compile time using TypeScript's type system.
 
+```typescript
+type Result = Cion.Lisp<`(+ 1 2)`> // "3"
+```
+
+Try it:  
 [playground]( https://www.typescriptlang.org/play/?#code/JYWwDg9gTgLgBDAnmApnAwsCA7OAzKCEOAcgAEYBDYRSga2AAtgYIYBnAVwHoBjLbCQBQQ7gCoxcAMqgwAGzSUoLRiBQxgvOGO5DeOdvCmcQAfQCsALgwCAdABlg7MAB4SACgDUcAExwAzACUJAB8cAC8pObC3NxwFOwAtCgAHqi8MMlQhFB6BkYmFqYo2dDWmDgOTq4e3n5BoRGkAGzCohJwACLAAG5OAnDaukioXb2mfpEV2FXObu5xABxwACzBIaJxgwB6APxwAEQ+B0IjaN09poum-k3TszULcACMzXDN65uDcHuHi9z+E5nMaXbDAOR3OyOOYeOJ+AAMn1i31+BzBchO7UkADEQJQwENTsg0PYILxKHJseCYCUmh48NTae48LgANopAC6cHcYRSvkCAuEwNJ5LkAFl8XT3HiCcy2ZzuZI+T4BcE4ETRgA1FC8UzNK6QyrQ1wAA3ciRCYVZz18AVWXIAJABvEUUqlyGlQAC+cGdrvF+K9gRNG2RO32B1Zb0WHMx4kkpIgBIA7ip8LhvAp4DoNSSyW7cJF6WyoHAFe5gHhuSFIvCy4E4KXmdzvKXng3zWWXqrgrm4ImwKYVoaZsaXGas3BWVW-fnKdgvVzmzagsHQ1sfhGVidkQlkmkdZkSjk8thDP2IEmh8VSlBrAOh3T-G143AAEooADmqUJwI-35SUxKAAIy0KYoWqcd3CgFBEgZbAABNSFZShEgALw5TwSFIEDeGeHxnzXL5w0OEhcJIHc4j3VJ0iPW9T3Pf9UiA0CbxyawmMA3C6WEIA ) | [source]( https://github.com/taiyakihitotsu/cion/blob/main/test/playground.ts )
 ## Install
 **pnpm** - `pnpm add -D @taiyakihitotsu/cion`  
 **npm** - `npm install -D @taiyakihitotsu/cion`  
 ## Key Features
 - **Zero Runtime Overhead**: Computations are performed at compile-time and vanish in production.
-- **Turing-Complete**: Supports recursion, lexical scoping (`let`), and higher-order functions (`fn`), loop syntax by `let`+`fn` or `reduce`.
+- **Turing-Complete**: Supports recursion, lexical scoping (`let`), and higher-order functions (`fn`), looping via `let` + `fn` or `reduce`.
 - **Compile-time Regex**: Features a built-in type-level regex engine (`re-find`).
 - **Standard Library**: 90+ built-in type-level functions including `map`, `filter`, `reduce`, and thread macros (`->`, `->>`).
 ## For Developers
@@ -22,9 +28,9 @@ const test: Cion.Lisp<`(inc 3)`> = '4'
 ```
 
 ## Overview
-Cion follows [clojure](https://clojure.org/guides/learn/clojure)'s standard syntax. You can pick some of [builtins](#builtins), vector ```[]```, and map ```{}```.
+Cion follows [clojure](https://clojure.org/guides/learn/clojure)'s standard syntax. You can use [builtins](#builtins), vector ```[]```, and map ```{}```.
 
-**NOTE**
+**Note**
  - Lists `()` and sets `#{}` are not supported. Use vector instead.
 
 (If you want to do a type-check of this doc, see [test/test-in-doc.ts](https://github.com/taiyakihitotsu/cion/blob/main/test/test-in-doc.ts))
@@ -68,7 +74,7 @@ const test_in_doc_get1: Cion.Lisp<`(get [1 2 3] 4)`> = 'nil'
 const test_in_doc_get1_err: Cion.Lisp<`(get [1 2 3] 4)`> = '[]'
 ```
 
- - Accessing an empty index returns `nil`.
+ - Accessing an out-of-bounds index returns `nil`.
 
 ### if, let, fn
 ```typescript
@@ -87,7 +93,7 @@ const test_in_doc_fn0_err: Cion.Lisp<`((fn [x y] (+ x y)) 2 3)`> = '6'
 
 - Two-component `if` forms (`(if true true-branch)`) are not implemented.
 - Destructuring is not implemented.
-- Empty body part is not supported.
+- Empty function bodies are not supported.
 
 ### loop
 ```typescript
@@ -124,21 +130,32 @@ const test_refind : Cion.Lisp<`(re-find ${email} 'zzz.zzz@testmailreg.com')`> = 
 
 
 ## Builtins
-The specs of some fns doesn't follow Clojure.  
+The specs of some fns **don't** follow Clojure.  
 See [spec/spec.ts](https://github.com/taiyakihitotsu/cion/blob/main/spec/spec.ts).
 
-- if, fn, let, count, nil, ->, ->>, some->, some->>
+### Core
+- if, fn, let, nil
+### Arithmetic
 - +, -, *, /, mod, rem, `*`trunc, floor, inc, dec, abs, min, max
+### String & Regex
 - str, re-find, split, subs, `*`subs-all, replace, join
-- and, or, not, >, <, =, eq, >=, <=
-- `*`prim?, any?, number?, string?, vector?, map?, fn?, ifn?, int?, `*`nat? (= nat-int?), ratio?, pos?, neg? pos-int?, neg-int?, odd?, even?, zero?, keyword?, empty?, boolean?, type, every?, some, nil?, some?
+### Logic
+- and, or, not, >, <, = (eq), >=, <=
+### Predicates
+- `*`prim?, any?, number?, string?, vector?, map?, fn?, ifn?, int?, `*`nat? (= nat-int?), ratio?, pos?, neg?, pos-int?, neg-int?, odd?, even?, zero?, keyword?, empty?, boolean?, type, every?, some, nil?, some?
+### Collections
 - map, filter, remove, reduce, zipmap, apply
-- conj, concat, interleave, reverse, range, repeat, drop, take, keys
+- conj, concat, interleave, reverse, range, repeat, drop, take, keys, count
+### Map operations
 - assoc, assoc-in, update, update-in
+### Accessors
 - first, second, `*`third, last, rest, butlast, get, get-in
-- ... and vector ```[0 1 2]``` & map ```{:x 0 :y 1 :z 2}``` syntax.
+### Threading macros
+- ->, ->>, some->, some->>
 
-[note] `*` are not implemented in Clojure.
+And vector ```[0 1 2]``` & map ```{:x 0 :y 1 :z 2}``` syntax supported.
+
+`*` indicates functions not available in Clojure.
 
 # Author
 taiyakihitotsu

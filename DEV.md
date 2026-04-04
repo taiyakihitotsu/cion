@@ -5,6 +5,8 @@ This document is intended for:
 It assumes familiarity with TypeScript advanced types and basic Lisp concepts.
 
 # Development
+## Toolchain
+This project uses `pnpm`.
 ## Workflow
 ### Setup
 1. **Initialize**: `sh init.sh`
@@ -16,11 +18,16 @@ It assumes familiarity with TypeScript advanced types and basic Lisp concepts.
 ### Commit Convention
 Commit messages must be prefixed with one of the following tags:  
 `[add]` | `[update]` | `[fix]` | `[refactor]` | `[chore]` | `[doc]` | `[test]`
-### Testing Standards
-**CRITICAL**: When testing map object types, do not compare raw union types directly.
-Since TypeScript's union types do not guarantee property order, S-expressions representing the same map may appear in different orders, causing flaky tests.
+## Testing Note
+### Map Equality
+Use `=` of `Cion.Lisp` to check whether 2 `Cion.Lisp`'s map are equal.  
+`Cion.Lisp`'s maps expressed as string literals are not ensured to be ordered as we want.
 
-**Solution**: Use `Cion.Lisp` to evaluate and compare values. Map-like structures should be validated through `Cion.Lisp`'s internal canonicalization to ensure consistent ordering.
+https://github.com/taiyakihitotsu/cion/blob/main/test/builtins/eq.ts#L110
+
+```typescript
+Equal<'true', Cion.Lisp<`(= {:b 2 :a {:c 0 :d 1}} {:a {:d 1 :c 0} :b 2})`>>
+```
 ## Debugging & Error Handling
 ### Error Structure
 All evaluation errors must extend:  
@@ -36,11 +43,39 @@ To inspect the internal state or environment (`env`) during evaluation, wrap the
 ```
 
 Since `sexpr` is an array, it is a safe place to dump the current `env` for deep inspection.
+### Using Built-in to define Built-in.
+Every builtins are listed as branches of `type Builtins` in [`src/index.ts`]( https://github.com/taiyakihitotsu/cion/blob/main/src/index.ts ).
+
+These AST should be a rest part of built-in call expression.
+
+```typescript
+// Eval in src/index.ts
+...
+  A extends Sexpr
+    ? A extends [infer OPC, ...infer OPR]
+...
+        : OPC extends Sym & [`sym`, infer U]
+          ? ReadLet<U, env> extends TNotMatch
+            ? Builtins<U,OPR,env,prev>
+...
+```
+
+E.g., when callling `+`, `LispAdd` will be executed with **the rest of AST tuple**.
+
+```typescript
+...
+    : U extends `+`
+      ? LispAdd<R>
+...
+```
+
+So calling `not` directly should be expressed as `LispNot<[['prim', false]]>`, **NOT** `LispInc<['prim', false]>`.  
+
 ## Handling Recursion Limits (TS2589)
 ```terminal
 TS2589: Type instantiation is excessively deep and possibly infinite.
 ```
-`Cion` heavily uses type-function and recurtion. You can read these eregant articles:
+`Cion` heavily uses type-function and recursion. You can read these elegant articles:
 
 - [How to workaround the max recursion depth in TypeScript]( https://www.esveo.com/en/blog/how-to-workaround-the-max-recursion-depth-in-typescript/ )
 - [Into the Chamber of Secrets, Break through the limits of TypeScript]( https://herringtondarkholme.github.io/2023/04/30/typescript-magic/ )
@@ -71,16 +106,16 @@ type B = Cion.Lisp<`${A}`>
 
 # Specification
 ## AST
-`string` here means internal-16-bit-string, e.g. `"0000000000001010"`.
+`bit` here means internal-16-bit-string-literal, e.g. `"0000000000001010"`.
 Rational numbers are composed by 2 bit-string element tuples. 
 ### Values
 | Type | Lisp Syntax | AST Representation | Notes |
 | :--- | :--- | :--- | :--- |
-| **Number** | `42`, `2/3` | `['prim', string]`, `['prim', [string, string]]` | Rational (Q) only. Denominator 0 returns `nil`. |
-| **String** | `'hello'` | `['prim', string]` | Wrapped in quotes `''`. |
-| **Keyword** | `:key` | `['key', string]` | Leading colon is removed in the AST string. |
-| **Vector** | `[1 2]`, `[]` | `['vec', ['prim', string], ['prim', string]]`, `['vec']` | No need to separete with `,`. |
-| **Map** | `{:a 1 :b 2}` | `['map', [['key', 'a'], ['prim', string]], [['key', 'b'], ['prim', string]]]` | No need to separate with `,`. |
+| **Number** | `42`, `2/3` | `['prim', bit]`, `['prim', [bit, bit]]` | Rational (Q) only. Denominator 0 returns `nil`. |
+| **String** | `'hello'` | `['prim', "'key'"]` | Wrapped in quotes `''`. |
+| **Keyword** | `:key` | `['key', 'key']` | Leading colon is removed in the AST string. |
+| **Vector** | `[1 2]`, `[]` | `['vec', ['prim', bit], ['prim', bit]]`, `['vec']` | No need to separate with commas (`,`). |
+| **Map** | `{:a 1 :b 2}` | `['map', [['key', 'a'], ['prim', bit]], [['key', 'b'], ['prim', bit]]]` | No need to separate with commas (`,`). |
 | **Fn** | `(fn [a] (inc a))` | `['fn', [['sym', 'a']], [['sym', 'inc'], ['sym', 'a']]]` | Body part required. |
 | **`nil`** | `nil` | `['prim', 'nil']` | primitive. |
 | **built-in** | `inc` | `['sym', 'inc']` | See also Apply Fn sector. |
@@ -89,8 +124,8 @@ They are the first classes for `Cion`.
 ### Syntax Macro
 | Type | Lisp Syntax | AST Representation | Notes |
 | :--- | :--- | :--- | :--- |
-| **`if`** | `(if true 0 1)` | `['if', ['prim', true], ['prim', string], ['prim', string]]` | Else branch required. |
-| **`let`** | `(let [a 0] (inc a))` | `['let', [['sym', 'a'], ['prim', string]], [['sym', 'inc'], ['sym', 'a']]]` | Body part required. |
+| **`if`** | `(if true 0 1)` | `['if', ['prim', true], ['prim', bit], ['prim', bit]]` | Else branch required. |
+| **`let`** | `(let [a 0] (inc a))` | `['let', [['sym', 'a'], ['prim', bit]], [['sym', 'inc'], ['sym', 'a']]]` | Body part required. |
 
 As the same as TypeScript's type-system, `Cion` S-expressions return S-expression, since type function must not have side-effect.
 
@@ -98,16 +133,16 @@ Internal arguments AST of `let` and `fn` are the common structure. Both are acce
 
 `fn` expressions are internally translated into nested `let` expressions.  
 When there are multiple arguments, the `let` expressions are nested accordingly.  
-So if `fn` part has over one args, firstly it is converted to multiarg `let` AST, then the form is separated into the one arg `let` AST.
+So if `fn` part has more than one argument, firstly it is converted to multiarg `let` AST, then the form is separated into the one arg `let` AST.
 
-Note that the Type `Fn` does not match builtin-functions. To accept both, use the union type `Fn | ['sym', BuiltinsFn].`
+Note that the Type `Fn` does not match built-in functions. To accept both, use the union type `Fn | ['sym', BuiltinsFn].`
 
 **Note for TS users**: `if` and `let` syntax also return a value.  
-**Note for Clojure users**: Threading macros (`->`, `->>`, `some->`, `some->>`) are implemented as fns in Cion, both are macros in Clojure though.
+**Note for Clojure users**: Threading macros (`->`, `->>`, `some->`, `some->>`) are implemented as fns in Cion, while in Clojure they are implemented as macros.
 ### Function Application
 | Type | Lisp Syntax | AST Representation | Notes |
 | :--- | :--- | :--- | :--- |
-| **Apply** | `(inc 0)` | `[['sym', 'inc'], ['prim', string]]` | Possible to empty call `(f)`. |
+| **Apply** | `(inc 0)` | `[['sym', 'inc'], ['prim', string]]` | Empty calls like `(f)` are also supported. |
 
 Fn is a first class, so you can write `((f) 0)` if `f` returns unary fn `g`.
 
@@ -119,7 +154,8 @@ Fns that do this include:
 - Getter fns like `first`
 - `div` (only when div by zero).
 
-I've leave that `update` / `update-in` throw errors directly instead of returning `nil` or themselves.  Their errors occur in very different ways, so throwing makes fixing the S-expression easier.
+I've decided to leave `update` / `update-in` throw errors directly instead of returning `nil` or themselves.  
+Their error cases vary significantly, so throwing errors makes debugging S-expressions easier.
 
 (They may also be updated in the future to return `nil` instead of errors.)
 
@@ -151,8 +187,6 @@ This is a deliberate design decision and should not be changed.
 In Cion Lisp, the `#` prefix for regex (e.g., `#''`) is not required. Within character classes `([ or [^)`, unescaped hyphens `(-)` are read literally unless written as ranges like `a-z`. 
 
 The escape character is `\\` (double backslash), not `\`, following TypeScript literal rules.
-
-Group-match is implemented but Group-catch isn't.
 
 [regex.ts]( https://github.com/taiyakihitotsu/cion/blob/main/src/regex.ts ) | [regex-eval.ts]( https://github.com/taiyakihitotsu/cion/blob/main/src/regex-eval.ts ) | [regex-compiler.ts]( https://github.com/taiyakihitotsu/cion/blob/main/src/regex-compiler.ts ) | [regex-const.ts]( https://github.com/taiyakihitotsu/cion/blob/main/src/regex-const.ts ) | [strutil.ts]( https://github.com/taiyakihitotsu/cion/blob/main/src/strutil.ts )
 
