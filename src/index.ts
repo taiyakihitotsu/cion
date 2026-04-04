@@ -111,9 +111,6 @@ const reduce_delenv_test6: ReduceDelEnv<[['sym', 'x']], [[{name: 'c', value:'s'}
 const reduce_delenv_test7: ReduceDelEnv<[['sym', 'a'], ['sym', 'x']], [[{name: 'c', value:'s'}],[{name: 'a', value: 's'}, {name: 'b', value: 's'}]]> = [[{name: 'c', value:'s'}],[{name: 'b', value: 's'}]]
 const reduce_delenv_test: ReduceDelEnv<[['sym', 'a'], ['sym', 'b'], ['sym', 'c']], [[{name: 'c', value:'s'}],[{name: 'a', value: 's'}, {name: 'b', value: 's'}]]> = [[], []]
 
-
-
-
 type EnvLifo = Env[];
 
 type LetError0 = "LetError";
@@ -474,26 +471,37 @@ type LispIsColl<
     : ['prim', false]
   : ErrorCase<LispIsCollError0, 'S is not sexpr.', S>
 
-type _LispCollEq<
-  ConstFst
-, ConstSnd
-, Keys extends Atom[]
+// Define about lisp map equiality.
+//
+// 1. ConstMapFst and -Snd should keep those values in any recursive layer.
+// 2. Compare each elements picked by Get, internal function.
+//    If both are TMap, recursively & deeply call this with the two.
+// 3. If all branch are equal, return R should be true.
+//    If not, return R should be false.
+export type _LispCollEq<
+  ConstMapFst extends TMap
+, ConstMapSnd extends TMap
+, Keys extends Keyword[]
 , R = false> =
-  Keys extends [infer KF extends Atom, ...infer KR extends Atom[]]
-    ? [LispGet<[ConstFst, KF]>, LispGet<[ConstSnd, KF]>] extends infer M extends [Atom, Atom]
-      ? _LispEq<M[0], M[1]> extends true
-        ? _LispCollEq<ConstFst, ConstSnd, KR, true>
-      : false
-    : false
-  : Util.Equal<Keys['length'], 0> extends true
-    ? R
-  : false
-
-
-type LocalValues<
-  M extends TMap
-, SortM extends TMap = M> =
-Eval<[['sym', 'map'], ['fn', [['sym', 'x']], [['sym', 'get'], M, ['sym', 'x']]], LispKeys<[SortM]>]>
+  Keys extends []
+    ? { r: R }
+  : Keys extends [infer KeyHead extends Keyword, ...infer KeyRest extends Keyword[]]
+    ? [Get<KeyHead, ConstMapFst>] extends [infer MapElemFst extends Atom]
+      ? [Get<KeyHead, ConstMapSnd>] extends [infer MapElemSnd extends Atom]
+        ? [MapElemFst] extends [TMap]
+          ? [MapElemSnd] extends [TMap]
+            ? LispKeys<[MapElemFst]> extends ['vec', ...infer NextKs extends Keyword[]]
+              ? Util.Rec<_LispCollEq<MapElemFst, MapElemSnd, NextKs, false>> extends true
+                ? { r: _LispCollEq<ConstMapFst, ConstMapSnd, KeyRest, true> }
+              : { r: false }
+            : { r: false }
+          : { r: false }
+        : _LispEq<MapElemFst, MapElemSnd> extends ['prim', true]
+          ? { r: _LispCollEq<ConstMapFst, ConstMapSnd, KeyRest, true> }
+        : { r: false }
+      : { r: false }
+    : { r: false }
+  : { r: false }
 
 type _RecurLispEq<
   V extends readonly unknown[]
@@ -514,21 +522,6 @@ type _RecurLispEq<
     ? false
   : true
 
-type _LispEq<
-  Fst
-, Snd> =
-  [LispIsColl<[Fst]>, LispIsColl<[Snd]>] extends [['prim', true], ['prim', true]]
-    ? [Fst, Snd] extends infer V extends [Vector, Vector]
-      ? ['prim', _RecurLispEq<V[0], V[1]>]
-    : [Fst, Snd] extends infer M extends [TMap, TMap]
-      ? [LocalValues<M[0]>, LocalValues<M[1], M[0]>] extends infer Sorted extends [Vector, Vector]
-        ? ['prim', _RecurLispEq<Sorted[0], Sorted[1]>]
-      : never
-    : never
-  : [Fst, Snd] extends [['prim', infer V extends ratio.Number], ['prim', infer U extends ratio.Number]]
-    ? ['prim', _PrimSndEq<V, U>]
-  : ['prim', Util.Equal<Fst, Snd>]
-
 type _PrimSndEq<
   X extends string | boolean | ratio.Number
 , Y extends string | boolean | ratio.Number> =
@@ -538,27 +531,20 @@ type _PrimSndEq<
     : Util.Equal<X, Y>
   : Util.Equal<X, Y>
 
-// [todo] move
-type LispEq_VecTest_0_Actual =
-_LispEq< ['vec', ['prim', `'x'`]]
-         , ['vec', ['prim', `'y'`]]>
-const LispEq_VecTest_0: Util.Equal<LispEq_VecTest_0_Actual, ['prim', false]> = true
-// [todo] move
-type LispEq_VecTest_1_Actual =
-_LispEq< ['vec', ['prim', `'x'`], ['vec', ['prim', true]]]
-         , ['vec', ['prim', `'x'`], ['vec', ['prim', true]]]>
-const LispEq_VecTest_1: Util.Equal<LispEq_VecTest_1_Actual, ['prim', true]> = true
-// [todo] move
-type LispEq_PrimTest_0_Actual =
-_LispEq< ['prim', 1]
-         , ['prim', 0]>
-const LispEq_PrimTest_0: Util.Equal<LispEq_PrimTest_0_Actual, ['prim', false]> = true
-// [todo] move
-type LispEq_PrimTest_1_Actual = _LispEq<['prim', 0], ['prim', 0]>
-const LispEq_PrimTest_1: Util.Equal<LispEq_PrimTest_1_Actual, ['prim', true]> = true
-// [todo] move
-type LispEq_MapTest_0_Actual = _LispEq<['map', [['key', 'a'], ['prim', true], ['key', 'b'], ['prim', 'b-str']]], ['map', [['key', 'a'], ['prim', true], ['key', 'b'], ['prim', 'b-str']]]>
-const LispEq_MapTest_0: Util.Equal<LispEq_MapTest_0_Actual, ['prim', true]> = true
+export type _LispEq<
+  Fst
+, Snd> =
+  [LispIsColl<[Fst]>, LispIsColl<[Snd]>] extends [['prim', true], ['prim', true]]
+    ? [Fst, Snd] extends infer V extends [Vector, Vector]
+      ? ['prim', _RecurLispEq<V[0], V[1]>]
+    : [Fst, Snd] extends [TMap, TMap]
+      ? LispKeys<[Fst]> extends ['vec', ...infer RestPickedKeys extends Keyword[]]
+        ? ['prim', Util.Rec<_LispCollEq<Extract<Fst, TMap>, Extract<Snd, TMap>, RestPickedKeys>>]
+      : never
+    : never
+  : [Fst, Snd] extends [['prim', infer V extends ratio.Number], ['prim', infer U extends ratio.Number]]
+    ? ['prim', _PrimSndEq<V, U>]
+  : ['prim', Util.Equal<Fst, Snd>]
 
 type LispEqError0 = typeof LispEqError0
 const LispEqError0 = "LispEqError0"
