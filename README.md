@@ -1,3 +1,7 @@
+# 🧪 Project Status: Beta
+Cion is currently in Beta and undergoing a major internal refactoring 🛠️.  
+Expect frequent updates and some "experimental" internal code!
+
 # Cion
 [![npm](https://img.shields.io/npm/v/@taiyakihitotsu/cion)](https://www.npmjs.com/package/@taiyakihitotsu/cion) ![license](https://img.shields.io/npm/l/@taiyakihitotsu/cion) [![build](https://github.com/taiyakihitotsu/cion/actions/workflows/node.js.yml/badge.svg)](https://github.com/taiyakihitotsu/cion/actions)
 
