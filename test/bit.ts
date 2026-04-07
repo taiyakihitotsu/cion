@@ -1,7 +1,7 @@
-import type {Equal} from '../src/util'
-import type {Nil, BitOr, BitAnd, BitXor, BitShiftLeftOne, BitShiftLeft, BitNot, BitEq, BitLen, BitLenGthan, _BitNeedFill, BitPadding, BitUniform, BitCut, BitIsZero, BitFill, _BitAdd, BitAdd, BitSub, BitGTE, BitGT, BitLT, BitLTE, BitMul, _BitShiftRight, BitRevSign, BitDiv, BitMod, BitDec, BitInc} from '../src/bit'
-import {CurPad} from '../src/bit'
-import type * as Peano from "../src/peano";
+import type {Equal} from '../src/util.js'
+import type {Nil, BitOr, BitAnd, BitXor, BitShiftLeftOne, BitShiftLeft, BitNot, BitEq, BitLen, BitLenGthan, _BitNeedFill, BitPadding, BitUniform, BitCut, BitIsZero, BitFill, _BitAdd, BitAdd, BitSub, BitGTE, BitGT, BitLT, BitLTE, BitMul, _BitShiftRight, BitRevSign, BitDiv, BitMod, BitDec, BitInc} from '../src/bit.js'
+import {CurPad} from '../src/bit.js'
+import type * as Peano from "../src/peano.js";
 
 const bitor1: true = {} as Equal<BitOr<`1`, `1`>, `1`>
 const bitor2: true = {} as Equal<BitOr<`1`, `0`>, `1`>

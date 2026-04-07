@@ -1,5 +1,5 @@
-import type { BitRepeat, BitDrop, BitTake, BitInter, Last } from '../src/vecutil'
-import type { Equal } from '../src/util'
+import type { BitRepeat, BitDrop, BitTake, BitInter, Last } from '../src/vecutil.js'
+import type { Equal } from '../src/util.js'
 
 // BitDrop
 type BaseVector = [0, 1, 2]

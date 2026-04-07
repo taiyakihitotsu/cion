@@ -1,6 +1,6 @@
-import type Cion from '../../src/index'
-import type { Rest } from '../../src/index'
-import type { Equal } from '../../src/util'
+import type Cion from '../../src/index.js'
+import type { Rest } from '../../src/index.js'
+import type { Equal } from '../../src/util.js'
 
 // Internal Rest type tests
 type testvec = [`vec`, [`prim`, true], [`prim`, 0], [`prim`, 1]];

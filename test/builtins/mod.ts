@@ -1,5 +1,5 @@
-import type Cion from '../../src/index.ts'
-import type {Equal} from '../../src/util'
+import type Cion from '../../src/index.js'
+import type {Equal} from '../../src/util.js'
 
 const mod_test_0 : true = {} as Equal<'0',   Cion.Lisp<`(mod 10 5)`>>
 const mod_test_1 : true = {} as Equal<'0',   Cion.Lisp<`(mod 10 10)`>>

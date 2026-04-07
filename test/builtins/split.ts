@@ -1,5 +1,5 @@
-import type Cion from '../../src/index'
-import type { Equal } from '../../src/util'
+import type Cion from '../../src/index.js'
+import type { Equal } from '../../src/util.js'
 
 // Basic split by literal string
 const split_test_0 : true = {} as Equal<"['a' 'a' 'a' 'a' 'a']", Cion.Lisp<`(split 'ababababa' 'b')`>>

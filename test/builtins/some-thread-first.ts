@@ -1,5 +1,5 @@
-import type Cion from '../../src/index'
-import type { Equal } from '../../src/util'
+import type Cion from '../../src/index.js'
+import type { Equal } from '../../src/util.js'
 
 // Basic some-> behavior
 const some_arrow_test_0 : true = {} as Equal<'true', Cion.Lisp<`(some-> 1 number?)`>>

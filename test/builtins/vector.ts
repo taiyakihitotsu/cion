@@ -1,7 +1,7 @@
-import type Cion from '../../src/index'
-import type { Eval } from '../../src/index'
-import type { Sexpr, Vector, Each } from '../../src/sexprtypes'
-import type { Equal } from '../../src/util'
+import type Cion from '../../src/index.js'
+import type { Eval } from '../../src/index.js'
+import type { Sexpr, Vector, Each } from '../../src/sexprtypes.js'
+import type { Equal } from '../../src/util.js'
 
 // --- Type Compatibility Tests ---
 

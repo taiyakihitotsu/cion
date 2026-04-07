@@ -1,6 +1,6 @@
-import type Cion from '../../src/index'
-import type { LispOr } from '../../src/index'
-import type { Equal } from '../../src/util'
+import type Cion from '../../src/index.js'
+import type { LispOr } from '../../src/index.js'
+import type { Equal } from '../../src/util.js'
 
 const or_internal_test_0 : true = {} as Equal<['prim', true], LispOr<[[`prim`, true], [`prim`, true]]>>
 const or_internal_test_1 : true = {} as Equal<['prim', true], LispOr<[[`prim`, true], [`prim`, false]]>>

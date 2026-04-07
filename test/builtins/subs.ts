@@ -1,5 +1,5 @@
-import type Cion from '../../src/index'
-import type { Equal } from '../../src/util'
+import type Cion from '../../src/index.js'
+import type { Equal } from '../../src/util.js'
 
 // Normal range selection
 const subs_test_0 : true = {} as Equal<`'23'`,  Cion.Lisp<`(subs '123456' 1 3)`>>

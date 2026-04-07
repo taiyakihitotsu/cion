@@ -1,7 +1,7 @@
-import type Cion from '../../src/index'
-import type { _Update } from '../../src/index'
-import { AssocErrorMsg1 } from '../../src/index'
-import type { Equal } from '../../src/util'
+import type Cion from '../../src/index.js'
+import type { _Update } from '../../src/index.js'
+import { AssocErrorMsg1 } from '../../src/index.js'
+import type { Equal } from '../../src/util.js'
 
 // --- Internal _Update Type Tests (AST / Tuple Level) ---
 

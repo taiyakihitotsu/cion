@@ -1,5 +1,5 @@
-import type { regexCompiler as rc } from './regex-compiler'
-import type { regexEval as re } from './regex-eval'
+import type { regexCompiler as rc } from './regex-compiler.js'
+import type { regexEval as re } from './regex-eval.js'
 
 // ------------------------
 // -- [main] eval regexp
@@ -46,5 +46,4 @@ export type RegexFind<
     : TapeEvalLoop<String, Tape>
   : never
 
-export type * as regex from './regex'
- 
+export type * as regex from './regex.js'

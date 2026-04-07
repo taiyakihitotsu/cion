@@ -1,6 +1,6 @@
-import type Cion from '../../src/index'
-import type { LispThreadFirst, ThreadFirst } from '../../src/index'
-import type { Equal } from '../../src/util'
+import type Cion from '../../src/index.js'
+import type { LispThreadFirst, ThreadFirst } from '../../src/index.js'
+import type { Equal } from '../../src/util.js'
 
 // --- ThreadFirst Internal Type Tests ---
 const tf_int_0 : true = {} as Equal<[[4], [[3], [[2], [[1], [0]]]]], ThreadFirst<[0], [[[1]], [[2]], [[3]], [[4]]]>>

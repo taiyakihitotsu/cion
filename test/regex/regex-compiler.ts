@@ -1,6 +1,6 @@
-import type { regexCompiler as rc } from '../../src/regex-compiler'
-import type * as regexConst from '../../src/regex-const'
-import type {Equal} from '../../src/util'
+import type { regexCompiler as rc } from '../../src/regex-compiler.js'
+import type * as regexConst from '../../src/regex-const.js'
+import type {Equal} from '../../src/util.js'
 
 // -----------------------------
 // -- Compiler MinMax
@@ -194,4 +194,4 @@ const test_full_email_neg_expand: true = {} as Equal<
 // [todo]
 export type mailRegex = rc.Comp<'(([^<>()[\\].,;: @"]+(\\.[^<>()[\\].,;: @"]+)*)|(".+"))@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\])|(([a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,}))'>
 
-export type * as testrc from './regex-compiler'
+export type * as testrc from './regex-compiler.js'

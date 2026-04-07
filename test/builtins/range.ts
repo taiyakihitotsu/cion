@@ -1,5 +1,5 @@
-import type Cion from '../../src/index.ts'
-import type { Equal } from '../../src/util'
+import type Cion from '../../src/index.js'
+import type { Equal } from '../../src/util.js'
 
 const range_test_0 : true = {} as Equal<'[0]',               Cion.Lisp<`(range 0 1)`>>
 const range_test_1 : true = {} as Equal<'[1 2]',             Cion.Lisp<`(range 1 3)`>>

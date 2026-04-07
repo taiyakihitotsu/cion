@@ -1,5 +1,5 @@
-import Cion, { LispAdd } from '../../src/index'
-import type { Equal } from '../../src/util'
+import Cion, { LispAdd } from '../../src/index.js'
+import type { Equal } from '../../src/util.js'
 
 // -- integer
 const integer_test0: true = {} as Equal<[`prim`, ['0000000000000100', '0000000000000001']],LispAdd<[[`prim`, '00000011'], [`prim`, '0000001']]>>

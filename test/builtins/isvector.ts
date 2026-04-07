@@ -1,5 +1,5 @@
-import type Cion from '../../src/index.ts'
-import type {Equal} from '../../src/util'
+import type Cion from '../../src/index.js'
+import type {Equal} from '../../src/util.js'
 
 const vector_test_0  : true = {} as Equal<['prim', false], Cion.RawLisp<`(vector? 1)`>>
 const vector_test_1  : true = {} as Equal<['prim', false], Cion.RawLisp<`(vector? -1)`>>

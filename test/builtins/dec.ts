@@ -1,5 +1,5 @@
-import type Cion from '../../src/index'
-import type { Equal } from '../../src/util'
+import type Cion from '../../src/index.js'
+import type { Equal } from '../../src/util.js'
 
 const dec_test_0 : true = {} as Equal<'-1', Cion.Lisp<`(dec 0)`>>
 const dec_test_1 : true = {} as Equal<'LispDecError0', Cion.Lisp<`(dec nil)`>['ast']['error']>

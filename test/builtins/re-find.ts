@@ -1,5 +1,5 @@
-import type Cion from '../../src/index'
-import type { Equal } from '../../src/util'
+import type Cion from '../../src/index.js'
+import type { Equal } from '../../src/util.js'
 
 // [note]
 // This is not for regex test but parse test.

@@ -1,6 +1,6 @@
-import type Cion from '../../src/index'
-import type { Eval } from '../../src/index'
-import type { Equal } from '../../src/util'
+import type Cion from '../../src/index.js'
+import type { Eval } from '../../src/index.js'
+import type { Equal } from '../../src/util.js'
 
 const fn_test_0 : true = {} as Equal<{
   error: 'LispAddError1',

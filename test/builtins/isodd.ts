@@ -1,5 +1,5 @@
-import type Cion from '../../src/index.ts'
-import type {Equal} from '../../src/util'
+import type Cion from '../../src/index.js'
+import type {Equal} from '../../src/util.js'
 
 const odd_test_0  : true = {} as Equal<['prim', true],  Cion.RawLisp<`(odd? 1)`>>
 const odd_test_1  : true = {} as Equal<['prim', true],  Cion.RawLisp<`(odd? -1)`>>

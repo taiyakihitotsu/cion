@@ -1,6 +1,6 @@
-import type * as Bit from './bit'
-import type * as Decimal from './decimal'
-import type * as ratio from './ratio'
+import type * as Bit from './bit.js'
+import type * as Decimal from './decimal.js'
+import type * as ratio from './ratio.js'
 
 // -------------------------------
 // -- Compiler

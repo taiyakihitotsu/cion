@@ -1,5 +1,5 @@
-import type Cion from '../../src/index.ts'
-import type {Equal} from '../../src/util'
+import type Cion from '../../src/index.js'
+import type {Equal} from '../../src/util.js'
 
 const isnat_test_0 : true = {} as Equal<['prim', true],  Cion.RawLisp<`(nat? 1)`>>
 const isnat_test_1 : true = {} as Equal<['prim', true],  Cion.RawLisp<`(nat? 0)`>>

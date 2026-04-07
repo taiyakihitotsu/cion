@@ -1,7 +1,7 @@
-import type Cion from '../../src/index'
-import type { Get, LispGet, Eval, IsKeyMapSexpr } from '../../src/index'
-import {VNil} from '../../src/sexprtypes'
-import type {Equal} from '../../src/util'
+import type Cion from '../../src/index.js'
+import type { Get, LispGet, Eval, IsKeyMapSexpr } from '../../src/index.js'
+import {VNil} from '../../src/sexprtypes.js'
+import type {Equal} from '../../src/util.js'
 
 const get_test_0 : true = {} as Equal<false
   ,IsKeyMapSexpr<[['key', ':a'], ['key', ':b']]>>

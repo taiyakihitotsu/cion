@@ -1,7 +1,7 @@
-import * as ratio from '../../src/ratio'
-import * as de from '../../src/decimal'
-import * as bit from '../../src/bit'
-import type { Equal } from '../../src/util'
+import * as ratio from '../../src/ratio.js'
+import * as de from '../../src/decimal.js'
+import * as bit from '../../src/bit.js'
+import type { Equal } from '../../src/util.js'
 
 // Scaling & DecimalRatio
 const ratio_scale_test_0 : true = {} as Equal<[['10', '2'], ['8', '2']], ratio.DecimalRatio<ratio.Scaling<[de.DtoB<'10'>, de.DtoB<'2'>], [de.DtoB<'8'>, de.DtoB<'2'>]>>>

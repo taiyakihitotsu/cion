@@ -1,7 +1,7 @@
-import type Cion from '../../src/index'
-import type { LispMul } from '../../src/index'
-import * as de from '../../src/decimal'
-import type { Equal } from '../../src/util'
+import type Cion from '../../src/index.js'
+import type { LispMul } from '../../src/index.js'
+import * as de from '../../src/decimal.js'
+import type { Equal } from '../../src/util.js'
 
 const mul_internal_test_0 : true = {} as Equal<['prim', ['0000000000000011', '0000000000000001']], LispMul<[[`prim`, '00000011'], [`prim`, '0000001']]>>
 const mul_internal_test_1 : true = {} as Equal<['prim', ['0000000000101101', '0000000000000001']], LispMul<[[`prim`, '00001111'], [`prim`, '0000001'], [`prim`, '00000011']]>>

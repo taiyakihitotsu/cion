@@ -1,6 +1,6 @@
-import type Cion from '../../src/index'
-import { VNil } from '../../src/sexprtypes'
-import type { Equal } from '../../src/util'
+import type Cion from '../../src/index.js'
+import { VNil } from '../../src/sexprtypes.js'
+import type { Equal } from '../../src/util.js'
 
 // RawLisp surface tests (Binary representation & VNil)
 const second_raw_test_0 : true = {} as Equal<

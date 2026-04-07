@@ -1,5 +1,5 @@
-import type Cion from '../../src/index'
-import type {Equal} from '../../src/util'
+import type Cion from '../../src/index.js'
+import type {Equal} from '../../src/util.js'
 
 const getIn_test_0 : true = {} as Equal<'[2]'
 ,Cion.Lisp<`(get-in [[2]] [0])`>>

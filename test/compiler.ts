@@ -1,5 +1,5 @@
-import type * as Compiler from '../src/compiler'
-import type {Equal} from '../src/util'
+import type * as Compiler from '../src/compiler.js'
+import type {Equal} from '../src/util.js'
 
 const test_compiler_rec_0: true = {} as Equal<
   ['(', 'x', '(', '(', 'if', 'a', 'b', 'c', ')', 'y', ')', ')'],

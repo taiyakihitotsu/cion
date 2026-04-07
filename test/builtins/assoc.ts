@@ -1,6 +1,6 @@
-import type Cion from '../../src/index'
-import type { _Assoc } from '../../src/index' // [todo]
-import type { Equal } from '../../src/util'
+import type Cion from '../../src/index.js'
+import type { _Assoc } from '../../src/index.js' // [todo]
+import type { Equal } from '../../src/util.js'
 
 const assoc_test_0: true = {} as Equal<['vec', ['key', ':a'], ['prim', 10], ['key', ':b'], ['prim', 1], ['key', ':c'], ['prim', 2]], _Assoc<['vec', ['key', ':a'], ['prim', 0], ['key', ':b'], ['prim', 1], ['key', ':c'], ['prim', 2]], ['prim', '1'], ['prim', 10]>>
 

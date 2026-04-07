@@ -1,6 +1,6 @@
-import type Cion from '../../src/index'
-import type { LispIsEvery } from '../../src/index'
-import type {Equal} from '../../src/util'
+import type Cion from '../../src/index.js'
+import type { LispIsEvery } from '../../src/index.js'
+import type {Equal} from '../../src/util.js'
 
 const isevery_test0: true = {} as Equal<LispIsEvery<[['fn', [['sym', 'x']], [['sym', 'number?'], ['sym', 'x']]], ['vec', ['prim', '0000000000000000'], ['prim', '0000000000000001']]]>, ['prim', true]>
 const isevery_test1: true = {} as Equal<LispIsEvery<[['fn', [['sym', 'x']], [['sym', 'number?'], ['sym', 'x']]], ['vec', ['prim', '0000000000000000'], ['prim', '0000000000000001'], ['prim', `'0000000000000001'`]]]>, ['prim', false]>

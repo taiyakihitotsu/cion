@@ -1,6 +1,6 @@
-import type Cion from '../../src/index'
-import type { LispEq, _LispEq, _LispCollEq, Eval, MakeVar } from '../../src/index'
-import type { Equal } from '../../src/util'
+import type Cion from '../../src/index.js'
+import type { LispEq, _LispEq, _LispCollEq, Eval, MakeVar } from '../../src/index.js'
+import type { Equal } from '../../src/util.js'
 
 /** ------------------------------
       Internal Map Equality

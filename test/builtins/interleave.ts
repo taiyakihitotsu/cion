@@ -1,6 +1,6 @@
-import type Cion from '../../src/index'
-import type { Interleave } from '../../src/index'
-import type {Equal} from '../../src/util'
+import type Cion from '../../src/index.js'
+import type { Interleave } from '../../src/index.js'
+import type {Equal} from '../../src/util.js'
 
 const interleave_test_0 : true = {} as Equal<[1, 4, 2, 5, 3, 6]
 ,  Interleave<[1, 2, 3], [4, 5, 6]>>

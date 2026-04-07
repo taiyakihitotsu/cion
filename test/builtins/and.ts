@@ -1,6 +1,6 @@
-import type Cion from '../../src/index'
-import type { LispAnd } from '../../src/index'
-import type { Equal } from '../../src/util'
+import type Cion from '../../src/index.js'
+import type { LispAnd } from '../../src/index.js'
+import type { Equal } from '../../src/util.js'
 
 const and_test_0: true = {} as Equal<[`prim`, true], LispAnd<[[`prim`, true], [`prim`, true]]>>
 const and_test_1: true = {} as Equal<[`prim`, false], LispAnd<[[`prim`, true], [`prim`, false]]>>

@@ -1,5 +1,5 @@
-import type Cion from '../../src/index.ts'
-import type {Equal} from '../../src/util'
+import type Cion from '../../src/index.js'
+import type {Equal} from '../../src/util.js'
 
 const pos_int_test_0  : true = {} as Equal<['prim', true],  Cion.RawLisp<`(pos-int? 1)`>>
 const pos_int_test_1  : true = {} as Equal<['prim', false], Cion.RawLisp<`(pos-int? -1)`>>

@@ -1,6 +1,6 @@
-import type Cion from '../../src/index'
-import type { Take } from '../../src/index'
-import type { Equal } from '../../src/util'
+import type Cion from '../../src/index.js'
+import type { Take } from '../../src/index.js'
+import type { Equal } from '../../src/util.js'
 
 // Internal Take type test (Binary string "11" equals 3)
 const take_internal_test_0 : true = {} as Equal<

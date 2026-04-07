@@ -1,14 +1,14 @@
-import type * as Bit from './bit.ts'
-import type * as Compiler from './compiler'
-import type * as Util from './util'
-import type * as Decimal from './decimal'
-import type { regex } from './regex'
-import type * as ratio from './ratio'
-import type * as str from './strutil'
-import type * as vec from './vecutil'
+import type * as Bit from './bit.js'
+import type * as Compiler from './compiler.js'
+import type * as Util from './util.js'
+import type * as Decimal from './decimal.js'
+import type { regex } from './regex.js'
+import type * as ratio from './ratio.js'
+import type * as str from './strutil.js'
+import type * as vec from './vecutil.js'
 
-import type {LetVal,LetArg,LetForm,Each,Atom,TMap,Sexpr,TNil,Keyword,Sym,PrimString,PrimBoolean,PrimTestNumber,PrimNumber,BitString,RatioString,NumString,Prim,Args,Fn,IFn,Vector,Var,Env,TNotMatch,IfForm, Falsy} from './sexprtypes'
-import {VNil,VNotMatch} from './sexprtypes'
+import type {LetVal,LetArg,LetForm,Each,Atom,TMap,Sexpr,TNil,Keyword,Sym,PrimString,PrimBoolean,PrimTestNumber,PrimNumber,BitString,RatioString,NumString,Prim,Args,Fn,IFn,Vector,Var,Env,TNotMatch,IfForm, Falsy} from './sexprtypes.js'
+import {VNil,VNotMatch} from './sexprtypes.js'
 
 // -----------------
 // -- Error Handle

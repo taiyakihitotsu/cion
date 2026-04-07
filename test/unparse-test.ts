@@ -1,5 +1,5 @@
-import type Cion from '../src/index'
-import type { Equal } from '../src/util'
+import type Cion from '../src/index.js'
+import type { Equal } from '../src/util.js'
 
 // --- Cion Lisp Interpreter Patterns ---
 

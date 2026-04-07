@@ -1,5 +1,5 @@
-import type { Cion } from '../../src/index'
-import type { Equal } from '../../src/util'
+import type { Cion } from '../../src/index.js'
+import type { Equal } from '../../src/util.js'
 
 const zero_lisp_test_0 : true = {} as Equal<'true',  Cion.Lisp<`(zero? 0)`>>
 const zero_lisp_test_1 : true = {} as Equal<'false', Cion.Lisp<`(zero? 1)`>>

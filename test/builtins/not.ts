@@ -1,6 +1,6 @@
-import type Cion from '../../src/index'
-import type { LispNot } from '../../src/index'
-import type { Equal } from '../../src/util'
+import type Cion from '../../src/index.js'
+import type { LispNot } from '../../src/index.js'
+import type { Equal } from '../../src/util.js'
 
 const not_internal_test_0 : true = {} as Equal<['prim', true],  LispNot<[['prim', false]]>>
 const not_internal_test_1 : true = {} as Equal<['prim', false], LispNot<[['prim', true]]>>

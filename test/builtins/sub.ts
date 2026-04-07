@@ -1,7 +1,7 @@
-import type Cion from '../../src/index'
-import type { LispSub } from '../../src/index'
-import type * as de from '../../src/decimal'
-import type { Equal } from '../../src/util'
+import type Cion from '../../src/index.js'
+import type { LispSub } from '../../src/index.js'
+import type * as de from '../../src/decimal.js'
+import type { Equal } from '../../src/util.js'
 
 // Internal LispSub type tests (Binary representation)
 const sub_internal_test_0 : true = {} as Equal<[`prim`, ['0000000000000010', '0000000000000001']], LispSub<[[`prim`, '00000011'], [`prim`, '0000001']]>>

@@ -1,7 +1,7 @@
-import type { regexCompiler as rc } from '../../src/regex-compiler'
-import type { regexEval as re } from '../../src/regex-eval'
-import type { regexConst } from '../../src/regex-const'
-import type { Equal } from '../../src/util'
+import type { regexCompiler as rc } from '../../src/regex-compiler.js'
+import type { regexEval as re } from '../../src/regex-eval.js'
+import type { regexConst } from '../../src/regex-const.js'
+import type { Equal } from '../../src/util.js'
 
 // --------------------
 // -- Simple Pattern

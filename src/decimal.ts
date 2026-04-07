@@ -1,6 +1,6 @@
-import type * as Bit from "./bit";
-import type * as Peano from "./peano"
-import type * as Util from './util'
+import type * as Bit from "./bit.js";
+import type * as Peano from "./peano.js"
+import type * as Util from './util.js'
 
 type D10    = '0000000000001010'
 type D100   = '0000000001100100'
@@ -291,4 +291,4 @@ const isbitexpr_test_3: IsBitExpr<''> = false
 export type DtoB<Bit extends string> = DecimalToBit<Bit>
 export type BtoD<Bit extends string> = BitToDecimal<Bit>
 
-export * as Decimal from './decimal'
+export * as Decimal from './decimal.js'

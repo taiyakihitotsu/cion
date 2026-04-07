@@ -1,6 +1,6 @@
-import type Cion from '../../src/index'
-import type { Filter } from '../../src/index'
-import type { Equal } from '../../src/util'
+import type Cion from '../../src/index.js'
+import type { Filter } from '../../src/index.js'
+import type { Equal } from '../../src/util.js'
 
 const filter_test_0 : true = {} as Equal<[`vec`, [`prim`, 1], [`prim`, 1]], 
 Filter<

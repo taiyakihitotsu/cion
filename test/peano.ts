@@ -1,1 +1,1 @@
-import type {Equal} from '../src/util'
+import type {Equal} from '../src/util.js'

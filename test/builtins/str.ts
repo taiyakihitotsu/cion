@@ -1,6 +1,6 @@
-import type Cion from '../../src/index'
-import type { Str, Eval } from '../../src/index'
-import type { Equal } from '../../src/util'
+import type Cion from '../../src/index.js'
+import type { Str, Eval } from '../../src/index.js'
+import type { Equal } from '../../src/util.js'
 
 // Internal Eval and Str type tests
 const str_internal_test_0 : true = {} as Equal<[`prim`, "'head/tail'"], Eval<[[`sym`, `str`], [`prim`, `head/`], [`prim`, `tail`]]>>

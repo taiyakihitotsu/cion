@@ -1,7 +1,7 @@
-import type Cion from '../../src/index'
-import type { First } from '../../src/index'
-import { VNil }  from '../../src/sexprtypes'
-import type { Equal } from '../../src/util'
+import type Cion from '../../src/index.js'
+import type { First } from '../../src/index.js'
+import { VNil }  from '../../src/sexprtypes.js'
+import type { Equal } from '../../src/util.js'
 
 type testvec = [`vec`, [`prim`, true], [`prim`, 0], [`prim`, 1]];
 

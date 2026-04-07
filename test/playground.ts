@@ -1,4 +1,4 @@
-import type Cion from '../src/index'
+import type Cion from '../src/index.js'
 
 /** Simple arithmetic */
 const Sum_5: Cion.Lisp<'(+ 2 3)'> = '5'

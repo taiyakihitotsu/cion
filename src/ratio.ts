@@ -1,6 +1,6 @@
-import * as Bit from './bit'
-import * as decimal from './decimal'
-import * as u from './util'
+import * as Bit from './bit.js'
+import * as decimal from './decimal.js'
+import * as u from './util.js'
 
 // -----------
 // -- util
@@ -300,4 +300,4 @@ export type IsNat<
     ? true
   : false
 
-export * as ratio from './ratio'
+export * as ratio from './ratio.js'

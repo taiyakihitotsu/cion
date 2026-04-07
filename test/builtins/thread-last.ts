@@ -1,6 +1,6 @@
-import type Cion from '../../src/index'
-import type { ThreadLast, LispThreadLast } from '../../src/index'
-import type { Equal } from '../../src/util'
+import type Cion from '../../src/index.js'
+import type { ThreadLast, LispThreadLast } from '../../src/index.js'
+import type { Equal } from '../../src/util.js'
 
 // --- LispThreadLast Internal Type Tests ---
 const ltl_int_0 : true = {} as Equal<[[4], [[3], [[2], [[1], [0]]]]], LispThreadLast<[[0], [[1]], [[2]], [[3]], [[4]]]>>

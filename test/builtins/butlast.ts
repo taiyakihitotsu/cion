@@ -1,6 +1,6 @@
-import type Cion from '../../src/index'
-import type { Butlast } from '../../src/index'
-import { Equal } from '../../src/util'
+import type Cion from '../../src/index.js'
+import type { Butlast } from '../../src/index.js'
+import { Equal } from '../../src/util.js'
 
 type testbutlastvec = [`vec`, [`prim`, 0], [`prim`, 1], ['prim', 2], ['prim', 3]] 
 

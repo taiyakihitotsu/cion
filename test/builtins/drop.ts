@@ -1,6 +1,6 @@
-import type Cion from '../../src/index'
-import type { Drop } from '../../src/index'
-import type { Equal } from '../../src/util'
+import type Cion from '../../src/index.js'
+import type { Drop } from '../../src/index.js'
+import type { Equal } from '../../src/util.js'
 
 const drop_test_0 : true = {} as Equal<[3, 4, 5, 6], 
 Drop<"11", [0, 1, 2, 3, 4, 5, 6]>>

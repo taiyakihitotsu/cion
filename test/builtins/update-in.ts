@@ -1,6 +1,6 @@
-import type Cion from '../../src/index'
-import type { _UpdateIn } from '../../src/index'
-import type { Equal } from '../../src/util'
+import type Cion from '../../src/index.js'
+import type { _UpdateIn } from '../../src/index.js'
+import type { Equal } from '../../src/util.js'
 
 // --- Internal _UpdateIn Type Tests (AST / Tuple Level) ---
 

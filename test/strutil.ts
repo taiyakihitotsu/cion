@@ -1,5 +1,5 @@
-import type * as strutil from '../src/strutil'
-import type { Equal } from '../src/util'
+import type * as strutil from '../src/strutil.js'
+import type { Equal } from '../src/util.js'
 
 // --- String Utility Patterns ---
 

@@ -133,4 +133,4 @@ export type ASCII =
 
 export type EmailRegex = '(([^<>()[\\].,;: @"]+(\\.[^<>()[\\].,;: @"]+)*)|(".+"))@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\])|(([a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,}))'
 
-export type * as regexConst from './regex-const'
+export type * as regexConst from './regex-const.js'

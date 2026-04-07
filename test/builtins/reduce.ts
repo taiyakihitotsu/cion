@@ -1,6 +1,6 @@
-import type Cion from '../../src/index'
-import type { Reduce } from '../../src/index'
-import type { Equal } from '../../src/util'
+import type Cion from '../../src/index.js'
+import type { Reduce } from '../../src/index.js'
+import type { Equal } from '../../src/util.js'
 
 // Internal Reduce type test
 const reduce_internal_test_0 : true = {} as Equal<

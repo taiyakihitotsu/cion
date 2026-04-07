@@ -1,4 +1,4 @@
-import type Cion from '../src/index'
+import type Cion from '../src/index.js'
 
 const test_in_doc0: Cion.Lisp<`(let [a 'a' f (fn [c] (str '+' c '+'))] (if (eq '+a+' (f a)) 'this_is_true' 'this_is_false'))`> = "'this_is_true'"
 

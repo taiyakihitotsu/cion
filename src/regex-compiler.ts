@@ -1,9 +1,9 @@
-import type * as Bit from './bit'
-import type * as Decimal from './decimal'
-import type { StrUtil as str } from './strutil'
-import type { VecUtil as vec } from './vecutil'
-import type { regexConst } from './regex-const'
-import type { Util as u } from './util'
+import type * as Bit from './bit.js'
+import type * as Decimal from './decimal.js'
+import type { StrUtil as str } from './strutil.js'
+import type { VecUtil as vec } from './vecutil.js'
+import type { regexConst } from './regex-const.js'
+import type { Util as u } from './util.js'
 
 export type CompTape = CompFrame | CompFrame[] | CompEnv
 export type CompState = string
@@ -301,4 +301,4 @@ export type Comp<
 , Option extends CompOption = InitCompOption> =
 u.Rec<recComp<S, u.AssocWith<InitCompOption, Option>>>
 
-export type * as regexCompiler from './regex-compiler'
+export type * as regexCompiler from './regex-compiler.js'

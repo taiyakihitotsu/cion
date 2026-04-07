@@ -1,5 +1,5 @@
-import type Cion from '../../src/index.ts'
-import type { Equal } from '../../src/util'
+import type Cion from '../../src/index.js'
+import type { Equal } from '../../src/util.js'
 
 // RawLisp surface tests (Remove elements < 3 from [0 1 2 3 4 5])
 const remove_raw_test_0 : true = {} as Equal<

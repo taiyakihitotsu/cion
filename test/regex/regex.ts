@@ -1,6 +1,6 @@
-import type { regex } from '../../src/regex'
-import type * as regexConst from '../../src/regex-const'
-import type { Equal } from '../../src/util'
+import type { regex } from '../../src/regex.js'
+import type * as regexConst from '../../src/regex-const.js'
+import type { Equal } from '../../src/util.js'
 
 // --- regex loop ---
 const evaltesttms_comp0vbzf0: true = {} as Equal<['', 'szds', ''], regex.RegexFind<'szds', 's(z|d){0,2}s'>>

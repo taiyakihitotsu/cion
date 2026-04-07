@@ -1,4 +1,4 @@
-import type * as Peano from "./peano";
+import type * as Peano from "./peano.js";
 
 // CONSTANTS.
 export type MAX = Peano.T16;
@@ -332,4 +332,4 @@ export type BitMod<
 export type BitDec<B extends string> = BitSub<B, "0000000000000001">
 export type BitInc<B extends string> = BitAdd<B, "0000000000000001">
 
-export * as Bit from './bit'
+export * as Bit from './bit.js'

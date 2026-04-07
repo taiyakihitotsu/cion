@@ -3,8 +3,13 @@
   "version": "0.3.2",
   "private": false,
   "description": "Clojure implemented on TypeScript at the type-level.",
-  "main": "index.d.ts",
-  "types": "dist/index.d.ts",
+  "types": "./dist/index.d.ts",
+  "type": "module",
+  "exports": {
+    ".": {
+     "types": "./dist/index.d.ts"
+     }
+  },
   "publishConfig": {
     "access": "public"
   },

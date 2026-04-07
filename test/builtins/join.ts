@@ -1,5 +1,5 @@
-import Cion, { Join, GetStr, LispJoin } from '../../src/index'
-import type { Equal } from '../../src/util'
+import Cion, { Join, GetStr, LispJoin } from '../../src/index.js'
+import type { Equal } from '../../src/util.js'
 
 const join_test_0 : true = {} as Equal<'a,b,c', Join<',', ['a', 'b', 'c']>>
 const join_test_1 : true = {} as Equal<'a',     Join<',', ['a']>>

@@ -1,5 +1,5 @@
-import type * as Bit from './bit'
-import type * as regexConst from './regex-const'
+import type * as Bit from './bit.js'
+import type * as regexConst from './regex-const.js'
 
 export type  tZero = '0000000000000000'
 export type  tOne  = '0000000000000001'
@@ -263,4 +263,4 @@ export type StrSearchAll<
     : StrSearchAll<Rest, Pattern, Tag, `${Forward}${F}`, Flag>
   : 'not all'
 
-export type * as StrUtil from './strutil'
+export type * as StrUtil from './strutil.js'

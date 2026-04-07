@@ -1,6 +1,6 @@
-import type Cion from '../../src/index.ts'
-import type { LispRelation } from '../../src/index.ts'
-import type {Equal} from '../../src/util'
+import type Cion from '../../src/index.js'
+import type { LispRelation } from '../../src/index.js'
+import type {Equal} from '../../src/util.js'
 
 const gte_test_0 : true = {} as Equal<[`prim`, true],
 LispRelation<'>=', [[`prim`, '00000011'], [`prim`, '0000001']]>>

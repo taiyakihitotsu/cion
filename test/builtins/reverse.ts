@@ -1,6 +1,6 @@
-import type Cion from '../../src/index'
-import type { Reverse } from '../../src/index'
-import type { Equal } from '../../src/util'
+import type Cion from '../../src/index.js'
+import type { Reverse } from '../../src/index.js'
+import type { Equal } from '../../src/util.js'
 
 // Internal Reverse type tests (Tuple level)
 const reverse_internal_test_0 : true = {} as Equal<[4, 3, 2, 1, 0], Reverse<[0, 1, 2, 3, 4]>>

@@ -1,5 +1,5 @@
-import type Cion from '../../src/index'
-import type { Equal } from '../../src/util'
+import type Cion from '../../src/index.js'
+import type { Equal } from '../../src/util.js'
 
 const replace_test_0 : true = {} as Equal<"'aaaaaaaaa'", Cion.Lisp<`(replace 'ababababa' 'b' 'a')`>>
 const replace_test_1 : true = {} as Equal<"'abxxxxba'",  Cion.Lisp<`(replace 'ab5468ba' '[\\d]' 'x')`>>

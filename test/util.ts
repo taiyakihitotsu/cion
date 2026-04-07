@@ -1,4 +1,4 @@
-import type { DissocKeys, AssocWith, Equal, UnionToTuple as UtoT } from '../src/util'
+import type { DissocKeys, AssocWith, Equal, UnionToTuple as UtoT } from '../src/util.js'
 
 /**
 `DissocKeys`

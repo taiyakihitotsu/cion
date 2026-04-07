@@ -1,5 +1,5 @@
-import type Cion from '../../src/index.ts'
-import type { Equal } from '../../src/util'
+import type Cion from '../../src/index.js'
+import type { Equal } from '../../src/util.js'
 
 const rem_test_0 : true = {} as Equal<'0',   Cion.Lisp<`(rem 10 5)`>>
 const rem_test_1 : true = {} as Equal<'0',   Cion.Lisp<`(rem 10 10)`>>

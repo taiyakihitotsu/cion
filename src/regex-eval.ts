@@ -1,5 +1,5 @@
-import type { regexCompiler as rc } from './regex-compiler'
-import type { StrUtil as str } from './strutil'
+import type { regexCompiler as rc } from './regex-compiler.js'
+import type { StrUtil as str } from './strutil.js'
 
 export type Unmatch = []
 
@@ -106,4 +106,4 @@ type _TapeEval<
       , dump: { firstTape: firstTape } }
   : never
 
-export type * as regexEval from './regex-eval'
+export type * as regexEval from './regex-eval.js'

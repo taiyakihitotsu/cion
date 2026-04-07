@@ -1,6 +1,6 @@
-import type Cion from '../../src/index'
-import type { Eval } from '../../src/index'
-import type {LetArg,LetForm} from '../../src/sexprtypes'
+import type Cion from '../../src/index.js'
+import type { Eval } from '../../src/index.js'
+import type {LetArg,LetForm} from '../../src/sexprtypes.js'
 
 // test let
 const evallettest: Eval<[`let`, [[`sym`, `t`], `'test'`], [`sym`, `t`]]> = {error: 'EvalError7', message: '', sexpr: `'test'`, env: [[]]}

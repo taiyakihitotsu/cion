@@ -85,4 +85,4 @@ export type Rec<
     ? Rec<_rec<T>>
   : T
 
-export type * as Util from './util'
+export type * as Util from './util.js'

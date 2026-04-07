@@ -1,6 +1,6 @@
-import type Cion from '../../src/index'
-import { VNil } from '../../src/sexprtypes'
-import type { Equal } from '../../src/util'
+import type Cion from '../../src/index.js'
+import { VNil } from '../../src/sexprtypes.js'
+import type { Equal } from '../../src/util.js'
 
 const last_test_0 : true =
   {} as Equal<['prim', '0000000000000010'], Cion.RawLisp<'(last [0 1 2])'>>

@@ -1,4 +1,4 @@
-// import type Cion from '../src/index.ts'
+// import type Cion from '../src/index.js'
  
 // const maintest_issymbol_0: Cion.RawLisp<`(symbol? 1)`> = ['prim', false]
 // const maintest_issymbol_1: Cion.RawLisp<`(symbol? -1)`> = ['prim', false]

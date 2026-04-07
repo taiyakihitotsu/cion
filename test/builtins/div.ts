@@ -1,6 +1,6 @@
-import type Cion from '../../src/index'
-import type { LispDiv } from '../../src/index'
-import type { Equal } from '../../src/util'
+import type Cion from '../../src/index.js'
+import type { LispDiv } from '../../src/index.js'
+import type { Equal } from '../../src/util.js'
 
 const div_test_0 : true = {} as Equal<[`prim`, ['0000000000000011', '0000000000000001']],
   LispDiv<[[`prim`, '00000011'], [`prim`, '0000001']]>>

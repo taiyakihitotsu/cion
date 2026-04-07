@@ -1,6 +1,6 @@
-import type Cion from '../../src/index'
-import type { LispRelation, Eval } from '../../src/index'
-import type {Equal} from '../../src/util'
+import type Cion from '../../src/index.js'
+import type { LispRelation, Eval } from '../../src/index.js'
+import type {Equal} from '../../src/util.js'
 
 const gt_test_0 : true = {} as Equal<['prim', false], 
   Eval<[['sym', 'not'], [['sym', '>'], ['prim', '0000000000000010'], ['prim', '00000000000000001']]]>>

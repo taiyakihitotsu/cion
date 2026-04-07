@@ -1,5 +1,5 @@
-import type Cion from '../../src/index.ts'
-import type {Equal} from '../../src/util'
+import type Cion from '../../src/index.js'
+import type {Equal} from '../../src/util.js'
 
 const min_test_0 : true = {} as Equal<'1',    Cion.Lisp<`(min 1 3)`>>
 const min_test_1 : true = {} as Equal<'-2',   Cion.Lisp<`(min 1 3 -2)`>>

@@ -1,4 +1,4 @@
-import type * as Util from './util'
+import type * as Util from './util.js'
 
   export type T0 = null;
   export type T1 = [T0];
@@ -66,4 +66,4 @@ import type * as Util from './util'
   export type lethan<T,U>  = gethan<U,T>
   export type lthan<T,U>   = gthan<U,T>
 
-export * as Peano from './peano'
+export * as Peano from './peano.js'

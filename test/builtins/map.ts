@@ -1,6 +1,6 @@
-import type Cion from '../../src/index.ts'
-import type {Equal} from '../../src/util'
-import { VNil } from '../../src/sexprtypes'
+import type Cion from '../../src/index.js'
+import type {Equal} from '../../src/util.js'
+import { VNil } from '../../src/sexprtypes.js'
 
 const map_lookup_test_0 : true = {} as Equal<['prim', '0000000000000001'], Cion.RawLisp<"(:a {:a 1})">>
 const map_lookup_test_1 : true = {} as Equal<['prim', '0000000000000001'], Cion.RawLisp<"(:a {:a 1 :b 2})">>

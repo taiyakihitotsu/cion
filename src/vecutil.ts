@@ -1,5 +1,5 @@
-import type { Bit } from './bit'
-import type { DecimalToBit } from './decimal'
+import type { Bit } from './bit.js'
+import type { DecimalToBit } from './decimal.js'
 
 /**
 This defines utility for tuples.
@@ -88,4 +88,4 @@ export type Last<
     : never
   : never
 
-export type * as VecUtil from './vecutil'
+export type * as VecUtil from './vecutil.js'
