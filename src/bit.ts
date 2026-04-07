@@ -2,7 +2,7 @@ import type * as Peano from "./peano.js";
 
 // CONSTANTS.
 export type MAX = Peano.T16;
-export type Zero = BitPadding<"0", MAX>;
+export type BitZero = BitPadding<"0", MAX>;
 
 // export const Pad8  = '00000000'
 // export const Pad16 = `${Pad8}${Pad8}`
@@ -140,11 +140,11 @@ export type BitCut<
 // todo
 export type BitIsZero<
   B extends string> =
-  BitUniform<Zero, B> extends [
+  BitUniform<BitZero, B> extends [
   infer Z,
   infer U,
 ]
-    ? BitEq<Zero, U>
+    ? BitEq<BitZero, U>
   : never
 
 type BitFillError0 = 'BitFillError0'
@@ -308,7 +308,7 @@ export type BitDiv<
     : never
   : never
 
-export type BitAbs<B extends string> = BitLT<B, Zero> extends true ? BitMul<B, '1111111111111111'> : B
+export type BitAbs<B extends string> = BitLT<B, BitZero> extends true ? BitMul<B, '1111111111111111'> : B
 
 export type _BitMod<
   B extends string
@@ -323,9 +323,9 @@ export type BitMod<
 , C extends string> =
   BitIsZero<C> extends true
     ? Nil
-  : [BitLT<B, Zero>, BitLT<C, Zero>] extends [true, false]
+  : [BitLT<B, BitZero>, BitLT<C, BitZero>] extends [true, false]
     ? _BitMod<BitSub<C, _BitMod<BitRevSign<B>, C>>, C>
-  : [BitLT<B, Zero>, BitLT<C, Zero>] extends [false, true]
+  : [BitLT<B, BitZero>, BitLT<C, BitZero>] extends [false, true]
     ? BitMul<_BitMod<B, BitRevSign<C>>, '1111111111111111'>
   : BitFill<_BitMod<BitAbs<B>, BitAbs<C>>, MAX>
 

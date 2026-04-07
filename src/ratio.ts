@@ -5,23 +5,23 @@ import * as u from './util.js'
 // -----------
 // -- util
 // -----------
-export type BitString = string
-export type Nat = BitString
-export type Ratio = [BitString, BitString]
+export type IntBitString = string // [todo]
+export type Nat = IntBitString // [todo]
+export type Ratio = [IntBitString, IntBitString]
 export type Number = Nat | Ratio
 export type DivByZero = 'nil'
-export type Zero = '0000000000000000'
-export type One = '0000000000000001'
-export type RatioZero = [Zero, One]
-export type RatioOne =  [One, One]
+export type IntZero = '0000000000000000'
+export type IntOne = '0000000000000001'
+export type RatioZero = [IntZero, IntOne]
+export type RatioOne =  [IntOne, IntOne]
 
 export type Scaling<
   X extends Ratio
 , Y extends Ratio> =
-  [X, Y] extends [ [ infer xc extends BitString
-                            , infer xm extends BitString ]
-                 , [ infer yc extends BitString
-                            , infer ym extends BitString ] ]
+  [X, Y] extends [ [ infer xc extends IntBitString
+                            , infer xm extends IntBitString ]
+                 , [ infer yc extends IntBitString
+                            , infer ym extends IntBitString ] ]
     ? xm extends ym
       ? [X, Y]
     : Bit.BitMul<xm, ym> extends infer SM
@@ -33,22 +33,22 @@ export type Scaling<
 // [note] to debug
 export type DecimalRatio<
   Z extends [Ratio, Ratio] | Ratio> =
-  Z extends [ [ infer xc extends BitString
-              , infer xm extends BitString ]
-            , [ infer yc extends BitString
-              , infer ym extends BitString ] ]
+  Z extends [ [ infer xc extends IntBitString
+              , infer xm extends IntBitString ]
+            , [ infer yc extends IntBitString
+              , infer ym extends IntBitString ] ]
     ? [ [decimal.BtoD<xc>, decimal.BtoD<xm>]
       , [decimal.BtoD<yc>, decimal.BtoD<ym>]]
-  : Z extends [ infer xc extends BitString
-              , infer xm extends BitString]
+  : Z extends [ infer xc extends IntBitString
+              , infer xm extends IntBitString]
     ? [ decimal.BtoD<xc>, decimal.BtoD<xm> ]
   : never
 
 export type ForceRatio<
-  Z extends BitString | Ratio> =
-  Z extends BitString
+  Z extends IntBitString | Ratio> =
+  Z extends IntBitString
     ? [Z, decimal.DtoB<'1'>]
-  : Z extends [infer xc extends BitString, infer xm extends BitString]
+  : Z extends [infer xc extends IntBitString, infer xm extends IntBitString]
     ? xc extends decimal.DtoB<'0'>
       ? [xc, decimal.DtoB<'1'>]
     : xm extends decimal.DtoB<'0'>
@@ -60,15 +60,15 @@ export type ForceRatio<
 // This uses `BitDiv` which truncates the decimal part, so it behaves like a step function.
 // [note]
 // this is trunc, not floor.
-export type Trunc<Z extends BitString | Ratio> = ForceNat<Z>
+export type Trunc<Z extends IntBitString | Ratio> = ForceNat<Z>
 export type ForceNat<
-  Z extends BitString | Ratio> =
-  Z extends [ infer xc extends BitString
-            , infer xm extends BitString]
+  Z extends IntBitString | Ratio> =
+  Z extends [ infer xc extends IntBitString
+            , infer xm extends IntBitString]
     ? xm extends decimal.DtoB<'0'>
       ? DivByZero
     : Bit.BitDiv<xc, xm>
-  : Z extends BitString
+  : Z extends IntBitString
     ? Z
   : never
 
@@ -79,11 +79,11 @@ const test2: decimal.BtoD<Bit.BitDiv<decimal.DtoB<'10'>, decimal.DtoB<'3'>>> = '
 const test3: decimal.BtoD<Bit.BitDiv<decimal.DtoB<'10'>, decimal.DtoB<'-3'>>> = '-3'
 
 export type Floor<
-  Z extends BitString | Ratio> =
-  Z extends BitString
+  Z extends IntBitString | Ratio> =
+  Z extends IntBitString
     ? Z
-  : Z extends Ratio & [infer X extends BitString, infer Y extends BitString]
-    ? [GCM<X,Y>, Bit.BitDiv<X,Y>] extends [infer tGCM extends BitString, infer tDiv extends BitString]
+  : Z extends Ratio & [infer X extends IntBitString, infer Y extends IntBitString]
+    ? [GCM<X,Y>, Bit.BitDiv<X,Y>] extends [infer tGCM extends IntBitString, infer tDiv extends IntBitString]
       ? [Bit.BitEq<tGCM, Y>, Bit.BitLT<X, '0'> & Bit.BitLT<Y, '0'>] extends [false, never]
         ? Bit.BitDec<tDiv>
       : tDiv
@@ -92,8 +92,8 @@ export type Floor<
 
 export type RatioStr<
   XY extends Ratio> =
-  XY extends [infer x extends BitString
-             , infer y extends BitString]
+  XY extends [infer x extends IntBitString
+             , infer y extends IntBitString]
     ? Bit.BitEq<y, '0000000000000001'> extends true
       ? `${decimal.BitToDecimal<x>}`
     : `${decimal.BtoD<x>}/${decimal.BtoD<y>}`
@@ -111,9 +111,9 @@ export type SimplifyStr<
 
 // [todo] roughly
 export type _GCM<
-  x extends BitString
-, y extends BitString
-, i extends BitString = y> =
+  x extends IntBitString
+, y extends IntBitString
+, i extends IntBitString = y> =
   i extends '0000000000000001'
     ? i
   : [ Bit.BitMod<y, i>
@@ -122,24 +122,24 @@ export type _GCM<
   : _GCM<x, y, Bit.BitDec<i>>
 // greatest common measure
 export type GCM<
-  X extends BitString
-, Y extends BitString> =
+  X extends IntBitString
+, Y extends IntBitString> =
   Bit.BitLT<X, Y> extends true
     ? _GCM<Bit.BitAbs<X>, Bit.BitAbs<Y>>
   : _GCM<Bit.BitAbs<Y>, Bit.BitAbs<X>>
 
 // least common multiple
 export type LCD<
-  Z extends BitString | Ratio> =
-  Z extends BitString
+  Z extends IntBitString | Ratio> =
+  Z extends IntBitString
     ? Z
-  : Z extends [ infer xc extends BitString
-              , infer xm extends BitString]
+  : Z extends [ infer xc extends IntBitString
+              , infer xm extends IntBitString]
     ? Bit.BitIsZero<xc> extends true
       ? RatioZero
     : Bit.BitIsZero<xm> extends true
       ? 'nil'
-    : GCM<xc, xm> extends infer gcm extends BitString
+    : GCM<xc, xm> extends infer gcm extends IntBitString
       ? [ Bit.BitLT<xc, '0000000000000000'>
         , Bit.BitLT<xm, '0000000000000000'> ] extends [true, true]
         ? [Bit.BitDiv<Bit.BitAbs<xc>, gcm>, Bit.BitDiv<Bit.BitAbs<xm>, gcm>]
@@ -152,11 +152,11 @@ export type LCD<
 
 export type Commonize<
   S extends Ratio> =
-  S extends [infer c extends BitString, infer d extends BitString]
+  S extends [infer c extends IntBitString, infer d extends IntBitString]
     ? Bit.BitIsZero<c> extends true
       ? RatioZero
-    : GCM<c,d> extends infer bc extends BitString
-      ? [Bit.BitDiv<c, bc>, Bit.BitDiv<d, bc>, Bit.BitLT<c, '0000000000000000'>, Bit.BitLT<d, '0000000000000000'>] extends [infer cr extends BitString, infer dr extends BitString, infer cs extends boolean, infer ds extends boolean]
+    : GCM<c,d> extends infer bc extends IntBitString
+      ? [Bit.BitDiv<c, bc>, Bit.BitDiv<d, bc>, Bit.BitLT<c, '0000000000000000'>, Bit.BitLT<d, '0000000000000000'>] extends [infer cr extends IntBitString, infer dr extends IntBitString, infer cs extends boolean, infer ds extends boolean]
         ? cs & ds extends never
           ? ds extends true
             ? [Bit.BitRevSign<cr>, Bit.BitRevSign<dr>]
@@ -173,30 +173,30 @@ export type Commonize<
 export type Add<
   X extends Ratio
 , Y extends Ratio> =
-  Scaling<X, Y> extends [ [ infer xc extends BitString
-                            , infer xm extends BitString ]
-                        , [ infer yc extends BitString
-                            , infer ym extends BitString ] ]
+  Scaling<X, Y> extends [ [ infer xc extends IntBitString
+                            , infer xm extends IntBitString ]
+                        , [ infer yc extends IntBitString
+                            , infer ym extends IntBitString ] ]
     ? [Bit.BitAdd<xc, yc>, xm]
   : never
 
 export type Sub<
   X extends Ratio
 , Y extends Ratio> =
-  Scaling<X, Y> extends [ [ infer xc extends BitString
-                            , infer xm extends BitString ]
-                        , [ infer yc extends BitString
-                            , infer ym extends BitString ] ]
+  Scaling<X, Y> extends [ [ infer xc extends IntBitString
+                            , infer xm extends IntBitString ]
+                        , [ infer yc extends IntBitString
+                            , infer ym extends IntBitString ] ]
     ? [Bit.BitSub<xc, yc>, xm]
   : never
 
 export type Mul<
   X extends Ratio
 , Y extends Ratio> =
-  [X, Y] extends [ [ infer xc extends BitString
-                            , infer xm extends BitString ]
-                        , [ infer yc extends BitString
-                            , infer ym extends BitString ] ]
+  [X, Y] extends [ [ infer xc extends IntBitString
+                            , infer xm extends IntBitString ]
+                        , [ infer yc extends IntBitString
+                            , infer ym extends IntBitString ] ]
     ? Bit.BitIsZero<xc> | Bit.BitIsZero<yc> extends false
       ? [ Bit.BitMul<xc, yc>
         , Bit.BitMul<xm, ym>]
@@ -206,10 +206,10 @@ export type Mul<
 export type Div<
   X extends Ratio
 , Y extends Ratio> =
-  [X, Y] extends [ [ infer xc extends BitString
-                            , infer xm extends BitString ]
-                        , [ infer yc extends BitString
-                            , infer ym extends BitString ] ]
+  [X, Y] extends [ [ infer xc extends IntBitString
+                            , infer xm extends IntBitString ]
+                        , [ infer yc extends IntBitString
+                            , infer ym extends IntBitString ] ]
     ? '0000000000000000' extends yc | xm
       ? DivByZero
     : [Bit.BitMul<xc, ym>, Bit.BitMul<xm, yc>]
@@ -220,8 +220,8 @@ export type Div<
 // --------------------------------
 
 export type BitR<
-  xc extends BitString
-, yc extends BitString
+  xc extends IntBitString
+, yc extends IntBitString
 , r extends '>' | '<' | '>=' | '<=' | '='> =
   r extends '>'
     ? Bit.BitGT<xc, yc>
@@ -242,10 +242,10 @@ export type Relation<
   [X, Y] extends [infer x extends Nat, infer y extends Nat]
     ? BitR<x,y,r>
   : [X, Y] extends [infer x extends Ratio, infer y extends Ratio]
-    ? Scaling<x, y> extends [ [ infer xc extends BitString
-                            , infer xm extends BitString ]
-                        , [ infer yc extends BitString
-                            , infer ym extends BitString ] ]
+    ? Scaling<x, y> extends [ [ infer xc extends IntBitString
+                            , infer xm extends IntBitString ]
+                        , [ infer yc extends IntBitString
+                            , infer ym extends IntBitString ] ]
       ? BitR<xc,yc,r>
     : never
   : never
@@ -256,17 +256,17 @@ export type Relation<
 
 export type Abs<
   X extends Number> =
-  X extends BitString
+  X extends IntBitString
     ? Bit.BitAbs<X>
-  : X extends [infer t  extends BitString, infer d extends BitString]
+  : X extends [infer t  extends IntBitString, infer d extends IntBitString]
     ? Commonize<[Bit.BitAbs<t>, Bit.BitAbs<d>]>
   : never
 
 export type Not<
   X extends Number> =
-  X extends BitString
+  X extends IntBitString
     ? Bit.BitRevSign<X>
-  : X extends Ratio & [infer t  extends BitString, infer d extends BitString]
+  : X extends Ratio & [infer t  extends IntBitString, infer d extends IntBitString]
     ? Commonize<[Bit.BitRevSign<t>, d]>
   : never
 
@@ -276,19 +276,19 @@ export type Not<
 
 export type IsZero<
   X extends Number> =
-  X extends BitString
+  X extends IntBitString
     ? Bit.BitIsZero<X>
-  : X extends Ratio & [infer t extends BitString, infer _]
+  : X extends Ratio & [infer t extends IntBitString, infer _]
     ? Bit.BitIsZero<t>
   : never
 
 export type IsInt<
   X extends Number> =
-  X extends BitString
+  X extends IntBitString
     ? true
   : X extends Ratio
-    ? Commonize<X> extends [infer _t, infer u extends BitString]
-      ? u extends One
+    ? Commonize<X> extends [infer _t, infer u extends IntBitString]
+      ? u extends IntOne
         ? true
       : false
     : false

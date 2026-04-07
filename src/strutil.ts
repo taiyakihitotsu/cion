@@ -12,15 +12,17 @@ export type Digit = '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'
 export type Lower = 'a' | 'b' | 'c' | 'd' | 'e' | 'f' | 'g' | 'h' | 'i' | 'j' | 'k' | 'l' | 'm' | 'n' | 'o' | 'p' | 'q' | 'r' | 's' | 't' | 'u' | 'v' | 'w' | 'x' | 'y' | 'z'
 export type Upper = Uppercase<Lower>
 export type WordChar = Digit | Lower | Upper | '_'
-export type ASCII =
+// [todo]
+export type InternalASCII =
 WordChar | ' ' | '!' | '"' | '#' | '$' | '%' | '&' | "'" | '(' | ')' |
   '*' | '+' | ',' | '-' | '.' | '/' | ':' | ';' | '<' | '=' | '>' | '?' | '@' |
   '[' | '\\' | ']' | '^' | '`' | '{' | '|' | '}' | '~'
-export type NonDigit = Exclude<ASCII, Digit>
-export type NonWordChar = Exclude<ASCII, WordChar>
-export type NonLower = Exclude<ASCII, Upper>
-export type NonUpper = Exclude<ASCII, Upper>
-export type MetaChars = 'd' | 'w' | 'l' | 'u' | 'D' | 'W' | 'L' | 'U'
+export type NonDigit = Exclude<InternalASCII, Digit>
+export type NonWordChar = Exclude<InternalASCII, WordChar>
+export type NonLower = Exclude<InternalASCII, Upper>
+export type NonUpper = Exclude<InternalASCII, Upper>
+// [todo]
+export type InternalMetaChars = 'd' | 'w' | 'l' | 'u' | 'D' | 'W' | 'L' | 'U'
 
 type Quantifiers =
 '[' | ']' |
@@ -99,7 +101,7 @@ export type MatchChar<
 
 export type StrLen<
   S extends string
-, N extends string = Bit.Zero> =
+, N extends string = Bit.BitZero> =
   S extends `${infer _}${infer Rest}`
     ? Rest extends ''
       ? Bit.BitInc<N>
@@ -145,7 +147,7 @@ StrDrop<StrTake<S,Bit.BitInc<M>>, N>
 export type RegCut<
   S extends string> =
   S extends `${infer f}${infer s}${infer th}${infer rest}`
-    ? [f, s] extends ['\\', MetaChars | Quantifiers]
+    ? [f, s] extends ['\\', InternalMetaChars | Quantifiers]
       ? [`\\${s}`, `${th}${rest}`]
     : f extends `*`
       ? s extends `?`
@@ -162,7 +164,7 @@ export type RegCut<
     : [f, `${s}${th}${rest}`]
   : S extends `${infer f}${infer s}${infer rest}`
     ? f extends '\\'
-      ? s extends MetaChars | Quantifiers
+      ? s extends InternalMetaChars | Quantifiers
         ? [`\\${s}`, `${rest}`]
       : never
     : f extends `*`
@@ -193,7 +195,7 @@ export type RegFirstSplit<
     ? S extends `\\${infer escapedFirst}${infer escapedRest}`
       ? escapedFirst extends '.'
         ? [`\\.`, escapedRest][N]
-      : escapedFirst extends MetaChars
+      : escapedFirst extends InternalMetaChars
         ? [`\\${escapedFirst}`, escapedRest][N]
       : escapedFirst extends Quantifiers
         ? [`${escapedFirst}`, escapedRest][N]

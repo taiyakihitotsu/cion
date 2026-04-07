@@ -47,24 +47,26 @@ export type SPad<S extends string> = S extends ` ${infer SS}` ? SS  : ` ${S}`
 //     ? [CC]
 //     : []
 
-type _rec<
+// [todo]
+type internalRec<
   T> =
   T extends {r: never}
     ? never
   : T extends {r: {r: {r: {r: {r: {r: {r: {r: infer U}}}}}}}}
-    ? { r: _rec<U> }
+    ? { r: internalRec<U> }
   : T extends {r: {r: {r: {r: infer U}}}}
-    ? { r: _rec<U> }
+    ? { r: internalRec<U> }
   : T extends {r: {r: infer U}}
-    ? { r: _rec<U> }
+    ? { r: internalRec<U> }
   : T extends {r: infer U}
     ? U
   : T
 
-export type Rec<
+// [todo]
+export type CompilerRec<
   T> =
   T extends {r: unknown}
-    ? Rec<_rec<T>>
+    ? CompilerRec<internalRec<T>>
   : T
 
 export type ReadString<
@@ -115,8 +117,7 @@ export type recp<
     ? { r: [...R, ...(U extends '' ? [] : [U])] }
   : { r: R }
 
-
-export type SParser<Sexpr extends string> = Rec<recp<Sexpr>>
+export type SParser<Sexpr extends string> = CompilerRec<recp<Sexpr>>
 
 type NumUnion = '0'|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'
 

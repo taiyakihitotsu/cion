@@ -2265,6 +2265,19 @@ const evalprimerrortest: Eval<[`prim`, 0]> = [`prim`, 0];
 // ----------------------------
 // -- Main
 // ----------------------------
+export * from './bit.js';
+export * from './compiler.js';
+export * from './decimal.js';
+export * from './peano.js';
+export * from './ratio.js';
+export * from './regex-compiler.js';
+export * from './regex-const.js';
+export * from './regex-eval.js';
+export * from './regex.js';
+export * from './sexprtypes.js';
+export * from './strutil.js';
+export * from './util.js';
+export * from './vecutil.js';
 
 export namespace Cion {
   export type RawLisp<S extends string> = Eval<Compiler.SCompiler<Compiler.SParser<Compiler.SPad<S>>>>

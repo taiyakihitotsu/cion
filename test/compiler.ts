@@ -3,52 +3,52 @@ import type {Equal} from '../src/util.js'
 
 const test_compiler_rec_0: true = {} as Equal<
   ['(', 'x', '(', '(', 'if', 'a', 'b', 'c', ')', 'y', ')', ')'],
-  Compiler.Rec<Compiler.recp<' (x ((if a b c) y))'>>
+  Compiler.CompilerRec<Compiler.recp<' (x ((if a b c) y))'>>
 >
 
 const test_compiler_rec_1: true = {} as Equal<
   ['(', 'x', '(', 'if', 'a', 'b', 'c', ')', 'y', ')'],
-  Compiler.Rec<Compiler.recp<' (x (if a b c) y)'>>
+  Compiler.CompilerRec<Compiler.recp<' (x (if a b c) y)'>>
 >
 
 const test_compiler_rec_2: true = {} as Equal<
   ['(', '(', 'f', ')', ')'],
-  Compiler.Rec<Compiler.recp<' ((f))'>>
+  Compiler.CompilerRec<Compiler.recp<' ((f))'>>
 >
 
 const test_compiler_rec_3: true = {} as Equal<
   ['(', '(', '(', '(', '(', '(', 'x', ')', ')', ')', ')', ')', ')'],
-  Compiler.Rec<Compiler.recp<' ((((((x))))))'>>
+  Compiler.CompilerRec<Compiler.recp<' ((((((x))))))'>>
 >
 
 const test_compiler_rec_4: true = {} as Equal<
   ['(', 'let', '[', 'a', '1', 'b', '2', ']', '(', 'if', 'true', 't', 'f', ')', ')'],
-  Compiler.Rec<Compiler.recp<' (let [a 1 b 2] (if true t f))'>>
+  Compiler.CompilerRec<Compiler.recp<' (let [a 1 b 2] (if true t f))'>>
 >
 
 const test_compiler_rec_5: true = {} as Equal<
   ['(', 'let', '[', 'a', '"test is this"', ']', '(', 'str', '"a b"', 'a', ')', ')'],
-  Compiler.Rec<Compiler.recp<` (let [a "test is this"] (str "a b" a))`>>
+  Compiler.CompilerRec<Compiler.recp<` (let [a "test is this"] (str "a b" a))`>>
 >
 
 const test_compiler_rec_6: true = {} as Equal<
   ['30'],
-  Compiler.Rec<Compiler.recp<` 30`>>
+  Compiler.CompilerRec<Compiler.recp<` 30`>>
 >
 
 const test_compiler_rec_7: true = {} as Equal<
   ['[', '30', ']'],
-  Compiler.Rec<Compiler.recp<` [30]`>>
+  Compiler.CompilerRec<Compiler.recp<` [30]`>>
 >
 
 const test_compiler_rec_8: true = {} as Equal<
   ['[', '3/2', ']'],
-  Compiler.Rec<Compiler.recp<`      [3/2]`>>
+  Compiler.CompilerRec<Compiler.recp<`      [3/2]`>>
 >
 
 const test_compiler_rec_9: true = {} as Equal<
   ['[', '3/2', ']'],
-  Compiler.Rec<Compiler.recp<`   [3/2]`>>
+  Compiler.CompilerRec<Compiler.recp<`   [3/2]`>>
 >
 
 // -------------------------------
@@ -56,12 +56,12 @@ const test_compiler_rec_9: true = {} as Equal<
 // -------------------------------
 const test_compiler_rec_10: true = {} as Equal<
   ['(', 'let', '[', 'a', '{', ':a', '1', ':b', '2', '}', ']', '(', '>', '(', ':a', 'a', ')', '(', ':b', 'a', ')', ')', ')'],
-  Compiler.Rec<Compiler.recp<' (let [a {:a 1 :b 2}] (> (:a a) (:b a)))'>>
+  Compiler.CompilerRec<Compiler.recp<' (let [a {:a 1 :b 2}] (> (:a a) (:b a)))'>>
 >
 
 const test_compiler_rec_11: true = {} as Equal<
   ['(', 'let', '[', 'a', '{', ':a', '-1', ':b', '2', '}', ']', '(', '>', '(', ':a', 'a', ')', '(', ':b', 'a', ')', ')', ')'],
-  Compiler.Rec<Compiler.recp<' (let [a {:a -1 :b 2}] (> (:a a) (:b a)))'>>
+  Compiler.CompilerRec<Compiler.recp<' (let [a {:a -1 :b 2}] (> (:a a) (:b a)))'>>
 >
 // -------------------------
 // -- Regex
@@ -69,7 +69,7 @@ const test_compiler_rec_11: true = {} as Equal<
 type email = `'(([^<>()[\\].,;: @"]+(\\.[^<>()[\\].,;: @"]+)*)|(".+"))@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\])|(([a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,}))'`
 const test_compiler_rec_email: true = {} as Equal<
   [`'(([^<>()[\\].,;: @"]+(\\.[^<>()[\\].,;: @"]+)*)|(".+"))@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\])|(([a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,}))'`],
-  Compiler.Rec<Compiler.recp<` ${email}`>>
+  Compiler.CompilerRec<Compiler.recp<` ${email}`>>
 >
 
 // NOTE (A) : they spit a 2589 error with LegacyCompiler.SParser.
@@ -84,7 +84,7 @@ const test_compiler_rec_complex_or: true = {} as Equal<
   aaaa
 >
 
-type tesa = Compiler.Rec<Compiler.recp<Compiler.SPad<aaa>>>
+type tesa = Compiler.CompilerRec<Compiler.recp<Compiler.SPad<aaa>>>
 const test_compiler_rec_tesa: true = {} as Equal<
   ['(', 'or', '(', '(', 'fn', '[', 'm0', 'm1', ']', '(', '>=', '(', '+', '(', ':x', 'm0', ')', '(', ':w', 'm0', ')', ')', '(', ':x', 'm1', ')', ')', ')', '{', ':x', '0', ':w', '1', '}', '{', ':x', '1', ':w', '2', '}', ')',  '(', '(', 'fn', '[', 'm0', 'm1', ']', '(', '>=', '(', '+', '(', ':x', 'm0', ')', '(', ':w', 'm0', ')', ')', '(', ':x', 'm1', ')', ')', ')', '{', ':x', '1', ':w', '2', '}', '{', ':x', '0', ':w', '1', '}', ')', ')'],
   tesa
