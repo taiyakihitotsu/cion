@@ -1,5 +1,5 @@
-import type { regex } from '../../src/regex.js'
-import type * as regexConst from '../../src/regex-const.js'
+import type { regex } from '../../src/regex/index.js'
+import type * as regexConst from '../../src/regex/index.js'
 import type { Equal } from '../../src/util.js'
 
 // --- regex loop ---

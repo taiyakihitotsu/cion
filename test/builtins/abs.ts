@@ -9,3 +9,4 @@ const test4: Equal<'2/3', Cion.Lisp<`(abs 2/3)`>> = true
 const test5: Equal<'2/3', Cion.Lisp<`(abs -2/3)`>> = true
 const test6: Equal<'nil', Cion.Lisp<`(abs nil)`>> = true
 const test7: Equal<'6/5', Cion.Lisp<`(abs (* -2 -3/5))`>> = true
+const test6_str: Equal<'nil', Cion.Lisp<`(abs 'test')`>> = true

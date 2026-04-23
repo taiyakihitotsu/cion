@@ -1,5 +1,5 @@
-import type * as Bit from './bit.js'
-import type * as regexConst from './regex-const.js'
+import type * as Bit from './bit/index.js'
+import type * as regexConst from './regex/index.js'
 
 export type  tZero = '0000000000000000'
 export type  tOne  = '0000000000000001'

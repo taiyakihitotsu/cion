@@ -18,7 +18,8 @@ export type Atom = ['map', Atom[]] | Sym | Prim | Fn | Vector | Keyword | TNil
 export type TMap = Exclude<Atom, Sym | Prim | Fn | Vector | Keyword | TNil>
 
 export type Sexpr = Array<Each | Each[] | Sexpr>;
-export type  TNil = ['prim', 'nil']
+export type NilLiteral = 'nil'
+export type  TNil = ['prim', NilLiteral]
 export const VNil: TNil = ['prim', 'nil'] as const
 
 export type Keyword = [`key`, string]
@@ -36,12 +37,16 @@ export type Prim = PrimString | PrimBoolean | PrimNumber | PrimTestNumber
 export type Args = Sym[];
 export type Fn = [`fn`, Args, Each | Each[] | Sexpr | Sexpr[]]
 export type IFn = Fn | Keyword | TMap
-export type Vector = [`vec`, ...(Sexpr | LetForm | Atom)[]] | [`vec`];
+export type VecEmpty = ['vec']
+export type Vector = [`vec`, ...(Sexpr | LetForm | Atom)[]] | VecEmpty;
 export type Var =
 { name: string
     , value: string | Atom }
 
 export type Env = [] | Var[];
+
+export type TTrue = ['prim', true]
+export type TFalse = ['prim', false]
 
 export type  TNotMatch = "NotMatch";
 export const VNotMatch = "NotMatch";

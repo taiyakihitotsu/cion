@@ -14,6 +14,8 @@ import type * as Util from './util.js'
   export const P32:T32 = [[[[[[[[[[[[[[[[P16]]]]]]]]]]]]]]]]
   export const P64:T64 = [[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[P32]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]
 
+  export type PeanoNumber = null | [PeanoNumber]
+
   export type add<
   T
 , TT> =

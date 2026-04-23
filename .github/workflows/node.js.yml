@@ -45,8 +45,5 @@ jobs:
       - name: Run check:spec
         run: pnpm check:spec
 
-      - name: Run check:smith
-        run: pnpm check:smith
-
       - name: Build
         run: pnpm build

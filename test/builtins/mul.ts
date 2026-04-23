@@ -1,11 +1,11 @@
 import type Cion from '../../src/index.js'
 import type { LispMul } from '../../src/index.js'
-import * as de from '../../src/decimal.js'
+import * as de from '../../src/decimal/index.js'
 import type { Equal } from '../../src/util.js'
 
 const mul_internal_test_0 : true = {} as Equal<['prim', ['0000000000000011', '0000000000000001']], LispMul<[[`prim`, '00000011'], [`prim`, '0000001']]>>
 const mul_internal_test_1 : true = {} as Equal<['prim', ['0000000000101101', '0000000000000001']], LispMul<[[`prim`, '00001111'], [`prim`, '0000001'], [`prim`, '00000011']]>>
-const mul_internal_test_2 : true = {} as Equal<['prim', ['0000000000101101', '0000000000000010']], LispMul<[[`prim`, '00001111'], [`prim`, ['0000001', de.DtoB<'2'>]], [`prim`, '00000011']]>>
+const mul_internal_test_2 : true = {} as Equal<['prim', ['0000000000101101', '0000000000000010']], LispMul<[[`prim`, '00001111'], [`prim`, ['0000001', de.DecimalToBit<'2'>]], [`prim`, '00000011']]>>
 
 const mul_raw_test_0 : true = {} as Equal<['prim', ["0000000000000011", '0000000000000001']], Cion.RawLisp<"(* 3 1)">>
 const mul_raw_test_1 : true = {} as Equal<['prim', ["0000000000000000", '0000000000000001']], Cion.RawLisp<"(* 0 1)">>

@@ -1,6 +1,5 @@
 import type Cion from '../../src/index.js'
 import type { _Update } from '../../src/index.js'
-import { AssocErrorMsg1 } from '../../src/index.js'
 import type { Equal } from '../../src/util.js'
 
 // --- Internal _Update Type Tests (AST / Tuple Level) ---
@@ -16,9 +15,10 @@ const update_int_1: true = {} as Equal<
   _Update<['vec', ['key', ':a'], ['prim', '01'], ['key', ':b'], ['prim', '0001'], ['key', ':c'], ['prim', '0010']], ['prim', '11'], ['fn', [['sym', 'x']], [['sym', '+'], ['sym', 'x'], ['prim', '1000']]]>>
 
 // Error case: Key not found or invalid for vector
-const update_int_error_0: true = {} as Equal<
-  { error: 'AssocError1'; message: typeof AssocErrorMsg1; sexpr: ['vec', ['key', ':a'], ['prim', '01'], ['key', ':b'], ['prim', '0001'], ['key', ':c'], ['prim', '0010']] },
-  _Update<['vec', ['key', ':a'], ['prim', '01'], ['key', ':b'], ['prim', '0001'], ['key', ':c'], ['prim', '0010']], ['key', ':d'], ['fn', [['sym', 'x']], [['sym', '+'], ['sym', 'x'], ['prim', '1000']]]>>
+type ExpectedError_Update_0 = { error: 'AssocError1'; message: "Args: 1st Vector & 2nd not number."; sexpr: ['vec', ['key', ':a'], ['prim', '01'], ['key', ':b'], ['prim', '0001'], ['key', ':c'], ['prim', '0010']] }
+type ActualError_Update_0 = _Update<['vec', ['key', ':a'], ['prim', '01'], ['key', ':b'], ['prim', '0001'], ['key', ':c'], ['prim', '0010']], ['key', ':d'], ['fn', [['sym', 'x']], [['sym', '+'], ['sym', 'x'], ['prim', '1000']]]>
+
+const update_int_error_0: true = {} as Equal<ExpectedError_Update_0, ActualError_Update_0>
 
 // --- RawLisp Macro Expansion Tests ---
 

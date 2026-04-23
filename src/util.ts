@@ -61,7 +61,7 @@ export type KeysTuple<R extends Record<PropertyKey, unknown>> = UnionToTuple<key
 // -- about 2589 error
 // -------------------------
 
-type _rec<
+export type _rec<
   T> =
   T extends {r: never}
     ? never

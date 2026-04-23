@@ -2,12 +2,13 @@ import type Cion from '../../src/index.js'
 import type { Eval } from '../../src/index.js'
 import type { Equal } from '../../src/util.js'
 
-const fn_test_0 : true = {} as Equal<{
+type ExpectedError_And_1 = {
   error: 'LispAddError1',
-  message: '',
+  message: 'Args should be sexpr.',
   sexpr: { sexpr: ['NotMatch'], error: 'ReadingError0', message: 'sexpr is not atom list.' }
 }
-  ,Eval<[['fn', [['sym', 'a'], ['sym', 'b']], [['sym', '+'], ['sym', 'a'], ['sym', 'b']]]]>>
+type ActualError_And_1 = Eval<[['fn', [['sym', 'a'], ['sym', 'b']], [['sym', '+'], ['sym', 'a'], ['sym', 'b']]]]>
+const fn_test_0 : true = {} as Equal<ExpectedError_And_1, ActualError_And_1>
 
 const fn_test_1 : true = {} as Equal<['prim', ['0000000000000101', '0000000000000001']]
   ,Eval<[['fn', [['sym', 'a'], ['sym', 'b']], [['sym', '+'], ['sym', 'a'], ['sym', 'b']]], ['prim', '10'], ['prim', '11']]>>
