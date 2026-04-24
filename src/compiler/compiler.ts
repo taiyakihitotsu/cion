@@ -1,4 +1,4 @@
-import type { Symbolizer } from './semantics.js'
+import type { Symbolizer } from './symbolizer.js'
 
 /**
 Internal helper to identify string literals within the token stream.

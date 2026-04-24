@@ -1,5 +1,9 @@
-import type {SCompiler} from '../../src/compiler/index.js'
-import type {Equal} from '../../src/util.js'
+import type {SCompiler} from '../../../src/compiler/index.js'
+import type {Equal} from '../../../src/util.js'
+
+// ---------------------------
+// -- Compiler
+// ---------------------------
 
 const test_s_compiler_0: true = {} as Equal<
   ['prim', '0000000000000010'],
