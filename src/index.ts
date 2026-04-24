@@ -1,5 +1,5 @@
 import type * as Bit from './bit/index.js'
-import type * as Compiler from './compiler/index.js'
+import type * as Compiler from './s-compiler/index.js'
 import type * as Util from './util.js'
 import type * as Decimal from './decimal/index.js'
 import type { regex } from './regex/index.js'
@@ -137,7 +137,7 @@ export type Str<
   S
 , R extends string = ""> =
   S extends [infer HS, ...infer T]
-    ? Compiler.Unparse<HS> extends infer s extends string
+    ? Compiler.SUnparse<HS> extends infer s extends string
       ? s extends `'${infer inner}'`
         ? Str<T, `${R}${inner}`>
       : Str<T, `${R}${s}`>
@@ -1984,9 +1984,9 @@ export type Eval<
 // ----------------------------
 
 export namespace Cion {
-  export type RawLisp<S extends string> = Eval<Compiler.SCompiler<Compiler.Tokenizer<S>>>
-  export type Lisp<S extends string> = Compiler.Unparse<RawLisp<S>>
-  export type CionParser<S extends string> = Compiler.Tokenizer<S>
+  export type RawLisp<S extends string> = Eval<Compiler.SCompiler<Compiler.STokenizer<S>>>
+  export type Lisp<S extends string> = Compiler.SUnparse<RawLisp<S>>
+  export type CionParser<S extends string> = Compiler.STokenizer<S>
   export type Builtins = BuiltinsUnion
 }
 

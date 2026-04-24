@@ -64,4 +64,4 @@ export type recp<
     ? { r: [...R, ...(U extends '' ? [] : [U])] }
   : { r: R }
 
-export type Tokenizer<Sexpr extends string> = Rec<recp<SPad<Sexpr>>>
+export type STokenizer<Sexpr extends string> = Rec<recp<SPad<Sexpr>>>

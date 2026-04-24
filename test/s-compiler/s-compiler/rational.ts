@@ -1,4 +1,4 @@
-import type {SCompiler} from '../../../src/compiler/index.js'
+import type {SCompiler} from '../../../src/s-compiler/index.js'
 import type {Equal} from '../../../src/util.js'
 
 const test_s_compiler_0: true = {} as Equal<

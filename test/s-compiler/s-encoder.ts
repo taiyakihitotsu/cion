@@ -1,4 +1,4 @@
-import type {SEncoder} from '../../src/compiler/index.js'
+import type {SEncoder} from '../../src/s-compiler/index.js'
 import type {Equal} from '../../src/util.js'
 
 // -------------------------

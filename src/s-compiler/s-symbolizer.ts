@@ -15,7 +15,7 @@ Takes a single token and returns its corresponding internal AST representation.
 4. Assume a token is symbol if not matched.
    Returns wrapped as ['sym', S] if so.
 */
-export type Symbolizer<
+export type SSymbolizer<
   Token extends string> =
   Token extends `${infer H}${infer _R}`
     ? H extends "'" | '"'

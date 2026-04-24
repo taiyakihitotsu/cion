@@ -1,4 +1,4 @@
-import type {ReadRational} from '../../../src/compiler/index.js'
+import type {ReadRational} from '../../../src/s-compiler/index.js'
 import type {Equal} from '../../../src/util.js'
 
 const Expected_3_2: true = {} as Equal<['3', '2'], ReadRational<`3/2`>>
