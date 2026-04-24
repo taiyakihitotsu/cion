@@ -33,8 +33,6 @@ export type UnionToIntersection<
     ? I
   : never
 
-export type UtoI<U> = UnionToIntersection<U>
-
 export type LastOf<
   T> =
   [T] extends [never]
@@ -49,11 +47,6 @@ export type UnionToTuple<
   [U] extends [never]
     ? T
   : UnionToTuple<Exclude<U, LastOf<U>>, [LastOf<U>, ...T]>
-  // : LastOf<U> extends infer LU
-  //   ? Exclude<U, LU> extends infer E
-  //     ? UnionToTuple<E, [LU, ...T]>
-  //   : never
-  // : never
 
 export type KeysTuple<R extends Record<PropertyKey, unknown>> = UnionToTuple<keyof R>
 

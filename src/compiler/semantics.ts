@@ -1,7 +1,7 @@
 import type * as Bit from '../bit/index.js'
 import type * as Decimal from '../decimal/index.js'
 import type {TNil, TTrue, TFalse } from '../sexprtypes.js'
-import type { ReadRational } from './util.js'
+import type { ReadRational } from './read-rational.js'
 
 /**
 Takes a single token and returns its corresponding internal AST representation.
