@@ -6,3 +6,7 @@
 [submodule "submodules/scripts"]
 	path = submodules/scripts
 	url = git@github.com:taiyakihitotsu/condscript.git
+[submodule "submodules/ascii-check"]
+	path = submodules/ascii-check
+	url = git@github.com:taiyakihitotsu/ascii-check.git
+	branch = main
