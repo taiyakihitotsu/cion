@@ -2,7 +2,10 @@ import type Cion from '../../src/index.js'
 import type { _AssocIn } from '../../src/index.js'
 import type { Equal } from '../../src/util.js'
 
-const assocIn_test_0: true = {} as Equal<['vec', ['key', ':a'], ['prim', 10], ['key', ':b'], ['prim', 1], ['key', ':c'], ['prim', 2]],  _AssocIn<['vec', ['key', ':a'], ['prim', 0], ['key', ':b'], ['prim', 1], ['key', ':c'], ['prim', 2]], ['vec', ['prim', '1']], ['prim', 10]>>
+type Expected_assocIn_0 = ['vec', ['key', ':a'], ['prim', 10], ['key', ':b'], ['prim', 1], ['key', ':c'], ['prim', 2]]
+type Actual_assocIn_0 = _AssocIn<['vec', ['key', ':a'], ['prim', 0], ['key', ':b'], ['prim', 1], ['key', ':c'], ['prim', 2]], ['vec', ['prim', '1']], ['prim', 10]>
+const assocIn_test_0: true = {} as Equal<Expected_assocIn_0, Actual_assocIn_0>
+
 const assocIn_test_1: true = {} as Equal<['map', [['key', ':a'], ['prim', 10], ['key', ':b'], ['prim', 1], ['key', ':c'], ['prim', 2]]], _AssocIn<['map', [['key', ':a'], ['prim', 0], ['key', ':b'], ['prim', 1], ['key', ':c'], ['prim', 2]]], ['vec', ['key', ':a']], ['prim', 10]>>
 const assocIn_test_2: true = {} as Equal<'AccessFailed', _AssocIn<['vec', ['key', ':a'], ['prim', 0], ['key', ':b'], ['vec', ['key', ':ba'], ['prim', 33]], ['key', ':c'], ['prim', 2]], ['vec', ['prim', '1'], ['prim', '0']], ['prim', 10]>>
 const assocIn_test_3: true = {} as Equal<['vec', ['key', ':a'], ['prim', 0], ['key', ':b'], ['vec', ['key', ':ba'], ['prim', 10]], ['key', ':c'], ['prim', 2]], _AssocIn<['vec', ['key', ':a'], ['prim', 0], ['key', ':b'], ['vec', ['key', ':ba'], ['prim', 33]], ['key', ':c'], ['prim', 2]], ['vec', ['prim', '11'], ['prim', '1']], ['prim', 10]>>

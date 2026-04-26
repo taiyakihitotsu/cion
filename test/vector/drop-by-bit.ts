@@ -15,5 +15,5 @@ const bitdrop_test_2: true = {} as Equal<DropByBitLessThanZero, BaseVector>
 type DropByBitLength = DropByBit<'010', BaseVector>
 const bitdrop_test_3: true = {} as Equal<DropByBitLength, [2]>
 
-type DropByBitGreaterThanLength = DropByBit<'11111', BaseVector>
-const bitdrop_test_4: true = {} as Equal<DropByBitGreaterThanLength, []>
+type DropByBitGreaterThanLength = DropByBit<'1111111111111111', BaseVector>
+const bitdrop_test_4: true = {} as Equal<DropByBitGreaterThanLength, BaseVector>
