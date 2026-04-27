@@ -23,4 +23,23 @@ const bitmul9: true = {} as Equal<BitMul<'1111111111110000', '1111111111111111'>
 const bitmul10: true = {} as Equal<BitMul<'0111111111110000', '1111111111111111'>, '1000000000010000'>
 const bitmul11: true = {} as Equal<BitMul<'1111111111111111','0111111111110000'>, '1000000000010000'>
 
+type Actual_Mul_Neg_Pos = BitMul<"1111111111111110", "0000000000000011">
+const testbitmul_neg_pos: true = {} as Equal<Actual_Mul_Neg_Pos, "1111111111111010">
 
+type Actual_Mul_Both_Neg = BitMul<"1111111111111110", "1111111111111110">
+const testbitmul_both_neg: true = {} as Equal<Actual_Mul_Both_Neg, `${typeof CurPad}00000100`>
+
+type Actual_Mul_Max_Zero = BitMul<"0111111111111111", "0000000000000000">
+const testbitmul_max_zero: true = {} as Equal<Actual_Mul_Max_Zero, "0000000000000000">
+
+type Actual_Mul_PowerOfTwo = BitMul<"0000000000000100", "0000000000000100">
+const testbitmul_power_two: true = {} as Equal<Actual_Mul_PowerOfTwo, `${typeof CurPad}00010000`>
+
+type Actual_Mul_Overflow_Boundary = BitMul<"0100000000000000", "0000000000000010">
+const testbitmul_overflow: true = {} as Equal<Actual_Mul_Overflow_Boundary, "1000000000000000">
+
+type Actual_Mul_Mixed_Small = BitMul<"011", "011">
+const testbitmul_small_mixed: true = {} as Equal<Actual_Mul_Mixed_Small, `${typeof CurPad}00001001`>
+
+type Actual_Mul_Short_Neg = BitMul<"1111111111111111", "0000000000000011">
+const testbitmul_short_neg: true = {} as Equal<Actual_Mul_Short_Neg, "1111111111111101">

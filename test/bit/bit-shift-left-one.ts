@@ -7,8 +7,6 @@ type T2 = [[null]]
 type T3 = [[[null]]]
 type T4 = [[[[null]]]]
 
-// --- BitShiftLeftOne Tests ---
-
 type Actual_S1_basic = BitShiftLeftOne<"101">
 const expected_S1_basic: true = {} as Equal<"010", Actual_S1_basic>
 
@@ -23,9 +21,6 @@ const expected_S1_empty: true = {} as Equal<"", Actual_S1_empty>
 
 type Actual_S1_single = BitShiftLeftOne<"1">
 const expected_S1_single: true = {} as Equal<"0", Actual_S1_single>
-
-
-// --- BitShiftLeft Tests (Recursive fixed-length shift) ---
 
 // Shift by 0
 type Actual_L_T0 = BitShiftLeft<"1011", T0>

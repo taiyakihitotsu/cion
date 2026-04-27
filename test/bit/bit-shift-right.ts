@@ -18,13 +18,9 @@ const bitsr_all: true = {} as Equal<"000", Actual_shift_all>
 type Actual_shift_beyond = BitShiftRight<"111", [[[null]]], [[[[null]]]]>
 const bitsr_beyond: true = {} as Equal<"000", Actual_shift_beyond>
 
-// --- Different Bit Patterns ---
-
 // Right shift with zeros at the end
 type Actual_shift_zero = BitShiftRight<"1100", [[[[null]]]], null>
 const bitsr_zeros_end: true = {} as Equal<"1100", Actual_shift_zero>
-
-// --- Large Bitstring / Peano Tests ---
 
 type Peano4 = [[[[null]]]]
 type Peano8 = [[[[[[[[null]]]]]]]]
@@ -38,8 +34,6 @@ const bitsr_large_shift: true = {} as Equal<
   BitShiftRight<"1111111111", [[[[[[[[[[null]]]]]]]]]], Peano8>, 
   "11"
 >
-
-// --- Edge Cases ---
 
 // Empty bitstring
 // @ts-expect-error:
