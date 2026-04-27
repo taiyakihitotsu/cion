@@ -1,26 +1,22 @@
 import type { Eval, MakeVar } from '../../src/index.js'
 import type { Equal } from '../../src/util.js'
 
-// [Note]
-// These tests are complement tests.
-//
-// Main test, e.g. for built-in functions,
-//   should written in `test/builtints`
-//   or a particular file.
-//
-// 
+// Returns evaluated symbol 
 
-const evalatomtest: Eval<[`prim`, `'test'`]> = [`prim`, `'test'`];
-const evalatomtest2: Eval<[`sym`, `test`], [[MakeVar<`test`, `'testval'`>]]> = [
+const evalatomtest: true = {} as Equal<Eval<[`prim`, `'test'`]>, [`prim`, `'test'`]>
+const evalatomtest2: true = {} as Equal<Eval<[`sym`, `test`], [[MakeVar<`test`, `'testval'`>]]>, [
   `prim`,
   `'testval'`,
-];
-const evalatomtest3: Eval<
+]>
+const evalatomtest3: true = {} as Equal<Eval<
   [`sym`, `test`],
   [[MakeVar<`test`, [`prim`, `'prim/test'`]>]]
-> = [`prim`, `'prim/test'`];
-const evalatomtest4: Eval<
+>, [`prim`, `'prim/test'`]>
+const evalatomtest4: true = {} as Equal<Eval<
   [`sym`, `test`],
   [[MakeVar<`test`, [`fn`, [[`sym`, `a`]], [`sym`, `a`]]>]]
-> = [`fn`, [[`sym`, `a`]], [`sym`, `a`]];
-const evalprimerrortest: Eval<[`prim`, 0]> = [`prim`, 0];
+>, [`fn`, [[`sym`, `a`]], [`sym`, `a`]]>
+
+// Return primitive
+
+const evalprimerrortest: true = {} as Equal<Eval<[`prim`, 0]>, [`prim`, 0]>
