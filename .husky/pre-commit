@@ -1,9 +1,10 @@
 changed_files=$(git diff --cached --name-only)
 
 if echo "$changed_files" | grep -qE '^(src/|test/|spec/)'; then
-  pnpm check:spec
   pnpm check
   pnpm check:test
+  pnpm check:spec
+  pnpm check:ascii
 else
   echo "husky is skiped."
 fi

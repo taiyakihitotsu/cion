@@ -24,6 +24,7 @@
     "check:test": "tsc --noEmit --project tsconfig.test.json",
     "check:spec": "tsc --noEmit --project tsconfig.spec.json",
     "check:smith": "sh ./submodules/scripts/sandbox-smith.sh && sh ./submodules/scripts/check-smith.sh",
+    "check:ascii": "sh check.sh",
     "format:biome": "biome format --write spec",
     "format:smith": "pnpm --prefix submodules/condsmith run format:smith ../../src",
     "run": "ts-node src/index.ts",

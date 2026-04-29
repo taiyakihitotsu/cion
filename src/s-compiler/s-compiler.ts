@@ -1,4 +1,4 @@
-import type { Symbolizer } from './semantics.js'
+import type { SSymbolizer } from './s-symbolizer.js'
 
 /**
 Internal helper to identify string literals within the token stream.
@@ -32,7 +32,7 @@ export type SCompiler<
       : H extends "}"
         ? ['map', Current]
       : Current extends []
-        ? Symbolizer<H>
+        ? SSymbolizer<H>
       : Current
     : H extends ')' | ']'
       ? SCompiler<
@@ -51,5 +51,5 @@ export type SCompiler<
       ? SCompiler<R, [], [Current, ...Stack]>
     : H extends `:${infer _}`
       ? SCompiler<R, [...Current, [`key`, H]], Stack>
-    : SCompiler<R, [...Current, Symbolizer<H>], Stack, StrStack, H extends 'let' | 'fn' ? true : false>
+    : SCompiler<R, [...Current, SSymbolizer<H>], Stack, StrStack, H extends 'let' | 'fn' ? true : false>
   : never

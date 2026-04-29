@@ -27,21 +27,21 @@ export const math_specs = {
       { pre: "(mod 5 3)", post: "2" },
       { pre: "(mod -5 3)", post: "1" },
     ],
-    doc: "Returns the modulo (non-negative remainder). Like Clojure’s mod.",
+    doc: "Returns the modulo (non-negative remainder). Like Clojure's mod.",
   },
   rem: {
     usage: [
       { pre: "(rem 5 3)", post: "2" },
       { pre: "(rem -5 3)", post: "-2" },
     ],
-    doc: "Remainder (sign of numerator). Like Clojure’s rem.",
+    doc: "Remainder (sign of numerator). Like Clojure's rem.",
   },
   "%": {
     usage: [
       { pre: "(% 5 3)", post: "2" },
       { pre: "(% -5 3)", post: "-2" },
     ],
-    doc: "Rem. Remainder (sign of numerator). Like Clojure’s rem.",
+    doc: "Rem. Remainder (sign of numerator). Like Clojure's rem.",
   },
   trunc: {
     usage: [

@@ -1,5 +1,5 @@
 import type * as Bit from './bit/index.js'
-import type * as Compiler from './compiler/index.js'
+import type * as Compiler from './s-compiler/index.js'
 import type * as Util from './util.js'
 import type * as Decimal from './decimal/index.js'
 import type { regex } from './regex/index.js'
@@ -137,7 +137,7 @@ export type Str<
   S
 , R extends string = ""> =
   S extends [infer HS, ...infer T]
-    ? Compiler.Unparse<HS> extends infer s extends string
+    ? Compiler.SUnparse<HS> extends infer s extends string
       ? s extends `'${infer inner}'`
         ? Str<T, `${R}${inner}`>
       : Str<T, `${R}${s}`>
@@ -1886,6 +1886,13 @@ type Builtins<
     : Eval<[ReadLet<U, env>, OPR[0]], env, [prev]>
   : never
 
+export type MapEval<A, env, isEval = false, acc extends unknown[] = []> = 
+  A extends [infer Head, ...infer Rest]
+    ? isEval extends false
+      ? MapEval<Rest, env, true, [...acc, Head]>
+    : MapEval<Rest, env, false, [...acc, Eval<Head, env>]>
+  : acc
+
 export type Eval<
   A
 , env = [[]]
@@ -1926,6 +1933,8 @@ export type Eval<
   : A extends Atom
     ? A extends Prim
       ? A
+    : A extends TMap & ['map', infer mr]
+      ? ['map', MapEval<mr, env>]
     : A extends Vector & ['vec', ...infer vr]
       ? vr extends []
         ? Vscope extends true
@@ -1984,9 +1993,10 @@ export type Eval<
 // ----------------------------
 
 export namespace Cion {
-  export type RawLisp<S extends string> = Eval<Compiler.SCompiler<Compiler.Tokenizer<S>>>
-  export type Lisp<S extends string> = Compiler.Unparse<RawLisp<S>>
-  export type CionParser<S extends string> = Compiler.Tokenizer<S>
+  export type RawLisp<S extends string> = Eval<Compiler.SCompiler<Compiler.STokenizer<S>>>
+  export type Lisp<S extends string> = Compiler.SUnparse<RawLisp<S>>
+  export type CionParser<S extends string> = Compiler.STokenizer<S>
+  export type CionCompiler<S extends string> = Compiler.SCompiler<Compiler.STokenizer<S>>
   export type Builtins = BuiltinsUnion
 }
 

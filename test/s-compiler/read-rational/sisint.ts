@@ -1,5 +1,5 @@
-import type {SIsInt} from '../../src/compiler/index.js'
-import type {Equal} from '../../src/util.js'
+import type {SIsInt} from '../../../src/s-compiler/index.js'
+import type {Equal} from '../../../src/util.js'
 
 const Zero_True: true = {} as Equal<true, SIsInt<'0'>>
 const String_False: true = {} as Equal<SIsInt<'s'>, false>

@@ -33,11 +33,9 @@ const get_test_8 : true = {} as Equal<['prim', '0']
 const get_test_9 : true = {} as Equal<typeof VNil
   ,LispGet<[['map', [['key', ':'], ['prim', '0']]], ['key', ':a']]>>
 
-const get_test_10 : true = {} as Equal<[`prim`, 3]
-  ,Get<
-    ['prim', '11'],
-    [`vec`, [`prim`, 0], [`prim`, 1], [`prim`, 2], [`prim`, 3], [`prim`, 4]]
-  >>
+
+type Actual_get_11 = Get<['prim', '11'], [`vec`, [`prim`, 0], [`prim`, 1], [`prim`, 2], [`prim`, 3], [`prim`, 4]]>
+const get_test_10 : true = {} as Equal<[`prim`, 3], Actual_get_11>
 
 const get_test_11 : true = {} as Equal<['prim', '0']
   ,Get<['key', ':a'], ['map', [['key', ':a'], ['prim', '0']]]>>
@@ -51,8 +49,8 @@ const get_test_13 : true = {} as Equal<typeof VNil
 const get_test_14 : true = {} as Equal<['key', ':a']
   ,Get<['prim', '0'], ['vec', ['key', ':a'], ['prim', '0']]>>
 
-const get_test_15 : true = {} as Equal<['prim', '10']
-  ,Get<['prim', '1'], ['vec', ['key', ':b'], ['prim', '10'], ['key', ':a'], ['prim', '0']]>>
+type Actual_get_15 = Get<['prim', '1'], ['vec', ['key', ':b'], ['prim', '10'], ['key', ':a'], ['prim', '0']]>
+const get_test_15 : true = {} as Equal<['prim', '10'], Actual_get_15>
 
 const get_test_16 : true = {} as Equal<typeof VNil
   ,Get<['prim', '111'], ['map', [['key', ':b'], ['prim', '10'], ['key', ':a'], ['prim', '0']]]>>

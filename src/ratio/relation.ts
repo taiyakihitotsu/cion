@@ -18,10 +18,14 @@ export type BitR<
     ? BitEq<xc, yc>
   : never
 
+type Test_Int_GT = BitGT<'0000000000000011', '0000000000000010'>
+
 /**
 Compares two RatioNumbers based on the specified relation.
 
 If both are Ratios, they are scaled to a common denominator before comparing their numerators.
+
+`X` and `Y` must be 16-digit-bit-strings.
 */
 export type Relation<
   X extends RatioNumber

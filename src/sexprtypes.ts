@@ -14,8 +14,19 @@ export type LetArg = EvenTuple<[Sym | Sym[], Sexpr|LetVal]>
 export type LetForm = [`let`, LetArg, Each | Each[] | Sexpr];
 
 export type Each = LetForm | IfForm | Atom
-export type Atom = ['map', Atom[]] | Sym | Prim | Fn | Vector | Keyword | TNil
-export type TMap = Exclude<Atom, Sym | Prim | Fn | Vector | Keyword | TNil>
+export type Atom = TMap | Sym | Prim | Fn | Vector | Keyword | TNil
+
+/**
+```typescript
+(fn [] {:a (+ 10 20)})
+```
+
+Cion internally evaluates this sexpr to `{:a (+ 10 20)}` via AST at the first.
+Then this not-evaluated AST, `(+ 10 20)`, passes into `Eval` as-is.
+So, at the time, `TMap` must includes `Sexpr` as members to prevent `EvalError11`.
+*/
+export type TMap = ['map', (Atom | Sexpr)[]]
+// export type TMap = Exclude<Atom, Sym | Prim | Fn | Vector | Keyword | TNil>
 
 export type Sexpr = Array<Each | Each[] | Sexpr>;
 export type NilLiteral = 'nil'
@@ -30,8 +41,8 @@ export type PrimTestNumber  = ['prim', number] // note : this is only used in te
 export type BitString = string
 export type RatioString = [string, string]
 export type NumString = BitString | RatioString
-export type PrimNumber = PrimNut | PrimRatio
-export type PrimNut   = ['prim', BitString]
+export type PrimNumber = PrimNat | PrimRatio
+export type PrimNat   = ['prim', BitString]
 export type PrimRatio = ['prim', RatioString]
 export type Prim = PrimString | PrimBoolean | PrimNumber | PrimTestNumber
 export type Args = Sym[];

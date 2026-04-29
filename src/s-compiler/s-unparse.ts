@@ -98,9 +98,9 @@ This process represents the "Unparse" (or stringify) phase and does not evaluate
 Dont not evaluate expressions.
 
 ```typescript
-type c = Unparse<['prim', true]> //=> 'true'
-type b = Unparse<['prim', 'string']> //=> "'string'"
-type a = Unparse<['if', ['prim', true], ['prim', '0000000000000001']]> //=> '(if true 1)'
+type c = SUnparse<['prim', true]> //=> 'true'
+type b = SUnparse<['prim', 'string']> //=> "'string'"
+type a = SUnparse<['if', ['prim', true], ['prim', '0000000000000001']]> //=> '(if true 1)'
 ```
 */
 export type _Unparse<
@@ -135,4 +135,4 @@ export type _Unparse<
       , error: 'InnerUnparseError' }
   : never
 
-export type Unparse<AST> = _Unparse<AST> extends infer r ? r extends '' ? 'nil' : r : never
+export type SUnparse<AST> = _Unparse<AST> extends infer r ? r extends '' ? 'nil' : r : never
