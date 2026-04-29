@@ -1886,6 +1886,13 @@ type Builtins<
     : Eval<[ReadLet<U, env>, OPR[0]], env, [prev]>
   : never
 
+export type MapEval<A, env, isEval = false, acc extends unknown[] = []> = 
+  A extends [infer Head, ...infer Rest]
+    ? isEval extends false
+      ? MapEval<Rest, env, true, [...acc, Head]>
+    : MapEval<Rest, env, false, [...acc, Eval<Head, env>]>
+  : acc
+
 export type Eval<
   A
 , env = [[]]
@@ -1926,6 +1933,9 @@ export type Eval<
   : A extends Atom
     ? A extends Prim
       ? A
+    // [todo] here
+    : A extends TMap & ['map', infer mr]
+      ? ['map', MapEval<mr, env>]
     : A extends Vector & ['vec', ...infer vr]
       ? vr extends []
         ? Vscope extends true
@@ -1987,6 +1997,7 @@ export namespace Cion {
   export type RawLisp<S extends string> = Eval<Compiler.SCompiler<Compiler.STokenizer<S>>>
   export type Lisp<S extends string> = Compiler.SUnparse<RawLisp<S>>
   export type CionParser<S extends string> = Compiler.STokenizer<S>
+  export type CionCompiler<S extends string> = Compiler.SCompiler<Compiler.STokenizer<S>>
   export type Builtins = BuiltinsUnion
 }
 

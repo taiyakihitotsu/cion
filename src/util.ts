@@ -14,6 +14,35 @@ type _IsEqual<
   : false
 
 // ---------------
+// -- Extends
+// ---------------
+
+type Not<T extends boolean> =
+  T extends true ? false : true 
+
+type EqualExtends<T, U> = [T, U] extends [U, T] ? true : false
+
+/**
+```typescript
+type A = DistributeExtends<0, 0 | number> //=> true
+type B = DistributeExtends<0, 0> //=> true
+type C = DistributeExtends<0, '0'> //=> false
+type D = DistributeExtends<0, '0', false> //=> true
+type DD = DistributeExtends<0, '0' | {a: 0}, false> //=> true
+type E = DistributeExtends<0, '0' | 0, false> //=> false
+```
+
+NOTE: If the left compares with `A` unions `B`, but `A` and `B` themselves are Union Type,
+wraps all arguments such as `DistributeExtends<[Source], [A] | [B]>`.
+*/
+export type DistributeExtends<T, U, Expect extends boolean = true> = 
+  [ U extends infer u
+      ? [ T extends u ? Expect : Not<Expect> ]
+    : never ] extends infer Result
+    ? EqualExtends<[[true]], Result>
+  : never
+
+// ---------------
 // -- Record
 // ---------------
 
