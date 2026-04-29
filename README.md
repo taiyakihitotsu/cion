@@ -1,7 +1,3 @@
-# 🧪 Project Status: Beta
-Cion is currently in Beta and undergoing a major internal refactoring 🛠️.  
-Expect frequent updates and some "experimental" internal code!
-
 # Cion
 [![npm](https://img.shields.io/npm/v/@taiyakihitotsu/cion)](https://www.npmjs.com/package/@taiyakihitotsu/cion) ![license](https://img.shields.io/npm/l/@taiyakihitotsu/cion) [![build](https://github.com/taiyakihitotsu/cion/actions/workflows/node.js.yml/badge.svg)](https://github.com/taiyakihitotsu/cion/actions)
 
@@ -135,7 +131,7 @@ const test_refind : Cion.Lisp<`(re-find ${email} 'zzz.zzz@testmailreg.com')`> = 
 
 ## Builtins
 The specs of some fns **don't** follow Clojure.  
-See [spec/spec.ts](https://github.com/taiyakihitotsu/cion/blob/main/spec/spec.ts).
+See the [spec](https://github.com/taiyakihitotsu/cion/tree/main/spec) directory.
 
 ### Core
 - if, fn, let, nil
