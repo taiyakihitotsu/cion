@@ -1,5 +1,5 @@
-import type Cion from '../src/index.js'
-import type { Equal } from '../src/util.js'
+import type Cion from '../../src/index.js'
+import type { Equal } from '../../src/util.js'
 
 // let test
 const test_let_0: true = {} as Equal<'3', Cion.Lisp<"(let [a {:a \"a\"}] (+ 1 2))">>

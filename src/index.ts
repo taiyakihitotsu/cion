@@ -1933,7 +1933,6 @@ export type Eval<
   : A extends Atom
     ? A extends Prim
       ? A
-    // [todo] here
     : A extends TMap & ['map', infer mr]
       ? ['map', MapEval<mr, env>]
     : A extends Vector & ['vec', ...infer vr]

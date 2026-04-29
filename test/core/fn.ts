@@ -1,5 +1,5 @@
-import type Cion from '../src/index.js'
-import type { Equal } from '../src/util.js'
+import type Cion from '../../src/index.js'
+import type { Equal } from '../../src/util.js'
 
 const test_fn_args_0: true = {} as Equal<'1', Cion.Lisp<"((fn [a] a) 1)">>
 const test_fn_args_1: true = {} as Equal<'2', Cion.Lisp<"((fn [a b] b) 1 2)">>
