@@ -1,3 +1,4 @@
+# DEV.md
 This document is intended for:
 - people who want to understand the internal implementation
 - potential contributors
@@ -85,10 +86,10 @@ If you struggle with TS2589 error, check `Rec` defined in [src/util.ts]( https:/
 - Rewrite a type function you want to fix TS2589, as returning `{r: Result}` instead of just `Result` type in **every branch**.
 - Decompose the result nested by `:r` via `Rec`.
 
-This pattern has been already used in [`SParser`]( https://github.com/taiyakihitotsu/cion/blob/doc/src/compiler.ts ) and [`regex-compiler`]( https://github.com/taiyakihitotsu/cion/blob/doc/src/regex-compiler.ts ). Check them for details and a nuance.
+This pattern has been already used in [`STokenizer`]( https://github.com/taiyakihitotsu/cion/blob/doc/src/s-compiler/s-tokenizer.ts ) and [`regex-compiler`]( https://github.com/taiyakihitotsu/cion/blob/main/src/regex/regex-compiler.ts ). Check them for details and a nuance.
 ## Core Design Principles
 ### Architecture Overview
-string-literal -- via [`SParser`]( https://github.com/taiyakihitotsu/cion/blob/main/src/compiler.ts ) --> tokens -- via [`SCompiler`]( https://github.com/taiyakihitotsu/cion/blob/main/src/compiler.ts ) --> AST -- via [`Eval`]( https://github.com/taiyakihitotsu/cion/blob/main/src/index.ts ) --> AST -- via [`Unparser`]( https://github.com/taiyakihitotsu/cion/blob/main/src/compiler.ts ) --> string-literal
+string-literal -- via [`STokenizer`]( https://github.com/taiyakihitotsu/cion/blob/main/src/s-compiler/s-tokenizer.ts ) --> tokens -- via [`SCompiler`]( https://github.com/taiyakihitotsu/cion/blob/main/src/s-compiler/s-compiler.ts ) --> AST -- via [`Eval`]( https://github.com/taiyakihitotsu/cion/blob/main/src/index.ts ) --> AST -- via [`SUnparser`]( https://github.com/taiyakihitotsu/cion/blob/main/src/s-compiler/s-unparse.ts ) --> string-literal
 ### Evaluation
 - **Cion.Lisp**: Always returns a string literal that is valid as an input to another `Cion.Lisp` call.
 - **Cion.RawLisp**: Always returns an AST tuple that is valid as an input to another `Cion.RawLisp` call.
@@ -168,7 +169,7 @@ Their error cases vary significantly, so throwing errors makes debugging S-expre
 
 All numerical calculations are performed using bit-strings. Integer number will be translated to rational number first if calculating with rational vs integer.
 
-[bit.ts]( https://github.com/taiyakihitotsu/cion/blob/main/src/bit.ts ) | [decimal.ts]( https://github.com/taiyakihitotsu/cion/blob/doc/src/bit.ts ) | [peano.ts]( https://github.com/taiyakihitotsu/cion/blob/main/src/bit.ts ) | [ratio.ts]( https://github.com/taiyakihitotsu/cion/blob/main/src/bit.ts )
+[bit]( https://github.com/taiyakihitotsu/cion/blob/main/src/bit ) | [decimal]( https://github.com/taiyakihitotsu/cion/blob/main/src/decimal ) | [peano.ts]( https://github.com/taiyakihitotsu/cion/blob/main/src/peano.ts ) | [ratio]( https://github.com/taiyakihitotsu/cion/blob/main/src/ratio )
 
 ### string
 All string expressions are wrapped in quotes `('')`.  
@@ -177,7 +178,6 @@ To concatenate two strings, concatenate their contents first, then wrap the resu
 
 ### regex
 Cion's regex engine is **non-backtracking**.
-
 - Once a pattern is evaluated, it does not revisit previous states
 - This guarantees deterministic behavior and avoids exponential runtime
 - Some patterns that rely on backtracking (as in JavaScript) may not behave the same
@@ -188,7 +188,7 @@ In Cion Lisp, the `#` prefix for regex (e.g., `#''`) is not required. Within cha
 
 The escape character is `\\` (double backslash), not `\`, following TypeScript literal rules.
 
-[regex.ts]( https://github.com/taiyakihitotsu/cion/blob/main/src/regex.ts ) | [regex-eval.ts]( https://github.com/taiyakihitotsu/cion/blob/main/src/regex-eval.ts ) | [regex-compiler.ts]( https://github.com/taiyakihitotsu/cion/blob/main/src/regex-compiler.ts ) | [regex-const.ts]( https://github.com/taiyakihitotsu/cion/blob/main/src/regex-const.ts ) | [strutil.ts]( https://github.com/taiyakihitotsu/cion/blob/main/src/strutil.ts )
+[regex.ts]( https://github.com/taiyakihitotsu/cion/blob/main/src/regex/regex.ts ) | [regex-eval.ts]( https://github.com/taiyakihitotsu/cion/blob/main/src/regex/regex-eval.ts ) | [regex-compiler.ts]( https://github.com/taiyakihitotsu/cion/blob/main/src/regex/regex-compiler.ts ) | [regex-const.ts]( https://github.com/taiyakihitotsu/cion/blob/main/src/regex/const.ts ) | [strutil.ts]( https://github.com/taiyakihitotsu/cion/blob/main/src/strutil.ts )
 
 
 # FAQ & more
